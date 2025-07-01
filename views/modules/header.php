@@ -5,19 +5,13 @@
 	<a href="home" class="logo">
 		
 		<!-- mini logo -->
-
 		<span class="logo-mini">
-
 			<img class="img-responsive" src="views/img/template/icono-blanco.png" style="padding: 10px" >
-
 		</span>
 
 		<!-- logo -->
-
 		<span class="logo-lg">
-
 			<img class="img-responsive" src="views/img/template/logo-blanco-lineal.png" style="padding: 10px 0" >
-
 		</span>
 
 	</a>

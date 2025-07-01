@@ -47,7 +47,6 @@
              <th>Birthday</th>
              <th>Total Purchases</th>
              <th>Last Purchase</th>
-             <th>Last login</th>
              <th>Actions</th>
 
            </tr> 
@@ -75,8 +74,6 @@
               <td>2017-12-11 12:05:32</td>
 
               <td>35</td>
-
-              <td>2017-12-11 12:05:32</td>
 
               <td>
 

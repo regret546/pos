@@ -172,66 +172,8 @@ if($_SESSION["profile"] == "Special"){
                     <hr>
 
                     <div class="row">
-
-                      <!--=====================================
-                        TAXES AND TOTAL INPUT
-                      ======================================-->
-
-                      <div class="col-xs-8 pull-right">
-
-                        <table class="table">
-                          
-                          <thead>
-                            
-                            <th>Taxes</th>
-                            <th>Total</th>
-
-                          </thead>
-
-
-                          <tbody>
-                            
-                            <tr>
-                              
-                              <td style="width: 50%">
-
-                                <div class="input-group">
-                                  
-                                  <input type="number" class="form-control" name="newTaxSale" id="newTaxSale" value="0" min="0">
-
-                                  <input type="hidden" name="newTaxPrice" id="newTaxPrice" value="0">
-
-                                  <input type="hidden" name="newNetPrice" id="newNetPrice" required>
-                                  
-                                  <span class="input-group-addon"><i class="fa fa-percent"></i></span>
-
-                                </div>
-                              </td>
-
-                              <td style="width: 50%">
-
-                                <div class="input-group">
-                                  
-                                  <span class="input-group-addon">₱</span>
-                                  
-                                  <input type="number" class="form-control" name="newSaleTotal" id="newSaleTotal" placeholder="00000" totalSale="" readonly required>
-
-                                  <input type="hidden" name="saleTotal" id="saleTotal" required>
-
-                                </div>
-
-                              </td>
-
-                            </tr>
-
-                          </tbody>
-						<!-- Log on to codeastro.com for more projects! -->
-                        </table>
-                        
-                      </div>
-
-                      <hr>
-                      
+                        <!-- Hidden field for total calculation -->
+                        <input type="hidden" name="saleTotal" id="saleTotal" value="0">
                     </div>
 
                     <hr>

@@ -19,7 +19,7 @@ foreach ($sales as $key => $valueSales) {
         array_push($arraySellers, $valueUsers["name"]);
 
         #We capture the names and net values in the same array
-        $arraySellersList = array($valueUsers["name"] => $valueSales["netPrice"]);
+        $arraySellersList = array($valueUsers["name"] => $valueSales["totalPrice"]);
 
         #We add the netprice of each seller
 

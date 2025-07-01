@@ -439,53 +439,31 @@ PRICES ADDITION
 =============================================*/
 
 function addingTotalPrices(){
-	var priceItem = $(".newProductPrice");
-	var arrayAddition = [];  
+    var priceItem = $(".newProductPrice");
+    var arrayAdditionPrice = [];  
 
-	for(var i = 0; i < priceItem.length; i++){
-		// Get the quantity from the same row
-		var quantity = $(priceItem[i]).closest('.row').find('.newProductQuantity').val();
-		var price = $(priceItem[i]).attr("realPrice"); // Use realPrice attribute instead of value
-		
-		arrayAddition.push(Number(price) * Number(quantity));
-	}
+    for(var i = 0; i < priceItem.length; i++){
+        var quantity = $(priceItem[i]).closest('.row').find('.newProductQuantity').val();
+        var price = $(priceItem[i]).val();
+        arrayAdditionPrice.push(Number(price) * Number(quantity));
+    }
 
-	// If no products, set everything to 0
-	if(arrayAddition.length === 0) {
-		$("#newNetPrice").val(0);
-		$("#newNetPrice").attr("realNetPrice", 0);
-		$("#newTaxPrice").val(0);
-		$("#saleTotal").val(0);
-		$("#newCashChange").val(0);
-		return;
-	}
+    function additionArray(total, number){
+        return total + number;
+    }
 
-	function additionArray(total, number){
-		return total + number;
-	}
+    var totalPrice = 0;
+    if(arrayAdditionPrice.length > 0) {
+        totalPrice = arrayAdditionPrice.reduce(additionArray);
+    }
 
-	var addingInput = arrayAddition.reduce(additionArray);
-	
-	// Set net price
-	$("#newNetPrice").val(addingInput.toFixed(2));
-	$("#newNetPrice").attr("realNetPrice", addingInput);
+    // Store total in hidden field for calculations
+    $("#saleTotal").val(totalPrice);
 
-	// Calculate tax
-	var tax = Number($("#newTaxSale").val());
-	var netPrice = Number($("#newNetPrice").attr("realNetPrice"));
-
-	var totalTax = netPrice * (tax/100);
-	var totalPrice = netPrice + totalTax;
-
-	$("#newTaxPrice").val(totalTax.toFixed(2));
-	$("#saleTotal").val(totalPrice.toFixed(2));
-
-	// Update cash change
-	var cash = $("#newCashValue").val();
-	if(cash) {
-		var change = Number(cash) - totalPrice;
-		$("#newCashChange").val(change.toFixed(2));
-	}
+    // Update cash change if there's a cash value entered
+    var cashValue = $("#newCashValue").val() || 0;
+    var change = Number(cashValue) - totalPrice;
+    $("#newCashChange").val(change.toFixed(2));
 }
 
 /*=============================================
@@ -494,10 +472,10 @@ ADD TAX
 
 function addTax(){
 	var tax = Number($("#newTaxSale").val());
-	var netPrice = Number($("#newNetPrice").val());
+	var totalPrice = Number($("#saleTotal").val());
 
-	var totalTax = (netPrice * tax) / 100;
-	var totalPrice = netPrice + totalTax;
+	var totalTax = (totalPrice * tax) / 100;
+	totalPrice = totalPrice + totalTax;
 	
 	$("#newTaxPrice").val(totalTax);
 	$("#newTaxPrice").attr("taxValue", totalTax);
@@ -515,7 +493,7 @@ WHEN TAX CHANGES
 =============================================*/
 
 $("#newTaxSale").change(function(){
-	addingTotalPrices();
+	listProducts();
 });
 
 /*=============================================
@@ -529,100 +507,96 @@ SELECT PAYMENT METHOD
 =============================================*/
 
 $("#newPaymentMethod").change(function(){
-    var method = $(this).val();
-    
-    if(method === "cash"){
-        $(this).parent().parent().removeClass("col-xs-6");
-        $(this).parent().parent().addClass("col-xs-4");
-        
-        $(".paymentMethodBoxes").html(
-            '<div class="col-xs-4">'+ 
-                '<div class="input-group">'+ 
-                    '<span class="input-group-addon">₱</span>'+ 
-                    '<input type="number" class="form-control" id="newCashValue" name="newCashValue" placeholder="0" required>'+
-                '</div>'+
-            '</div>'+
-            '<div class="col-xs-4" id="getCashChange" style="padding-left:0px">'+
-                '<div class="input-group">'+
-                    '<span class="input-group-addon">₱</span>'+
-                    '<input type="text" class="form-control" id="newCashChange" name="newCashChange" placeholder="0" readonly required>'+
-                '</div>'+
-            '</div>'
-        );
 
-        // Add event listener for cash input
-        $("#newCashValue").on("change", function() {
-            var cash = $(this).val();
-            var total = $("#saleTotal").val(); // Use saleTotal instead of newSaleTotal
-            
-            if(Number(cash) < Number(total)){
-                // If cash is less than total, show error
-                swal({
-                    title: "Cash is insufficient",
-                    type: "error",
-                    confirmButtonText: "Close!"
-                });
-                
-                $("#newCashValue").val("");
-                $("#newCashChange").val("");
-                return;
-            }
-            
-            var change = Number(cash) - Number(total);
-            $("#newCashChange").val(change.toFixed(2));
-        });
+	var method = $(this).val();
 
-    } else {
-        $(this).parent().parent().removeClass('col-xs-4');
-        $(this).parent().parent().addClass('col-xs-6');
-        $(".paymentMethodBoxes").html(
-            '<div class="col-xs-6" style="padding-left:0px">'+
-                '<div class="input-group">'+
-                    '<input type="text" class="form-control" id="newTransactionCode" name="newTransactionCode" placeholder="Transaction code" required>'+
-                    '<span class="input-group-addon"><i class="fa fa-lock"></i></span>'+
-                '</div>'+
-            '</div>'
-        );
-    }
+	if(method == "cash"){
 
-    // Update payment method list
-    $("#listPaymentMethod").val(method);
-});
+		$(this).parent().parent().removeClass('col-xs-6');
+		$(this).parent().parent().addClass('col-xs-4');
+		
+		$(".paymentMethodBoxes").html(
+			'<div class="col-xs-4">'+
+				'<div class="form-group">'+
+					'<label>Customer Cash</label>'+
+					'<div class="input-group">'+
+						'<span class="input-group-addon"><i class="fa fa-money"></i></span>'+
+						'<input type="text" class="form-control" id="newCashValue" placeholder="0.00" required>'+
+					'</div>'+
+				'</div>'+
+			'</div>'+
+			'<div class="col-xs-4" id="getCashChange" style="padding-left:0px">'+
+				'<div class="form-group">'+
+					'<label>Change</label>'+
+					'<div class="input-group">'+
+						'<span class="input-group-addon"><i class="fa fa-money"></i></span>'+
+						'<input type="text" class="form-control" id="newCashChange" name="newCashChange" placeholder="0.00" readonly required>'+
+					'</div>'+
+				'</div>'+
+			'</div>'
+		)
 
-/*=============================================
-CASH CHANGE
-=============================================*/
-function updateCashChange() {
-	var cash = Number($("#newCashValue").val()) || 0;
-	var total = Number($("#saleTotal").val()) || 0;
-	var change = cash - total;
-	
-	$("#newCashChange").val(change);
-}
+		// Initialize number formatting
+		$('#newCashValue, #newCashChange').number(true, 2);
+		
+		// Listen for cash value changes
+		$("#newCashValue").change(function(){
+			updateCashChange();
+		});
 
-$(".saleForm").on("change keyup", "input#newCashValue", function(){
-	updateCashChange();
-});
+		$("#newCashValue").focus();
+
+	} else {
+
+		$(this).parent().parent().removeClass('col-xs-4');
+		$(this).parent().parent().addClass('col-xs-6');
+		
+		$(".paymentMethodBoxes").html(
+			'<div class="col-xs-6" style="padding-left:0px">'+
+				'<div class="input-group">'+
+					'<input type="text" class="form-control" id="newTransactionCode" placeholder="Transaction code" required>'+
+					'<span class="input-group-addon"><i class="fa fa-lock"></i></span>'+
+				'</div>'+
+			'</div>'
+		)
+
+	}
+
+	listMethods()
+
+})
 
 /*=============================================
 LIST PAYMENT METHOD
 =============================================*/
 function listMethods(){
+
 	var paymentMethod = $("#newPaymentMethod").val();
-	var cashValue = $("#newCashValue").val() || "";
-	var transactionCode = $("#newTransactionCode").val() || "";
 	
-	if(paymentMethod === "cash") {
-		$("#listPaymentMethod").val(paymentMethod);
-	} else if(paymentMethod === "CC" || paymentMethod === "DC") {
-		$("#listPaymentMethod").val(paymentMethod + "-" + transactionCode);
+	if(paymentMethod == "cash"){
+
+		$("#listPaymentMethod").val("cash");
+
+	} else {
+
+		var transactionCode = $("#newTransactionCode").val();
+		$("#listPaymentMethod").val(paymentMethod+"-"+transactionCode);
+
 	}
+
 }
 
-// Update payment method when transaction code changes
-$(".saleForm").on("change", "input#newTransactionCode", function(){
-	listMethods();
-});
+/*=============================================
+CASH CHANGE
+=============================================*/
+function updateCashChange() {
+    var cash = Number($("#newCashValue").val().replace(/,/g, '')) || 0;
+    var total = Number($("#saleTotal").val()) || 0;
+    var change = cash - total;
+    
+    // Format to exactly 2 decimal places
+    $("#newCashChange").val(change.toFixed(2));
+}
 
 /*=============================================
 EDIT SALE BUTTON
@@ -833,9 +807,11 @@ function listProducts(){
 	var description = $(".newProductDescription");
 	var quantity = $(".newProductQuantity");
 	var price = $(".newProductPrice");
+	var totalSale = 0;
 
 	for(var i = 0; i < description.length; i++){
 		var totalPrice = Number($(quantity[i]).val()) * Number($(price[i]).attr("realPrice"));
+		totalSale += totalPrice;
 		
 		productsList.push({ 
 			"id" : $(description[i]).attr("idProduct"), 
@@ -848,9 +824,7 @@ function listProducts(){
 	}
 
 	$("#productsList").val(JSON.stringify(productsList));
-	
-	// After updating products list, recalculate totals
-	addingTotalPrices();
+	$("#saleTotal").val(totalSale);
 }
 
 // Add event listeners for quantity changes
@@ -862,5 +836,49 @@ $(".saleForm").on("change", "input.newProductQuantity", function() {
 $(".saleForm").on("click", "button.removeProduct", function() {
 	$(this).closest('.row').remove();
 	listProducts();
+});
+
+// Add form submission handler
+$(".saleForm").on("submit", function(e) {
+    e.preventDefault();
+    
+    // Validate if products have been added
+    if ($(".newProduct").children().length === 0) {
+        swal({
+            type: "error",
+            title: "The sale must contain at least one product",
+            showConfirmButton: true,
+            confirmButtonText: "Close"
+        });
+        return;
+    }
+
+    // Validate if customer is selected
+    if ($("#selectCustomer").val() === "") {
+        swal({
+            type: "error",
+            title: "You must select a customer",
+            showConfirmButton: true,
+            confirmButtonText: "Close"
+        });
+        return;
+    }
+
+    // Validate if payment method is selected
+    if ($("#newPaymentMethod").val() === "") {
+        swal({
+            type: "error",
+            title: "You must select a payment method",
+            showConfirmButton: true,
+            confirmButtonText: "Close"
+        });
+        return;
+    }
+
+    // Set payment method
+    $("#listPaymentMethod").val($("#newPaymentMethod").val());
+
+    // Submit form
+    this.submit();
 });
 

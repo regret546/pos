@@ -32,7 +32,7 @@ $answerSale = ControllerSales::ctrShowSales($itemSale, $valueSale);
 
 $saledate = substr($answerSale["saledate"],0,-8);
 $products = json_decode($answerSale["products"], true);
-$netPrice = number_format($answerSale["netPrice"],2);
+
 $tax = number_format($answerSale["tax"],2);
 $totalPrice = number_format($answerSale["totalPrice"],2);
 
@@ -145,7 +145,7 @@ $pdf->writeHTML($block2, false, false, false, false, '');
 }
 
 // ---------------------------------------------------------
-$totalPriceAfterTax = $netPrice + $tax;
+
 $block3 = <<<EOF
 
 <table style="font-size:7px; text-align:right">
@@ -157,7 +157,7 @@ $block3 = <<<EOF
 		</td>
 
 		<td style="width:80px;">
-			$peso $netPrice
+			$peso $totalPrice
 		</td>
 
 	</tr>

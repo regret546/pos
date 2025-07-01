@@ -83,7 +83,6 @@ if($xml){
              <th>Customer</th>
              <th>Seller</th>
              <th>Payment Method</th>
-             <th>Net Cost</th>
              <th>Total Cost</th>
              <th>Date</th>
              <th>Actions</th>
@@ -132,8 +131,6 @@ if($xml){
                   echo '<td>'.$userAnswer["name"].'</td>
 
                   <td>'.$value["paymentMethod"].'</td>
-
-                  <td>₱ '.number_format($value["netPrice"],2).'</td>
 
                   <td>₱ '.number_format($value["totalPrice"],2).'</td>
 

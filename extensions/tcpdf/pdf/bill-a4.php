@@ -32,7 +32,7 @@ $answerSale = ControllerSales::ctrShowSales($itemSale, $valueSale);
 
 $saledate = substr($answerSale["saledate"],0,-8);
 $products = json_decode($answerSale["products"], true);
-$netPrice = number_format($answerSale["netPrice"],2);
+
 $tax = number_format($answerSale["tax"],2);
 $totalPrice = number_format($answerSale["totalPrice"],2);
 
@@ -250,7 +250,7 @@ $block5 = <<<EOF
 			</td>
 
 			<td style="border: 1px solid #666; color:#333; background-color:white; width:100px; text-align:center">
-				$peso $netPrice
+				$peso $totalPrice
 			</td>
 
 		</tr>

@@ -43,38 +43,29 @@ class ModelSales{
 	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	static public function mdlAddSale($table, $data){
 
-		try {
-			$stmt = Connection::connect()->prepare("INSERT INTO $table(code, idCustomer, idSeller, products, tax, netPrice, totalPrice, paymentMethod) VALUES (:code, :idCustomer, :idSeller, :products, :tax, :netPrice, :totalPrice, :paymentMethod)");
+		$stmt = Connection::connect()->prepare("INSERT INTO $table(code, idCustomer, idSeller, products, tax, totalPrice, paymentMethod) VALUES (:code, :idCustomer, :idSeller, :products, :tax, :totalPrice, :paymentMethod)");
 
-			// Convert numeric values to proper format
-			$tax = floatval($data["tax"]);
-			$netPrice = floatval($data["netPrice"]);
-			$totalPrice = floatval($data["totalPrice"]);
+		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
+		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
+		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
+		$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
+		$stmt->bindParam(":tax", $data["tax"], PDO::PARAM_STR);
+		$stmt->bindParam(":totalPrice", $data["totalPrice"], PDO::PARAM_STR);
+		$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
 
-			$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
-			$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
-			$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
-			$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
-			$stmt->bindParam(":tax", $tax, PDO::PARAM_STR);
-			$stmt->bindParam(":netPrice", $netPrice, PDO::PARAM_STR);
-			$stmt->bindParam(":totalPrice", $totalPrice, PDO::PARAM_STR);
-			$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
+		if($stmt->execute()){
 
-			if($stmt->execute()){
-				return "ok";
-			}
+			return "ok";
+
+		}else{
 
 			return "error";
-
-		} catch(Exception $e) {
-			error_log("Error in mdlAddSale: " . $e->getMessage());
-			return "error";
-		} finally {
-			if(isset($stmt)) {
-				$stmt->closeCursor();
-				$stmt = null;
-			}
+		
 		}
+
+		$stmt->close();
+		$stmt = null;
+
 	}
 	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
@@ -83,14 +74,13 @@ class ModelSales{
 	
 	static public function mdlEditSale($table, $data){
 
-		$stmt = Connection::connect()->prepare("UPDATE $table SET  idCustomer = :idCustomer, idSeller = :idSeller, products = :products, tax = :tax, netPrice = :netPrice, totalPrice= :totalPrice, paymentMethod = :paymentMethod WHERE code = :code");
+		$stmt = Connection::connect()->prepare("UPDATE $table SET  idCustomer = :idCustomer, idSeller = :idSeller, products = :products, tax = :tax, totalPrice= :totalPrice, paymentMethod = :paymentMethod WHERE code = :code");
 
 		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
 		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
 		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
 		$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
 		$stmt->bindParam(":tax", $data["tax"], PDO::PARAM_STR);
-		$stmt->bindParam(":netPrice", $data["netPrice"], PDO::PARAM_STR);
 		$stmt->bindParam(":totalPrice", $data["totalPrice"], PDO::PARAM_STR);
 		$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
 
@@ -196,7 +186,7 @@ class ModelSales{
 
 	static public function mdlAddingTotalSales($table){	
 
-		$stmt = Connection::connect()->prepare("SELECT SUM(netPrice) as total FROM $table");
+		$stmt = Connection::connect()->prepare("SELECT SUM(totalPrice) as total FROM $table");
 
 		$stmt -> execute();
 

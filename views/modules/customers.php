@@ -63,7 +63,6 @@ if($_SESSION["profile"] == "Special"){
              <th>Birthday</th>
              <th>Total Purchases</th>
              <th>Last Purchase</th>
-             <th>Last login</th>
              <th>Actions</th>
 
            </tr> 
@@ -101,8 +100,6 @@ if($_SESSION["profile"] == "Special"){
                       <td>'.$value["purchases"].'</td>
 
                       <td>'.$value["lastPurchase"].'</td>
-
-                      <td>'.$value["registerDate"].'</td>
 
                       <td>
 

@@ -95,8 +95,7 @@ class ControllerSales{
 				"idCustomer"=>$_POST["selectCustomer"],
 				"code"=>$_POST["newSale"],
 				"products"=>$_POST["productsList"],
-				"tax"=>$_POST["newTaxPrice"],
-				"netPrice"=>$_POST["newNetPrice"],
+				"tax"=>0,
 				"totalPrice"=>$_POST["saleTotal"],
 				"paymentMethod"=>$_POST["listPaymentMethod"]
 			);
@@ -266,14 +265,15 @@ class ControllerSales{
 			SAVE PURCHASE CHANGES
 			=============================================*/	
 
-			$data = array("idSeller"=>$_POST["idSeller"],
-						   "idCustomer"=>$_POST["selectCustomer"],
-						   "code"=>$_POST["editSale"],
-						   "products"=>$productsList,
-						   "tax"=>$_POST["newTaxPrice"],
-						   "netPrice"=>$_POST["newNetPrice"],
-						   "totalPrice"=>$_POST["saleTotal"],
-						   "paymentMethod"=>$_POST["listPaymentMethod"]);
+			$data = array(
+				"code"=>$_POST["editSale"],
+				"idCustomer"=>$_POST["selectCustomer"],
+				"idSeller"=>$_POST["idSeller"],
+				"products"=>$productsList,
+				"tax"=>0,
+				"totalPrice"=>$_POST["saleTotal"],
+				"paymentMethod"=>$_POST["listPaymentMethod"]
+			);
 
 
 			$answer = ModelSales::mdleditSale($table, $data);
