@@ -439,31 +439,29 @@ PRICES ADDITION
 =============================================*/
 
 function addingTotalPrices(){
-    var priceItem = $(".newProductPrice");
-    var arrayAdditionPrice = [];  
 
-    for(var i = 0; i < priceItem.length; i++){
-        var quantity = $(priceItem[i]).closest('.row').find('.newProductQuantity').val();
-        var price = $(priceItem[i]).val();
-        arrayAdditionPrice.push(Number(price) * Number(quantity));
-    }
+	var priceItem = $(".newProductPrice");
+	var arrayAdditionPrice = [];  
 
-    function additionArray(total, number){
-        return total + number;
-    }
+	for(var i = 0; i < priceItem.length; i++){
 
-    var totalPrice = 0;
-    if(arrayAdditionPrice.length > 0) {
-        totalPrice = arrayAdditionPrice.reduce(additionArray);
-    }
+		 arrayAdditionPrice.push(Number($(priceItem[i]).val()));
+		 
+	}
 
-    // Store total in hidden field for calculations
-    $("#saleTotal").val(totalPrice);
+	function additionArray(total, number){
 
-    // Update cash change if there's a cash value entered
-    var cashValue = $("#newCashValue").val() || 0;
-    var change = Number(cashValue) - totalPrice;
-    $("#newCashChange").val(change.toFixed(2));
+		return total + number;
+
+	}
+
+	var addingTotalPrice = arrayAdditionPrice.reduce(additionArray);
+	
+	$("#newSaleTotal").val(addingTotalPrice);
+	$("#saleTotal").val(addingTotalPrice);
+	$("#newSaleTotal").attr("totalSale",addingTotalPrice);
+
+
 }
 
 /*=============================================
@@ -880,5 +878,23 @@ $(".saleForm").on("submit", function(e) {
 
     // Submit form
     this.submit();
+});
+
+/*=============================================
+CALCULATE CHANGE
+=============================================*/
+
+$("#customerCash").change(function(){
+    
+    var cash = $(this).val();
+    var total = $("#saleTotal").val();
+    
+    if(cash >= total){
+        var change = Number(cash) - Number(total);
+        $("#cashChange").val(change.toFixed(2));
+    }else{
+        $("#cashChange").val("");
+    }
+
 });
 

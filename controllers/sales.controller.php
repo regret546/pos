@@ -31,7 +31,7 @@ class ControllerSales{
 		if(isset($_POST["newSale"])){
 
 			/*=============================================
-			UPDATE CUSTOMER'S PURCHASES AND REDUCE THE STOCK AND INCREASE SALES OF THE PRODUCT
+			UPDATE CUSTOMER'S PURCHASES AND REDUCE THE STOCK AND INCREMENT THE SALES OF THE PRODUCT
 			=============================================*/
 
 			$productsList = json_decode($_POST["productsList"], true);
@@ -45,20 +45,20 @@ class ControllerSales{
 			   $tableProducts = "products";
 
 			    $item = "id";
-			    $valueProductId = $value["id"];
+			    $valueProduct = $value["id"];
 			    $order = "id";
 
-			    $getProduct = ProductsModel::mdlShowProducts($tableProducts, $item, $valueProductId, $order);
+			    $getProduct = ProductsModel::mdlShowProducts($tableProducts, $item, $valueProduct, $order);
 
 				$item1a = "sales";
 				$value1a = $value["quantity"] + $getProduct["sales"];
 
-			    $newSales = ProductsModel::mdlUpdateProduct($tableProducts, $item1a, $value1a, $valueProductId);
+			    $newSales = ProductsModel::mdlUpdateProduct($tableProducts, $item1a, $value1a, $valueProduct);
 
 				$item1b = "stock";
 				$value1b = $getProduct["stock"] - $value["quantity"];
 
-				$newStock = ProductsModel::mdlUpdateProduct($tableProducts, $item1b, $value1b, $valueProductId);
+				$newStock = ProductsModel::mdlUpdateProduct($tableProducts, $item1b, $value1b, $valueProduct);
 
 			}
 
@@ -176,7 +176,7 @@ class ControllerSales{
 					$tableProducts = "products";
 
 					$item = "id";
-					$value1 = $value["id"];
+					$value = $value["id"];
 					$order = "id";
 
 					$getProduct = ProductsModel::mdlShowProducts($tableProducts, $item, $value, $order);
@@ -204,7 +204,7 @@ class ControllerSales{
 				$value1a = $getCustomer["purchases"] - array_sum($totalPurchasedProducts);
 
 				$customerPurchases = ModelCustomers::mdlUpdateCustomer($tableCustomers, $item1a, $value1a, $valueCustomer);
-				/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 				/*=============================================
 				UPDATE THE CUSTOMER'S PURCHASES AND REDUCE THE STOCK AND INCREMENT PRODUCT SALES
 				=============================================*/
@@ -260,7 +260,7 @@ class ControllerSales{
 				$dateCustomer_2 = ModelCustomers::mdlUpdateCustomer($tableCustomers_2, $item1b_2, $value1b_2, $value_2);
 
 			}
-			/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 			/*=============================================
 			SAVE PURCHASE CHANGES
 			=============================================*/	
@@ -275,8 +275,7 @@ class ControllerSales{
 				"paymentMethod"=>$_POST["listPaymentMethod"]
 			);
 
-
-			$answer = ModelSales::mdleditSale($table, $data);
+			$answer = ModelSales::mdlEditSale($table, $data);
 
 			if($answer == "ok"){
 
