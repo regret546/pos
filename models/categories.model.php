@@ -3,8 +3,7 @@
 
 require_once "connection.php";
 
-class CategoriesModel{
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+class ModelCategories{
 	/*=============================================
 	CREATE CATEGORY
 	=============================================*/
@@ -29,7 +28,6 @@ class CategoriesModel{
 
 		$stmt = null;
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	SHOW CATEGORY 
 	=============================================*/
@@ -61,7 +59,6 @@ class CategoriesModel{
 		$stmt = null;
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	EDIT CATEGORY
 	=============================================*/
@@ -87,7 +84,6 @@ class CategoriesModel{
 		$stmt = null;
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	DELETE CATEGORY
 	=============================================*/

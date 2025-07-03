@@ -12,26 +12,13 @@ if($_SESSION["profile"] == "Special"){
 
 }
 
-
-$xml = ControllerSales::ctrDownloadXML();
-
-if($xml){
-
-  rename($_GET["xml"].".xml", "xml/".$_GET["xml"].".xml");
-
-  echo '<a class="btn btn-block btn-success openXML" file="xml/'.$_GET["xml"].'.xml" href="sales">The XML file has been created succesfully<span class="fa fa-times pull-right"></span></a>';
-
-}
-
 ?>
 <div class="content-wrapper">
 
   <section class="content-header">
 
     <h1>
-	<!-- Log on to codeastro.com for more projects! -->
       Sales Management
-
     </h1>
 
     <ol class="breadcrumb">
@@ -71,7 +58,7 @@ if($xml){
       </div>
 
       <div class="box-body">
-		<!-- Log on to codeastro.com for more projects! -->
+
         <table class="table table-bordered table-hover table-striped dt-responsive tables" width="100%">
        
           <thead>
@@ -141,8 +128,6 @@ if($xml){
                     <div class="btn-group">
                         
                       <div class="btn-group">
-
-                      <a class="btn btn-success" href="index.php?route=sales&xml='.$value["code"].'">xml</a>
                         
                       <button class="btn btn-warning btnPrintBill" saleCode="'.$value["code"].'">
 
@@ -166,7 +151,6 @@ if($xml){
 
         ?>
 
-
           </tbody>
 
         </table>
@@ -181,7 +165,7 @@ if($xml){
       </div>
     
     </div>
-	<!-- Log on to codeastro.com for more projects! -->
+
   </section>
 
 </div>

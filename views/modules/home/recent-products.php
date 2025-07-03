@@ -8,7 +8,6 @@ $products = ControllerProducts::ctrShowProducts($item, $value, $order);
 
  ?>
 
-<!-- Log on to codeastro.com for more projects! -->
 <div class="box box-default">
 
   <div class="box-header with-border">
@@ -32,7 +31,7 @@ $products = ControllerProducts::ctrShowProducts($item, $value, $order);
     </div>
 
   </div>
-  <!-- Log on to codeastro.com for more projects! -->
+
   <div class="box-body">
 
     <ul class="products-list product-list-in-box">
@@ -55,7 +54,7 @@ $products = ControllerProducts::ctrShowProducts($item, $value, $order);
 
             '.$products[$i]["description"].'
 
-            <span class="label label-warning pull-right">$'.$products[$i]["sellingPrice"].'</span>
+            <span class="label label-warning pull-right">₱'.$products[$i]["sellingPrice"].'</span>
 
           </a>
     
@@ -76,5 +75,5 @@ $products = ControllerProducts::ctrShowProducts($item, $value, $order);
     <a href="products" class="uppercase">View All Products</a>
   
   </div>
-	<!-- Log on to codeastro.com for more projects! -->
+
 </div>

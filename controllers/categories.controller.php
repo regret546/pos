@@ -16,7 +16,7 @@
 
 				$data = strtoupper($_POST['newCategory']);
 
-				$answer = CategoriesModel::mdlAddCategory($table, $data);
+				$answer = ModelCategories::mdlAddCategory($table, $data);
 				// var_dump($answer);
 
 				if($answer == 'ok'){
@@ -72,7 +72,7 @@
 
 		$table = "categories";
 
-		$answer = CategoriesModel::mdlShowCategories($table, $item, $value);
+		$answer = ModelCategories::mdlShowCategories($table, $item, $value);
 
 		return $answer;
 	}
@@ -92,7 +92,7 @@
 				$data = array("Category"=>strtoupper($_POST["editCategory"]),
 							   "id"=>$_POST["idCategory"]);
 
-				$answer = CategoriesModel::mdlEditCategory($table, $data);
+				$answer = ModelCategories::mdlEditCategory($table, $data);
 				// var_dump($answer);
 
 				if($answer == "ok"){
@@ -153,7 +153,7 @@
 			$table ="categories";
 			$data = $_GET["idCategory"];
 
-			$answer = CategoriesModel::mdlDeleteCategory($table, $data);
+			$answer = ModelCategories::mdlDeleteCategory($table, $data);
 			// var_dump($answer);
 
 			if($answer == "ok"){
