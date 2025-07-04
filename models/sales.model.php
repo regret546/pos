@@ -188,6 +188,24 @@ class ModelSales{
 	}
 
 	/*=============================================
+	ADDING TOTAL SALES
+	=============================================*/
+
+	static public function mdlAddingTotalSales($table){	
+		
+		$stmt = Connection::connect()->prepare("SELECT SUM(totalPrice) as total FROM $table");
+
+		$stmt -> execute();
+
+		return $stmt -> fetch();
+
+		$stmt -> close();
+
+		$stmt = null;
+
+	}
+
+	/*=============================================
 	Add TO CART
 	=============================================*/
 
