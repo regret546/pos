@@ -760,6 +760,7 @@ $(".saleForm").on("click", "button.removeProduct", function () {
 // Add form submission handler
 $(".saleForm").on("submit", function (e) {
   e.preventDefault();
+  e.stopPropagation();
 
   // Validate if products have been added
   if ($(".newProduct").children().length === 0) {
@@ -808,6 +809,7 @@ $(".saleForm").on("submit", function (e) {
         showConfirmButton: true,
         confirmButtonText: "Close",
       });
+      $("#newCashValue").focus();
       return false;
     }
   }
@@ -815,14 +817,40 @@ $(".saleForm").on("submit", function (e) {
   // Set payment method
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
-  // Submit form
-  this.submit();
+  // If we get here, all validations passed
+  return true;
 });
 
-// Additional handler to prevent direct form submission
-$(document).on("submit", ".saleForm", function (e) {
-  e.preventDefault();
-  return false;
+// Prevent the default click behavior of the submit button
+$("#saveSaleBtn").on("click", function (e) {
+  if ($("#newPaymentMethod").val() === "cash") {
+    var change = Number($("#newCashChange").val().replace(/,/g, "")) || 0;
+    if (change < 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      swal({
+        type: "error",
+        title: "Invalid Cash Amount",
+        text:
+          "The cash amount must be greater than or equal to the total amount. Current change: " +
+          change,
+        showConfirmButton: true,
+        confirmButtonText: "Close",
+      });
+      $("#newCashValue").focus();
+      return false;
+    }
+  }
+});
+
+// Add hidden input for cash change
+$(".saleForm").append(
+  '<input type="hidden" name="newCashChange" id="hiddenCashChange">'
+);
+
+// Update hidden cash change input when visible input changes
+$("#newCashChange").on("change keyup", function () {
+  $("#hiddenCashChange").val($(this).val());
 });
 
 /*=============================================
