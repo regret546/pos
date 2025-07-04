@@ -472,7 +472,7 @@ $("#newPaymentMethod").change(function () {
         "<label>Customer Cash</label>" +
         '<div class="input-group">' +
         '<span class="input-group-addon"><i class="fa fa-money"></i></span>' +
-        '<input type="text" class="form-control" id="newCashValue" placeholder="0.00" required>' +
+        '<input type="text" class="form-control" id="newCashValue" name="newCashValue" placeholder="0.00" required>' +
         "</div>" +
         "</div>" +
         "</div>" +
@@ -487,11 +487,12 @@ $("#newPaymentMethod").change(function () {
         "</div>"
     );
 
-    // Initialize number formatting
-    $("#newCashValue, #newCashChange").number(true, 2);
+    // Initialize number formatting for cash fields
+    $("#newCashValue").number(true, 2);
+    $("#newCashChange").number(true, 2);
 
     // Listen for cash value changes
-    $("#newCashValue").change(function () {
+    $("#newCashValue").on("input change", function () {
       updateCashChange();
     });
 
@@ -503,7 +504,7 @@ $("#newPaymentMethod").change(function () {
     $(".paymentMethodBoxes").html(
       '<div class="col-xs-6" style="padding-left:0px">' +
         '<div class="input-group">' +
-        '<input type="text" class="form-control" id="newTransactionCode" placeholder="Transaction code" required>' +
+        '<input type="text" class="form-control" id="newTransactionCode" name="newTransactionCode" placeholder="Transaction code" required>' +
         '<span class="input-group-addon"><i class="fa fa-lock"></i></span>' +
         "</div>" +
         "</div>"
@@ -531,21 +532,22 @@ function listMethods() {
 CASH CHANGE
 =============================================*/
 function updateCashChange() {
-  // Parse the values and remove commas
-  var cash = parseFloat($("#newCashValue").val().replace(/,/g, "")) || 0;
-  var total = parseFloat($("#saleTotal").val().replace(/,/g, "")) || 0;
+  // Get the input values and clean them
+  var cashInput = $("#newCashValue").val() || "0";
+  var totalInput = $("#saleTotal").val() || "0";
 
-  // Calculate change
-  var change = (cash - total).toFixed(2);
+  // Remove commas and convert to numbers with 2 decimal precision
+  var cash = parseFloat(cashInput.replace(/,/g, ""));
+  var total = parseFloat(totalInput.replace(/,/g, ""));
 
-  // Convert back to float for comparison
-  var changeNum = parseFloat(change);
+  // Ensure we have valid numbers
+  cash = isNaN(cash) ? 0 : cash;
+  total = isNaN(total) ? 0 : total;
 
-  // Format and display the change
-  $("#newCashChange").val(change);
+  // Calculate change with 2 decimal precision
+  var change = (Math.round((cash - total) * 100) / 100).toFixed(2);
 
-  // If change is negative, show error and prevent form submission
-  if (changeNum < 0) {
+  if (parseFloat(change) < 0) {
     swal({
       type: "error",
       title: "Invalid Cash Amount",
@@ -553,10 +555,13 @@ function updateCashChange() {
       showConfirmButton: true,
       confirmButtonText: "Close",
     });
-    $("#newCashValue").val("");
-    $("#newCashChange").val("");
     return false;
   }
+
+  // Update the change field
+  $("#newCashChange").val(change);
+
+  return true;
 }
 
 /*=============================================
@@ -879,12 +884,22 @@ $(".saleForm").on("submit", function (e) {
 
   // For cash payments, validate that change is not negative
   if ($("#newPaymentMethod").val() === "cash") {
-    var cash = parseFloat($("#newCashValue").val().replace(/,/g, "")) || 0;
-    var total = parseFloat($("#saleTotal").val().replace(/,/g, "")) || 0;
-    var change = (cash - total).toFixed(2);
-    var changeNum = parseFloat(change);
+    // Get the input values and clean them
+    var cashInput = $("#newCashValue").val() || "0";
+    var totalInput = $("#saleTotal").val() || "0";
 
-    if (changeNum < 0) {
+    // Remove commas and convert to numbers with 2 decimal precision
+    var cash = parseFloat(cashInput.replace(/,/g, ""));
+    var total = parseFloat(totalInput.replace(/,/g, ""));
+
+    // Ensure we have valid numbers
+    cash = isNaN(cash) ? 0 : cash;
+    total = isNaN(total) ? 0 : total;
+
+    // Calculate change with 2 decimal precision
+    var change = (Math.round((cash - total) * 100) / 100).toFixed(2);
+
+    if (parseFloat(change) < 0) {
       swal({
         type: "error",
         title: "Invalid Cash Amount",
@@ -892,8 +907,6 @@ $(".saleForm").on("submit", function (e) {
         showConfirmButton: true,
         confirmButtonText: "Close",
       });
-      $("#newCashValue").val("");
-      $("#newCashChange").val("");
       return false;
     }
   }
