@@ -1,11 +1,12 @@
 <?php
 
-require_once 'connection.php';
-
+require_once "connection.php";
+require_once "date.helper.php";
 
 class ModelSales{
+
 	/*=============================================
-	SHOWING SALES
+	SHOW SALES
 	=============================================*/
 
 	static public function mdlShowSales($table, $item, $value){
@@ -29,7 +30,7 @@ class ModelSales{
 			return $stmt -> fetchAll();
 
 		}
-
+		
 		$stmt -> close();
 
 		$stmt = null;
@@ -37,20 +38,24 @@ class ModelSales{
 	}
 
 	/*=============================================
-	REGISTERING SALE
+	CREATE SALE
 	=============================================*/
 
 	static public function mdlAddSale($table, $data){
 
-		$stmt = Connection::connect()->prepare("INSERT INTO $table(code, idCustomer, idSeller, products, tax, totalPrice, paymentMethod) VALUES (:code, :idCustomer, :idSeller, :products, :tax, :totalPrice, :paymentMethod)");
+		DateHelper::init();
+		$saledate = DateHelper::getDateTime();
+
+		$stmt = Connection::connect()->prepare("INSERT INTO $table(code, idSeller, idCustomer, products, tax, totalPrice, paymentMethod, saledate) VALUES (:code, :idSeller, :idCustomer, :products, :tax, :totalPrice, :paymentMethod, :saledate)");
 
 		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
-		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
 		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
+		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
 		$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
 		$stmt->bindParam(":tax", $data["tax"], PDO::PARAM_STR);
 		$stmt->bindParam(":totalPrice", $data["totalPrice"], PDO::PARAM_STR);
 		$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
+		$stmt->bindParam(":saledate", $saledate, PDO::PARAM_STR);
 
 		if($stmt->execute()){
 
@@ -70,18 +75,22 @@ class ModelSales{
 	/*=============================================
 	EDIT SALE
 	=============================================*/
-	
+
 	static public function mdlEditSale($table, $data){
 
-		$stmt = Connection::connect()->prepare("UPDATE $table SET  idCustomer = :idCustomer, idSeller = :idSeller, products = :products, tax = :tax, totalPrice= :totalPrice, paymentMethod = :paymentMethod WHERE code = :code");
+		DateHelper::init();
+		$saledate = DateHelper::getDateTime();
+		
+		$stmt = Connection::connect()->prepare("UPDATE $table SET  idCustomer = :idCustomer, idSeller = :idSeller, products = :products, tax = :tax, totalPrice= :totalPrice, paymentMethod = :paymentMethod, saledate = :saledate WHERE code = :code");
 
 		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
-		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
 		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
+		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
 		$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
 		$stmt->bindParam(":tax", $data["tax"], PDO::PARAM_STR);
 		$stmt->bindParam(":totalPrice", $data["totalPrice"], PDO::PARAM_STR);
 		$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
+		$stmt->bindParam(":saledate", $saledate, PDO::PARAM_STR);
 
 		if($stmt->execute()){
 
@@ -141,7 +150,7 @@ class ModelSales{
 
 		}else if($initialDate == $finalDate){
 
-			$stmt = Connection::connect()->prepare("SELECT * FROM $table WHERE saledate like '%$finalDate%'");
+			$stmt = Connection::connect()->prepare("SELECT * FROM $table WHERE DATE(saledate) = :saledate ORDER BY id ASC");
 
 			$stmt -> bindParam(":saledate", $finalDate, PDO::PARAM_STR);
 
@@ -179,20 +188,73 @@ class ModelSales{
 	}
 
 	/*=============================================
-	Adding TOTAL sales
+	Add TO CART
 	=============================================*/
 
-	static public function mdlAddingTotalSales($table){	
+	static public function mdlAddToCart($table, $data){
 
-		$stmt = Connection::connect()->prepare("SELECT SUM(totalPrice) as total FROM $table");
+		DateHelper::init();
+		$saledate = DateHelper::getDateTime();
 
-		$stmt -> execute();
+		$stmt = Connection::connect()->prepare("INSERT INTO $table(code, idSeller, idCustomer, products, tax, totalPrice, paymentMethod, saledate) VALUES (:code, :idSeller, :idCustomer, :products, :tax, :totalPrice, :paymentMethod, :saledate)");
 
-		return $stmt -> fetch();
+		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
+		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
+		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
+		$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
+		$stmt->bindParam(":tax", $data["tax"], PDO::PARAM_STR);
+		$stmt->bindParam(":totalPrice", $data["totalPrice"], PDO::PARAM_STR);
+		$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
+		$stmt->bindParam(":saledate", $saledate, PDO::PARAM_STR);
 
-		$stmt -> close();
+		if($stmt->execute()){
 
+			return "ok";
+
+		}else{
+
+			return "error";
+		
+		}
+
+		$stmt->close();
 		$stmt = null;
 
 	}
+
+	/*=============================================
+	EDIT CART
+	=============================================*/
+
+	static public function mdlEditCart($table, $data){
+
+		DateHelper::init();
+		$saledate = DateHelper::getDateTime();
+		
+		$stmt = Connection::connect()->prepare("UPDATE $table SET  idCustomer = :idCustomer, idSeller = :idSeller, products = :products, tax = :tax, totalPrice= :totalPrice, paymentMethod = :paymentMethod, saledate = :saledate WHERE code = :code");
+
+		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
+		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
+		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
+		$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
+		$stmt->bindParam(":tax", $data["tax"], PDO::PARAM_STR);
+		$stmt->bindParam(":totalPrice", $data["totalPrice"], PDO::PARAM_STR);
+		$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
+		$stmt->bindParam(":saledate", $saledate, PDO::PARAM_STR);
+
+		if($stmt->execute()){
+
+			return "ok";
+
+		}else{
+
+			return "error";
+		
+		}
+
+		$stmt->close();
+		$stmt = null;
+
+	}
+
 }

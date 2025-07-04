@@ -1,14 +1,18 @@
 <?php
 
 require_once "connection.php";
+require_once "date.helper.php";
 
 class ModelCustomers{
 
 	/*=============================================
-	CREATE CUSTOMERS
+	CREATE CUSTOMER
 	=============================================*/
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	static public function mdlAddCustomer($table, $data){
+
+		DateHelper::init();
+		$lastPurchase = DateHelper::getDateTime();
 
 		$stmt = Connection::connect()->prepare("INSERT INTO $table(name, idDocument, email, phone, address, birthdate, purchases, lastPurchase) VALUES (:name, :idDocument, :email, :phone, :address, :birthdate, :purchases, :lastPurchase)");
 
@@ -17,9 +21,9 @@ class ModelCustomers{
 		$stmt->bindParam(":email", $data["email"], PDO::PARAM_STR);
 		$stmt->bindParam(":phone", $data["phone"], PDO::PARAM_STR);
 		$stmt->bindParam(":address", $data["address"], PDO::PARAM_STR);
-		$stmt->bindParam(":birthdate", $data["birthdate"], PDO::PARAM_STR);
+		$stmt->bindParam(":birthdate", DateHelper::formatDate($data["birthdate"]), PDO::PARAM_STR);
 		$stmt->bindParam(":purchases", $data["purchases"], PDO::PARAM_INT);
-		$stmt->bindParam(":lastPurchase", $data["lastPurchase"], PDO::PARAM_STR);
+		$stmt->bindParam(":lastPurchase", $lastPurchase, PDO::PARAM_STR);
 
 		if($stmt->execute()){
 
@@ -35,7 +39,7 @@ class ModelCustomers{
 		$stmt = null;
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	SHOW CUSTOMERS
 	=============================================*/
@@ -67,7 +71,7 @@ class ModelCustomers{
 		$stmt = null;
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	EDIT CUSTOMER
 	=============================================*/
@@ -82,7 +86,7 @@ class ModelCustomers{
 		$stmt->bindParam(":email", $data["email"], PDO::PARAM_STR);
 		$stmt->bindParam(":phone", $data["phone"], PDO::PARAM_STR);
 		$stmt->bindParam(":address", $data["address"], PDO::PARAM_STR);
-		$stmt->bindParam(":birthdate", $data["birthdate"], PDO::PARAM_STR);
+		$stmt->bindParam(":birthdate", DateHelper::formatDate($data["birthdate"]), PDO::PARAM_STR);
 
 		if($stmt->execute()){
 
@@ -98,7 +102,7 @@ class ModelCustomers{
 		$stmt = null;
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	DELETE CUSTOMER
 	=============================================*/
@@ -124,14 +128,14 @@ class ModelCustomers{
 		$stmt = null;
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	UPDATE CUSTOMER
 	=============================================*/
 
 	static public function mdlUpdateCustomer($table, $item1, $value1, $value){
 
-		$stmt = Connection::connect()->prepare("UPDATE $table SET $item1 = :$item1 WHERE id = :id");
+		$stmt = Connection::connect()->prepare("UPDATE $table set $item1 = :$item1 WHERE id = :id");
 
 		$stmt -> bindParam(":".$item1, $value1, PDO::PARAM_STR);
 		$stmt -> bindParam(":id", $value, PDO::PARAM_STR);

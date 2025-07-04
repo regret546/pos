@@ -74,13 +74,15 @@ class ControllerSales{
 
 			$customerPurchases = ModelCustomers::mdlUpdateCustomer($tableCustomers, $item1a, $value1a, $valueCustomer);
 
+			/*=============================================
+			UPDATE CUSTOMER'S LAST PURCHASE
+			=============================================*/
+
+			require_once "models/date.helper.php";
+			DateHelper::init();
+
 			$item1b = "lastPurchase";
-
-			date_default_timezone_set('America/Bogota');
-
-			$date = date('Y-m-d');
-			$hour = date('H:i:s');
-			$value1b = $date.' '.$hour;
+			$value1b = DateHelper::getDateTime();
 
 			$dateCustomer = ModelCustomers::mdlUpdateCustomer($tableCustomers, $item1b, $value1b, $valueCustomer);
 
@@ -91,11 +93,11 @@ class ControllerSales{
 			$table = "sales";
 
 			$data = array(
+				"code"=>$_POST["newSale"],
 				"idSeller"=>$_POST["idSeller"],
 				"idCustomer"=>$_POST["selectCustomer"],
-				"code"=>$_POST["newSale"],
 				"products"=>$_POST["productsList"],
-				"tax"=>0,
+				"tax"=>$_POST["newTaxPrice"],
 				"totalPrice"=>$_POST["saleTotal"],
 				"paymentMethod"=>$_POST["listPaymentMethod"]
 			);
@@ -110,13 +112,13 @@ class ControllerSales{
 
 				swal({
 					  type: "success",
-					  title: "The sale has been successfully added",
+					  title: "Sale added successfully",
 					  showConfirmButton: true,
 					  confirmButtonText: "Close"
 					  }).then((result) => {
 								if (result.value) {
 
-								window.location = "sales";
+								window.location = "create-sale";
 
 								}
 							})
@@ -250,12 +252,7 @@ class ControllerSales{
 				$customerPurchases_2 = ModelCustomers::mdlUpdateCustomer($tableCustomers_2, $item1a_2, $value1a_2, $value_2);
 
 				$item1b_2 = "lastPurchase";
-
-				date_default_timezone_set('America/Bogota');
-
-				$date = date('Y-m-d');
-				$hour = date('H:i:s');
-				$value1b_2 = $date.' '.$hour;
+				$value1b_2 = DateHelper::getDateTime();
 
 				$dateCustomer_2 = ModelCustomers::mdlUpdateCustomer($tableCustomers_2, $item1b_2, $value1b_2, $value_2);
 
@@ -270,7 +267,7 @@ class ControllerSales{
 				"idCustomer"=>$_POST["selectCustomer"],
 				"idSeller"=>$_POST["idSeller"],
 				"products"=>$productsList,
-				"tax"=>0,
+				"tax"=>$_POST["newTaxPrice"],
 				"totalPrice"=>$_POST["saleTotal"],
 				"paymentMethod"=>$_POST["listPaymentMethod"]
 			);
@@ -285,7 +282,7 @@ class ControllerSales{
 
 				swal({
 					  type: "success",
-					  title: "The sale has been edited correctly",
+					  title: "Sale edited successfully",
 					  showConfirmButton: true,
 					  confirmButtonText: "Close"
 					  }).then((result) => {
@@ -429,10 +426,9 @@ class ControllerSales{
 
 				swal({
 					  type: "success",
-					  title: "The sale has been deleted succesfully",
+					  title: "Sale deleted successfully",
 					  showConfirmButton: true,
-					  confirmButtonText: "Close",
-					  closeOnConfirm: false
+					  confirmButtonText: "Close"
 					  }).then((result) => {
 								if (result.value) {
 
@@ -496,7 +492,7 @@ class ControllerSales{
 			header("Content-type: application/vnd.ms-excel; charset=UTF-8"); // Added charset
 			header("Cache-Control: cache, must-revalidate"); 
 			header('Content-Description: File Transfer');
-			header('Last-Modified: '.date('D, d M Y H:i:s'));
+			header('Last-Modified: '.DateHelper::getDateTime());
 			header("Pragma: public"); 
 			header('Content-Disposition:; filename="'.$name.'"');
 			header("Content-Transfer-Encoding: binary");

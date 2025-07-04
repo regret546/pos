@@ -39,16 +39,12 @@ class ControllerUsers{
 						Register date to know last_login
 						=============================================*/
 
-						date_default_timezone_set("America/Bogota");
+						require_once "models/date.helper.php";
+						DateHelper::init();
 
-						$date = date('Y-m-d');
-						$hour = date('H:i:s');
-
-						$actualDate = $date.' '.$hour;
-
+						$actualDate = DateHelper::getDateTime();
 						$item1 = "lastLogin";
 						$value1 = $actualDate;
-
 						$item2 = "id";
 						$value2 = $answer["id"];
 
