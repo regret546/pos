@@ -868,8 +868,6 @@ $(".saleForm").on("submit", function (e) {
           change,
         showConfirmButton: true,
         confirmButtonText: "Close",
-      }).then(function (result) {
-        // Do nothing, just prevent form submission
       });
       return false;
     }
@@ -882,27 +880,12 @@ $(".saleForm").on("submit", function (e) {
   return true;
 });
 
-// Prevent the default click behavior of the submit button
-$("#saveSaleBtn").on("click", function (e) {
+// Add click handler for the save button
+$(".saleForm button[type='submit']").on("click", function (e) {
   if ($("#newPaymentMethod").val() === "cash") {
     var change = Number($("#newCashChange").val().replace(/,/g, "")) || 0;
     if (change < 0) {
       e.preventDefault();
-      e.stopPropagation();
-
-      // Store current products
-      var currentProducts = [];
-      $(".newProduct .row").each(function () {
-        var $row = $(this);
-        currentProducts.push({
-          id: $row.find(".newProductDescription").attr("idProduct"),
-          description: $row.find(".newProductDescription").val(),
-          quantity: Number($row.find(".newProductQuantity").val()),
-          stock: Number($row.find(".newProductQuantity").attr("stock")),
-          price: Number($row.find(".newProductPrice").attr("realPrice")),
-        });
-      });
-
       swal({
         type: "error",
         title: "Invalid Cash Amount",
@@ -911,14 +894,6 @@ $("#saveSaleBtn").on("click", function (e) {
           change,
         showConfirmButton: true,
         confirmButtonText: "Close",
-      }).then((result) => {
-        // Restore products after error
-        $(".newProduct").empty();
-        currentProducts.forEach(function (product) {
-          addProductToSale(product);
-        });
-        // Keep focus on cash value input after error
-        $("#newCashValue").focus();
       });
       return false;
     }
