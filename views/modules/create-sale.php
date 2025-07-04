@@ -231,6 +231,15 @@ if($_SESSION["profile"] == "Special"){
                     text: "The cash amount must be greater than or equal to the total amount.",
                     showConfirmButton: true,
                     confirmButtonText: "Close"
+                  }).then((result) => {
+                    // Restore form values
+                    if(isset($_POST["productsList"])) {
+                      echo "var productsList = " . $_POST["productsList"] . ";";
+                      echo "productsList.forEach(function(product) {";
+                      echo "  addProductToSale(product);";
+                      echo "});";
+                    }
+                    $("#newCashValue").focus();
                   });
                 </script>';
                 return;

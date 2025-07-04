@@ -757,10 +757,84 @@ $(".saleForm").on("click", "button.removeProduct", function () {
   listProducts();
 });
 
+/*=============================================
+RESTORE PRODUCT TO SALE
+=============================================*/
+function addProductToSale(product) {
+  var description = product.description;
+  var stock = product.stock;
+  var price = product.price;
+  var idProduct = product.id;
+
+  $(".newProduct").append(
+    '<div class="row" style="padding:5px 15px">' +
+      "<!-- Product description -->" +
+      '<div class="col-xs-6" style="padding-right:0px">' +
+      '<div class="input-group">' +
+      '<span class="input-group-addon"><button type="button" class="btn btn-danger btn-xs removeProduct" idProduct="' +
+      idProduct +
+      '"><i class="fa fa-times"></i></button></span>' +
+      '<input type="text" class="form-control newProductDescription" idProduct="' +
+      idProduct +
+      '" name="addProductSale" value="' +
+      description +
+      '" readonly required>' +
+      "</div>" +
+      "</div>" +
+      "<!-- Product quantity -->" +
+      '<div class="col-xs-3">' +
+      '<input type="number" class="form-control newProductQuantity" name="newProductQuantity" min="1" value="' +
+      product.quantity +
+      '" stock="' +
+      stock +
+      '" newStock="' +
+      Number(stock - product.quantity) +
+      '" required>' +
+      "</div>" +
+      "<!-- product price -->" +
+      '<div class="col-xs-3 enterPrice" style="padding-left:0px">' +
+      '<div class="input-group">' +
+      '<span class="input-group-addon">₱</span>' +
+      '<input type="text" class="form-control newProductPrice" realPrice="' +
+      price +
+      '" name="newProductPrice" value="' +
+      price +
+      '" readonly required>' +
+      "</div>" +
+      "</div>" +
+      "</div>"
+  );
+
+  // ADDING TOTAL PRICES
+  addingTotalPrices();
+
+  // ADD TAX
+  addTax();
+
+  // GROUP PRODUCTS IN JSON FORMAT
+  listProducts();
+
+  // FORMAT PRODUCT PRICE
+  $(".newProductPrice").number(true, 2);
+}
+
 // Add form submission handler
 $(".saleForm").on("submit", function (e) {
   e.preventDefault();
   e.stopPropagation();
+
+  // Store current products list before validation
+  var currentProducts = [];
+  $(".newProduct .row").each(function () {
+    var $row = $(this);
+    currentProducts.push({
+      id: $row.find(".newProductDescription").attr("idProduct"),
+      description: $row.find(".newProductDescription").val(),
+      quantity: Number($row.find(".newProductQuantity").val()),
+      stock: Number($row.find(".newProductQuantity").attr("stock")),
+      price: Number($row.find(".newProductPrice").attr("realPrice")),
+    });
+  });
 
   // Validate if products have been added
   if ($(".newProduct").children().length === 0) {
@@ -808,8 +882,15 @@ $(".saleForm").on("submit", function (e) {
           change,
         showConfirmButton: true,
         confirmButtonText: "Close",
+      }).then((result) => {
+        // Restore products after error
+        $(".newProduct").empty();
+        currentProducts.forEach(function (product) {
+          addProductToSale(product);
+        });
+        // Keep focus on cash value input after error
+        $("#newCashValue").focus();
       });
-      $("#newCashValue").focus();
       return false;
     }
   }
@@ -817,7 +898,7 @@ $(".saleForm").on("submit", function (e) {
   // Set payment method
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
-  // If we get here, all validations passed
+  // If we get here, all validations passed, allow form submission
   return true;
 });
 
@@ -828,6 +909,20 @@ $("#saveSaleBtn").on("click", function (e) {
     if (change < 0) {
       e.preventDefault();
       e.stopPropagation();
+
+      // Store current products
+      var currentProducts = [];
+      $(".newProduct .row").each(function () {
+        var $row = $(this);
+        currentProducts.push({
+          id: $row.find(".newProductDescription").attr("idProduct"),
+          description: $row.find(".newProductDescription").val(),
+          quantity: Number($row.find(".newProductQuantity").val()),
+          stock: Number($row.find(".newProductQuantity").attr("stock")),
+          price: Number($row.find(".newProductPrice").attr("realPrice")),
+        });
+      });
+
       swal({
         type: "error",
         title: "Invalid Cash Amount",
@@ -836,8 +931,15 @@ $("#saveSaleBtn").on("click", function (e) {
           change,
         showConfirmButton: true,
         confirmButtonText: "Close",
+      }).then((result) => {
+        // Restore products after error
+        $(".newProduct").empty();
+        currentProducts.forEach(function (product) {
+          addProductToSale(product);
+        });
+        // Keep focus on cash value input after error
+        $("#newCashValue").focus();
       });
-      $("#newCashValue").focus();
       return false;
     }
   }
