@@ -1,247 +1,130 @@
--- phpMyAdmin SQL Dump
--- version 4.6.5.2
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Generation Time: Dec 13, 2022 at 04:43 AM
--- Server version: 5.6.21
--- PHP Version: 5.6.3
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET time_zone = "+00:00";
-
+-- --------------------------------------------------------
+-- Host:                         127.0.0.1
+-- Server version:               8.0.30 - MySQL Community Server - GPL
+-- Server OS:                    Win64
+-- HeidiSQL Version:             12.1.0.6537
+-- --------------------------------------------------------
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES=0 */;
 
---
--- Database: `posystem`
---
+-- Use the correct database
+USE `u735263260_pos`;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `categories`
---
-
-CREATE TABLE `categories` (
-  `id` int(11) NOT NULL,
-  `Category` text COLLATE utf8_spanish_ci NOT NULL,
-  `Date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
-
---
--- Dumping data for table `categories`
---
+-- Dumping structure for table categories
+CREATE TABLE IF NOT EXISTS `categories` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `Category` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `Date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
 
 INSERT INTO `categories` (`id`, `Category`, `Date`) VALUES
-(1, 'Category One', '2022-12-07 18:04:16'),
-(2, 'Category Two', '2022-12-07 18:04:20'),
-(3, 'Category Three', '2022-12-07 18:04:24'),
-(4, 'Category Four', '2022-12-07 18:04:27'),
-(5, 'Category Five', '2022-12-07 18:04:31'),
-(6, 'Category Six', '2022-12-07 18:04:36'),
-(7, 'Category Seven', '2022-12-07 18:04:41');
+	(8, 'MOUSE', '2025-06-30 06:13:17'),
+	(9, 'KEYBOARD', '2025-06-30 12:11:25'),
+	(10, 'MONITOR', '2025-06-30 12:11:30'),
+	(11, 'CPU', '2025-06-30 06:13:58'),
+	(12, 'GPU', '2025-06-30 06:14:03'),
+	(13, 'MOTHERBOARD', '2025-06-30 12:11:40'),
+	(14, 'HEADSET', '2025-06-30 12:10:58');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `customers`
---
-
-CREATE TABLE `customers` (
-  `id` int(11) NOT NULL,
-  `name` text COLLATE utf8_spanish_ci NOT NULL,
-  `idDocument` int(11) NOT NULL,
-  `email` text COLLATE utf8_spanish_ci NOT NULL,
-  `phone` text COLLATE utf8_spanish_ci NOT NULL,
-  `address` text COLLATE utf8_spanish_ci NOT NULL,
+-- Table: customers
+CREATE TABLE IF NOT EXISTS `customers` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `idDocument` int NOT NULL,
+  `email` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `phone` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `address` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
   `birthdate` date NOT NULL,
-  `purchases` int(11) NOT NULL,
+  `purchases` int NOT NULL,
   `lastPurchase` datetime NOT NULL,
-  `registerDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+  `registerDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
 
---
--- Dumping data for table `customers`
---
+INSERT INTO `customers` VALUES
+(12, 'Dexter', 43, 'dexter@gmail.com', '09559332133', 'Bunao', '1998-02-22', 14, '2025-07-02 09:11:19', '2025-07-02 14:11:19'),
+(13, 'Kei', 102, 'kei@gmail.com', '09559332133', 'Bunao', '1998-02-22', 6, '2025-07-01 09:13:06', '2025-07-01 14:13:07');
 
-INSERT INTO `customers` (`id`, `name`, `idDocument`, `email`, `phone`, `address`, `birthdate`, `purchases`, `lastPurchase`, `registerDate`) VALUES
-(1, 'David Cullison', 123456, 'davidc@mail.com', '(555)567-9999', '27 Joseph Street', '1986-01-05', 15, '2018-12-03 00:01:21', '2022-12-10 13:41:42'),
-(2, 'Mary Yaeger', 121212, 'maryy@mail.com', '(555) 789-9045', '71 Highland Drive', '1983-06-22', 3, '2022-12-08 12:20:28', '2022-12-10 13:41:27'),
-(3, 'Robert Zimmerman', 122458, 'robert@mail.com', '(305) 455-6677', '27 Joseph Street', '1989-04-12', 0, '2022-12-08 12:18:43', '2022-12-10 13:40:27'),
-(4, 'Randall Williams', 103698, 'randalw@mail.com', '(305) 256-6541', '31 Romines Mill Road', '1989-08-15', 5, '2022-12-10 08:42:36', '2022-12-10 13:42:36'),
-(6, 'Christine Moore', 852100, 'christine@mail.com', '(785) 458-7888', '44 Down Lane', '1990-10-16', 36, '2022-12-07 13:17:31', '2022-12-08 18:11:56'),
-(7, 'Nicole Young', 100254, 'nicole@mail.com', '(101) 222-1145', '44 Sycamore Fork Road', '1989-12-12', 4, '2022-12-10 08:38:47', '2022-12-10 13:38:47'),
-(8, 'Grace Moore', 178500, 'gracem@mail.com', '(100) 124-5896', '39 Cambridge Drive', '1990-12-07', 7, '2022-12-10 12:40:02', '2022-12-10 17:40:02'),
-(9, 'Reed Campbell', 178500, 'reedc@mail.com', '(100) 245-7866', '87 Lang Avenue', '1988-04-16', 18, '2022-12-10 08:43:42', '2022-12-10 13:43:42'),
-(10, 'Lynn', 101014, 'lynn@mail.com', '(100) 145-8966', '90 Roosevelt Road', '1992-02-22', 0, '0000-00-00 00:00:00', '2022-12-10 17:12:55'),
-(11, 'Will Williams', 100147, 'williams@mail.com', '(774) 145-8888', '114 Test Address', '1985-04-19', 13, '2022-12-10 12:35:52', '2022-12-10 17:35:52');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `products`
---
-
-CREATE TABLE `products` (
-  `id` int(11) NOT NULL,
-  `idCategory` int(11) NOT NULL,
-  `code` text COLLATE utf8_spanish_ci NOT NULL,
-  `description` text COLLATE utf8_spanish_ci NOT NULL,
-  `image` text COLLATE utf8_spanish_ci NOT NULL,
-  `stock` int(11) NOT NULL,
+-- Table: products
+CREATE TABLE IF NOT EXISTS `products` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `idCategory` int NOT NULL,
+  `code` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `image` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `stock` int NOT NULL,
   `buyingPrice` float NOT NULL,
   `sellingPrice` float NOT NULL,
-  `sales` int(11) NOT NULL,
-  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+  `sales` int NOT NULL,
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
 
---
--- Dumping data for table `products`
---
+INSERT INTO `products` VALUES
+(68, 4, '525', 'Product Sample Eleven', 'views/img/products/default/anonymous.png', 26, 120, 168, 0, '2025-06-30 06:54:01'),
+(69, 8, '5446', 'a4tech mouse', 'views/img/products/5446/651.jpg', 20, 199, 278.6, 0, '2025-06-30 06:20:19'),
+(70, 9, '5446', 'a4tech keyboard', 'views/img/products/5446/381.jpg', 20, 299, 418.6, 0, '2025-06-30 13:22:07'),
+(71, 13, '5446', 'monitor', 'views/img/products/5446/833.jpg', 17, 4000, 5600, 3, '2025-06-30 06:53:13'),
+(72, 9, 'Aula-f75', 'Aulaf75', 'views/img/products/Aula-f75/322.jpg', 6, 999, 1398.6, 15, '2025-07-03 06:03:40'),
+(73, 0, 'asdasd', 'adasdas', 'views/img/products/default/anonymous.png', 12, 1223, 1712.2, 0, '2025-06-30 13:22:15'),
+(74, 0, '12312', 'dasd', 'views/img/products/default/anonymous.png', 10, 123, 172.2, 2, '2025-06-30 13:53:14'),
+(75, 9, '123123-', 'asdasd', 'views/img/products/default/anonymous.png', 12, 123, 172.2, 0, '2025-06-30 13:22:13');
 
-INSERT INTO `products` (`id`, `idCategory`, `code`, `description`, `image`, `stock`, `buyingPrice`, `sellingPrice`, `sales`, `date`) VALUES
-(18, 2, '201', 'Product Sample One', 'views/img/products/default/anonymous.png', 10, 56, 78, 20, '2022-12-08 17:23:41'),
-(25, 3, '301', 'Product Sample Two', 'views/img/products/default/anonymous.png', 18, 144, 185, 23, '2022-12-08 17:20:28'),
-(36, 4, '401', 'Product Sample Three', 'views/img/products/default/anonymous.png', 55, 98, 125, 22, '2022-12-10 13:42:36'),
-(44, 5, '501', 'Product Sample Four', 'views/img/products/default/anonymous.png', 8, 350, 490, 21, '2022-12-08 17:23:27'),
-(61, 7, '518', 'Test Product', 'views/img/products/518/204.jpg', 19, 20, 28, 41, '2022-12-07 18:19:13'),
-(62, 4, '519', 'Product Sample Five', 'views/img/products/default/anonymous.png', 95, 120, 156, 0, '2022-12-10 17:12:55'),
-(63, 7, '520', 'Product Sample Six', 'views/img/products/default/anonymous.png', 53, 70, 98, 0, '2022-12-10 17:12:55'),
-(64, 1, '521', 'Product Sample Seven', 'views/img/products/default/anonymous.png', 32, 50, 70, 0, '2022-12-08 17:31:25'),
-(65, 3, '522', 'Product Sample Eight', 'views/img/products/default/anonymous.png', 5, 100, 140, 5, '2022-12-10 16:53:02'),
-(66, 4, '523', 'Product Sample Nine', 'views/img/products/default/anonymous.png', 37, 25, 35, 23, '2022-12-10 17:35:52'),
-(67, 5, '524', 'Product Sample Ten', 'views/img/products/default/anonymous.png', 65, 65, 91, 6, '2022-12-10 13:43:42'),
-(68, 4, '525', 'Product Sample Eleven', 'views/img/products/default/anonymous.png', 16, 120, 168, 10, '2022-12-10 17:40:02');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `sales`
---
-
-CREATE TABLE `sales` (
-  `id` int(11) NOT NULL,
-  `code` int(11) NOT NULL,
-  `idCustomer` int(11) NOT NULL,
-  `idSeller` int(11) NOT NULL,
-  `products` text COLLATE utf8_spanish_ci NOT NULL,
-  `tax` int(11) NOT NULL,
+-- Table: sales
+CREATE TABLE IF NOT EXISTS `sales` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `code` int NOT NULL,
+  `idCustomer` int NOT NULL,
+  `idSeller` int NOT NULL,
+  `products` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `tax` int NOT NULL,
+  `netPrice` float NOT NULL,
   `totalPrice` float NOT NULL,
-  `paymentMethod` text COLLATE utf8_spanish_ci NOT NULL,
-  `saledate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci ROW_FORMAT=COMPACT;
+  `customerCash` float DEFAULT NULL,
+  `paymentMethod` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `saledate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
 
---
--- Dumping data for table `sales`
---
+INSERT INTO `sales` VALUES
+(23, 10014, 12, 1, '[{"id":"71","description":"monitor","quantity":"1","stock":"17","price":"5600","totalPrice":"5600"}]', 0, 0, 5600, NULL, 'cash', '2025-06-30 06:53:13'),
+(29, 10015, 12, 1, '[{"id":"74","description":"dasd","quantity":"1","stock":"11","price":"172.2","totalPrice":"172.2"}]', 0, 0, 0, NULL, 'cash', '2025-06-30 13:26:15'),
+(30, 10016, 12, 1, '[{"id":"74","description":"dasd","quantity":"1","stock":"10","price":"172.2","totalPrice":172.2}]', 0, 172.2, 172.2, NULL, 'cash', '2025-06-30 13:53:14'),
+(31, 10017, 12, 4, '[{"id":"72","description":"Aulaf75","quantity":"1","stock":"19","price":"1398.6","totalPrice":1398.6}]', 0, 0, 1398.6, NULL, 'cash', '2025-07-01 13:33:42'),
+(32, 10018, 13, 4, '[{"id":"72","description":"Aulaf75","quantity":"1","stock":"18","price":"1398.6","totalPrice":1398.6}]', 0, 1398.6, 1398.6, NULL, 'cash', '2025-07-01 13:38:29'),
+(33, 10019, 12, 4, '[{"id":"72","description":"Aulaf75","quantity":"1","stock":"5","price":"1398.6","totalPrice":1398.6}]', 0, 1398.6, 1398.6, NULL, 'cash', '2025-07-02 14:11:19');
 
-INSERT INTO `sales` (`id`, `code`, `idCustomer`, `idSeller`, `products`, `tax`, `totalPrice`, `paymentMethod`, `saledate`) VALUES
-(9, 10001, 2, 2, '[{\"id\":\"25\",\"description\":\"Product Sample Two\",\"quantity\":\"3\",\"stock\":\"29\",\"price\":\"185\",\"totalPrice\":\"555\"}]', 17, 572, 'cash', '2018-12-04 00:53:28'),
-(11, 10002, 3, 1, '[{\"id\":\"44\",\"description\":\"Product Sample Four\",\"quantity\":\"4\",\"stock\":\"16\",\"price\":\"490\",\"totalPrice\":\"1960\"},{\"id\":\"36\",\"description\":\"Product Sample Three\",\"quantity\":\"6\",\"stock\":\"14\",\"price\":\"125\",\"totalPrice\":\"750\"}]', 0, 2710, 'cash', '2018-12-05 06:30:28'),
-(12, 10003, 3, 1, '[{\"id\":\"44\",\"description\":\"Product Sample Four\",\"quantity\":\"1\",\"stock\":\"2\",\"price\":\"490\",\"totalPrice\":\"490\"},{\"id\":\"36\",\"description\":\"Product Sample Three\",\"quantity\":\"1\",\"stock\":\"8\",\"price\":\"125\",\"totalPrice\":\"125\"},{\"id\":\"25\",\"description\":\"Product Sample Two\",\"quantity\":\"1\",\"stock\":\"23\",\"price\":\"185\",\"totalPrice\":\"185\"},{\"id\":\"18\",\"description\":\"Product Sample One\",\"quantity\":\"2\",\"stock\":\"114\",\"price\":\"78\",\"totalPrice\":\"156\"}]', 48, 1004, 'cash', '2019-04-09 22:59:10'),
-(14, 10005, 6, 1, '[{\"id\":\"61\",\"description\":\"Test Product\",\"quantity\":\"9\",\"stock\":\"31\",\"price\":\"28\",\"totalPrice\":\"252\"},{\"id\":\"44\",\"description\":\"Product Sample Four\",\"quantity\":\"3\",\"stock\":\"3\",\"price\":\"490\",\"totalPrice\":\"1470\"},{\"id\":\"36\",\"description\":\"Product Sample Three\",\"quantity\":\"5\",\"stock\":\"3\",\"price\":\"125\",\"totalPrice\":\"625\"}]', 117, 2464, 'cash', '2020-02-26 05:34:45'),
-(15, 10006, 6, 1, '[{\"id\":\"61\",\"description\":\"Test Product\",\"quantity\":\"17\",\"stock\":\"19\",\"price\":\"28\",\"totalPrice\":\"476\"},{\"id\":\"25\",\"description\":\"Product Sample Two\",\"quantity\":\"2\",\"stock\":\"1\",\"price\":\"185\",\"totalPrice\":\"370\"}]', 25, 871, 'cash', '2021-01-05 15:36:20'),
-(17, 10008, 4, 1, '[{\"id\":\"67\",\"description\":\"Product Sample Ten\",\"quantity\":\"2\",\"stock\":\"69\",\"price\":\"91\",\"totalPrice\":\"182\"}]', 0, 182, 'cash', '2021-09-28 05:18:53'),
-(18, 10009, 7, 1, '[{\"id\":\"66\",\"description\":\"Product Sample Nine\",\"quantity\":\"3\",\"stock\":\"57\",\"price\":\"35\",\"totalPrice\":\"105\"},{\"id\":\"65\",\"description\":\"Product Sample Eight\",\"quantity\":\"1\",\"stock\":\"40\",\"price\":\"140\",\"totalPrice\":\"140\"}]', 5, 250, 'cash', '2022-02-13 23:58:09'),
-(19, 10010, 4, 1, '[{\"id\":\"36\",\"description\":\"Product Sample Three\",\"quantity\":\"3\",\"stock\":\"55\",\"price\":\"125\",\"totalPrice\":\"375\"}]', 4, 379, 'cash', '2022-06-29 03:42:37'),
-(20, 10011, 9, 1, '[{\"id\":\"67\",\"description\":\"Product Sample Ten\",\"quantity\":\"4\",\"stock\":\"65\",\"price\":\"91\",\"totalPrice\":\"364\"},{\"id\":\"66\",\"description\":\"Product Sample Nine\",\"quantity\":\"10\",\"stock\":\"47\",\"price\":\"35\",\"totalPrice\":\"350\"},{\"id\":\"65\",\"description\":\"Product Sample Eight\",\"quantity\":\"4\",\"stock\":\"36\",\"price\":\"140\",\"totalPrice\":\"560\"}]', 64, 1338, 'CC-110101458966', '2022-09-20 13:43:42'),
-(21, 10012, 11, 1, '[{\"id\":\"68\",\"description\":\"Product Sample Eleven\",\"quantity\":\"3\",\"stock\":\"23\",\"price\":\"168\",\"totalPrice\":\"504\"},{\"id\":\"66\",\"description\":\"Product Sample Nine\",\"quantity\":\"10\",\"stock\":\"37\",\"price\":\"35\",\"totalPrice\":\"350\"}]', 68, 922, 'CC-100000147850', '2022-12-10 17:35:52'),
-(22, 10013, 8, 2, '[{\"id\":\"68\",\"description\":\"Product Sample Eleven\",\"quantity\":\"7\",\"stock\":\"16\",\"price\":\"168\",\"totalPrice\":\"1176\"}]', 0, 1176, 'cash', '2022-12-10 17:40:02');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
---
-
-CREATE TABLE `users` (
-  `id` int(11) NOT NULL,
-  `name` text COLLATE utf8_spanish_ci NOT NULL,
-  `user` text COLLATE utf8_spanish_ci NOT NULL,
-  `password` text COLLATE utf8_spanish_ci NOT NULL,
-  `profile` text COLLATE utf8_spanish_ci NOT NULL,
-  `photo` text COLLATE utf8_spanish_ci NOT NULL,
-  `status` int(1) NOT NULL,
+-- Table: users
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `user` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `password` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `profile` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `photo` text CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci NOT NULL,
+  `status` int NOT NULL,
   `lastLogin` datetime NOT NULL,
-  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci ROW_FORMAT=COMPACT;
+  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
 
---
--- Dumping data for table `users`
---
+INSERT INTO `users` VALUES
+(1, 'Administrator', 'admin', '$2a$07$asxx54ahjppf45sd87a5auXBm1Vr2M1NV5t/zNQtGHGpS5fFirrbG', 'Administrator', 'views/img/users/admin/admin-icn.png', 1, '2025-07-03 22:07:20', '2025-07-04 03:07:20'),
+(4, 'admin1', 'admin1', '$2a$07$asxx54ahjppf45sd87a5auq7Jv7frVPvHwXetZz5rg8WwwwDkB0L2', 'Administrator', 'views/img/users/default/prfplaceholder.png', 1, '2025-07-03 00:48:57', '2025-07-03 05:48:57'),
+(5, 'Queenie', 'cashier', '$2a$07$asxx54ahjppf45sd87a5auq7Jv7frVPvHwXetZz5rg8WwwwDkB0L2', 'Seller', 'views/img/users/default/prfplaceholder.png', 1, '2025-07-01 00:38:30', '2025-07-01 05:38:30'),
+(6, 'Kei', 'Kei', '$2a$07$asxx54ahjppf45sd87a5auq7Jv7frVPvHwXetZz5rg8WwwwDkB0L2', 'Special', 'views/img/users/default/prfplaceholder.png', 1, '2025-07-01 05:29:59', '2025-07-01 10:29:59');
 
-INSERT INTO `users` (`id`, `name`, `user`, `password`, `profile`, `photo`, `status`, `lastLogin`, `date`) VALUES
-(1, 'Administrator', 'admin', '$2a$07$asxx54ahjppf45sd87a5auJvme8CFSgJ.CVouof6guZgq6uhIs55K', 'Administrator', 'views/img/users/admin/admin-icn.png', 1, '2022-12-12 22:42:22', '2022-12-13 03:42:22'),
-(2, 'Jonathan Barbour', 'seller', '$2a$07$asxx54ahjppf45sd87a5au8uJqn2VoaOMw86zRUoDH6inuYomGLDq', 'Seller', 'views/img/users/jonathan/239.jpg', 1, '2022-12-10 12:39:15', '2022-12-10 17:39:15'),
-(3, 'Carmen McLeod', 'carmen', '$2a$07$asxx54ahjppf45sd87a5au8uJqn2VoaOMw86zRUoDH6inuYomGLDq', 'Special', 'views/img/users/carmen/215.jpg', 1, '2022-12-10 12:17:55', '2022-12-10 17:17:55');
-
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `categories`
---
-ALTER TABLE `categories`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `customers`
---
-ALTER TABLE `customers`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `products`
---
-ALTER TABLE `products`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `sales`
---
-ALTER TABLE `sales`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `users`
---
-ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
-
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `categories`
---
-ALTER TABLE `categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
---
--- AUTO_INCREMENT for table `customers`
---
-ALTER TABLE `customers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
---
--- AUTO_INCREMENT for table `products`
---
-ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
---
--- AUTO_INCREMENT for table `sales`
---
-ALTER TABLE `sales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
---
--- AUTO_INCREMENT for table `users`
---
-ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+-- Reset session variables
+/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
