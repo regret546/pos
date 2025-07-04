@@ -533,21 +533,9 @@ CASH CHANGE
 function updateCashChange() {
   var cash = Number($("#newCashValue").val().replace(/,/g, "")) || 0;
   var total = Number($("#saleTotal").val().replace(/,/g, "")) || 0;
-
   var change = cash - total;
 
-  if (change < 0) {
-    swal({
-      title: "Insufficient Cash",
-      text: "The cash amount must be equal to or greater than the total amount",
-      type: "error",
-      confirmButtonText: "OK",
-    });
-    $("#newCashValue").val("");
-    $("#newCashChange").val("");
-    return;
-  }
-
+  // Format to exactly 2 decimal places
   $("#newCashChange").val(change.toFixed(2));
 }
 
@@ -806,110 +794,11 @@ $(".saleForm").on("submit", function (e) {
     return false;
   }
 
-  // For cash payments, validate that change is not negative and cash value exists
-  if ($("#newPaymentMethod").val() === "cash") {
-    var cashValue = $("#newCashValue").val();
-    var changeValue = $("#newCashChange").val();
-
-    // Check if cash value is empty or not provided
-    if (
-      !cashValue ||
-      cashValue === "" ||
-      cashValue === "0" ||
-      cashValue === "0.00"
-    ) {
-      swal({
-        type: "error",
-        title: "Invalid Cash Amount",
-        text: "Please enter the cash amount received from customer",
-        showConfirmButton: true,
-        confirmButtonText: "Close",
-      });
-      return false;
-    }
-
-    // Convert and check if change is negative
-    var change = Number(changeValue.replace(/,/g, "")) || 0;
-    var cash = Number(cashValue.replace(/,/g, "")) || 0;
-    var total = Number($("#saleTotal").val().replace(/,/g, "")) || 0;
-
-    if (cash < total || change < 0) {
-      swal({
-        type: "error",
-        title: "Invalid Cash Amount",
-        text: "Cannot complete sale with insufficient cash amount",
-        showConfirmButton: true,
-        confirmButtonText: "Close",
-      });
-      return false;
-    }
-  }
-
   // Set payment method
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
-  // Create form data including cash value
-  var formData = new FormData(this);
-  if ($("#newPaymentMethod").val() === "cash") {
-    formData.append("newCashValue", $("#newCashValue").val());
-  }
-
-  // Submit via AJAX
-  $.ajax({
-    url: "index.php?route=create-sale",
-    method: "POST",
-    data: formData,
-    cache: false,
-    contentType: false,
-    processData: false,
-    success: function (response) {
-      try {
-        var result = JSON.parse(response);
-        if (result.status === "success") {
-          localStorage.removeItem("range");
-          swal({
-            type: "success",
-            title: result.message,
-            showConfirmButton: true,
-            confirmButtonText: "Close",
-          }).then((result) => {
-            if (result.value) {
-              window.location = "create-sale";
-            }
-          });
-        } else {
-          swal({
-            type: "error",
-            title: "Error",
-            text: result.message || "There was an error processing the sale",
-            showConfirmButton: true,
-            confirmButtonText: "Close",
-          });
-        }
-      } catch (e) {
-        console.error("Error parsing response:", e);
-        swal({
-          type: "error",
-          title: "Error",
-          text: "There was an error processing the sale",
-          showConfirmButton: true,
-          confirmButtonText: "Close",
-        });
-      }
-    },
-    error: function (xhr, status, error) {
-      console.error("AJAX Error:", error);
-      swal({
-        type: "error",
-        title: "Error",
-        text: "There was an error processing the sale",
-        showConfirmButton: true,
-        confirmButtonText: "Close",
-      });
-    },
-  });
-
-  return false;
+  // Submit form
+  this.submit();
 });
 
 // Additional handler to prevent direct form submission

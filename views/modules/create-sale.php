@@ -47,7 +47,7 @@ if($_SESSION["profile"] == "Special"){
 
           <div class="box-header with-border"></div>
 
-          <form role="form" method="post" class="saleForm" action="index.php?route=create-sale">
+          <form role="form" method="post" class="saleForm">
 
             <div class="box-body">
                 
