@@ -528,7 +528,7 @@ function listMethods() {
 }
 
 /*=============================================
-CASH CHANGE
+UPDATE CASH CHANGE
 =============================================*/
 function updateCashChange() {
   var cash = Number($("#newCashValue").val().replace(/,/g, "")) || 0;
@@ -538,6 +538,33 @@ function updateCashChange() {
   // Format to exactly 2 decimal places
   $("#newCashChange").val(change.toFixed(2));
 }
+
+/*=============================================
+FORM SUBMIT
+=============================================*/
+$(document).ready(function () {
+  $(".saleForm").on("submit", function (e) {
+    e.preventDefault();
+
+    // Check for cash payment with negative change
+    if ($("#newPaymentMethod").val() === "cash") {
+      var change = Number($("#newCashChange").val().replace(/,/g, "")) || 0;
+      if (change < 0) {
+        swal({
+          type: "error",
+          title: "Invalid Cash Amount",
+          text: "The cash amount must be greater than or equal to the total amount",
+          showConfirmButton: true,
+          confirmButtonText: "Close",
+        });
+        return false;
+      }
+    }
+
+    // If validation passes, submit the form
+    $(this).unbind("submit").submit();
+  });
+});
 
 /*=============================================
 EDIT SALE BUTTON

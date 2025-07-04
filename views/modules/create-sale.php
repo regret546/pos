@@ -216,28 +216,9 @@ if($_SESSION["profile"] == "Special"){
             </div>
 
             <div class="box-footer">
-              <button type="submit" class="btn btn-success pull-right" onclick="return validateSale();">Save Sale</button>
+              <button type="submit" class="btn btn-success pull-right">Save Sale</button>
             </div>
           </form>
-
-          <script>
-          function validateSale() {
-            if ($("#newPaymentMethod").val() === "cash") {
-              var change = Number($("#newCashChange").val().replace(/,/g, "")) || 0;
-              if (change < 0) {
-                swal({
-                  type: "error",
-                  title: "Invalid Cash Amount",
-                  text: "The cash amount must be greater than or equal to the total amount.",
-                  showConfirmButton: true,
-                  confirmButtonText: "Close"
-                });
-                return false;
-              }
-            }
-            return true;
-          }
-          </script>
 
           <?php
             if(isset($_POST["newSale"])) {
