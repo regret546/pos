@@ -868,8 +868,9 @@ $(".saleForm").on("submit", function (e) {
           change,
         showConfirmButton: true,
         confirmButtonText: "Close",
+      }).then(function (result) {
+        // Do nothing, just prevent form submission
       });
-      $("#newCashValue").focus();
       return false;
     }
   }
@@ -877,8 +878,8 @@ $(".saleForm").on("submit", function (e) {
   // Set payment method
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
-  // Submit form
-  this.submit();
+  // If all validations pass, submit the form
+  return true;
 });
 
 // Prevent the default click behavior of the submit button
