@@ -794,6 +794,24 @@ $(".saleForm").on("submit", function (e) {
     return false;
   }
 
+  // For cash payments, validate that change is not negative
+  if ($("#newPaymentMethod").val() === "cash") {
+    var change = Number($("#newCashChange").val().replace(/,/g, "")) || 0;
+
+    if (change < 0) {
+      swal({
+        type: "error",
+        title: "Invalid Cash Amount",
+        text:
+          "The cash amount must be greater than or equal to the total amount. Current change: " +
+          change,
+        showConfirmButton: true,
+        confirmButtonText: "Close",
+      });
+      return false;
+    }
+  }
+
   // Set payment method
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
