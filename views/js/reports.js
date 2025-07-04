@@ -6,7 +6,7 @@ $(function() {
     if(localStorage.getItem("captureRange2") != null){
         $("#daterange-btn2 span").html(localStorage.getItem("captureRange2"));
     }else{
-        $("#daterange-btn2 span").html('<i class="fa fa-calendar"></i> Date Range');
+        $("#daterange-btn2 span").html('<i class="fa fa-calendar"></i> Date range')
     }
 
     /*=============================================
@@ -17,8 +17,9 @@ $(function() {
       {
         ranges   : {
           'Today'       : [moment(), moment()],
-          'Last 7 Days' : [moment().subtract(6, 'days'), moment()],
-          'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+          'Yesterday'   : [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+          'Last 7 days' : [moment().subtract(6, 'days'), moment()],
+          'Last 30 days': [moment().subtract(29, 'days'), moment()],
           'This Month'  : [moment().startOf('month'), moment().endOf('month')],
           'Last Month'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
         },
@@ -26,6 +27,7 @@ $(function() {
         endDate  : moment()
       },
       function (start, end) {
+
         $('#daterange-btn2 span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
 
         var initialDate = start.format('YYYY-MM-DD');
@@ -34,8 +36,11 @@ $(function() {
         var captureRange = $("#daterange-btn2 span").html();
        
         localStorage.setItem("captureRange2", captureRange);
+
         window.location = "index.php?route=reports&initialDate="+initialDate+"&finalDate="+finalDate;
+
       }
+
     )
 
     /*=============================================
@@ -43,8 +48,10 @@ $(function() {
     =============================================*/
 
     $(".daterangepicker .range_inputs .cancelBtn").on("click", function(){
+
         localStorage.removeItem("captureRange2");
         localStorage.clear();
         window.location = "reports";
+
     })
 });
