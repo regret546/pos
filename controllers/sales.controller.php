@@ -504,16 +504,16 @@ class ControllerSales{
 			echo utf8_decode("<table border='0'> 
 
 					<tr> 
-					<td style='font-weight:bold; border:1px solid #eee;'>CÓDIGO</td> 
-					<td style='font-weight:bold; border:1px solid #eee;'>customer</td>
-					<td style='font-weight:bold; border:1px solid #eee;'>Seller</td>
-					<td style='font-weight:bold; border:1px solid #eee;'>quantity</td>
-					<td style='font-weight:bold; border:1px solid #eee;'>products</td>
-					<td style='font-weight:bold; border:1px solid #eee;'>tax</td>
-					<td style='font-weight:bold; border:1px solid #eee;'>netPrice</td>		
+					<td style='font-weight:bold; border:1px solid #eee;'>CODE</td> 
+					<td style='font-weight:bold; border:1px solid #eee;'>CUSTOMER</td>
+					<td style='font-weight:bold; border:1px solid #eee;'>SELLER</td>
+					<td style='font-weight:bold; border:1px solid #eee;'>QUANTITY</td>
+					<td style='font-weight:bold; border:1px solid #eee;'>PRODUCTS</td>
+					<td style='font-weight:bold; border:1px solid #eee;'>TAX</td>
+					<td style='font-weight:bold; border:1px solid #eee;'>NET PRICE</td>		
 					<td style='font-weight:bold; border:1px solid #eee;'>TOTAL</td>		
-					<td style='font-weight:bold; border:1px solid #eee;'>METODO DE PAGO</td	
-					<td style='font-weight:bold; border:1px solid #eee;'>FECHA</td>		
+					<td style='font-weight:bold; border:1px solid #eee;'>METHOD OF PAYMENT</td>	
+					<td style='font-weight:bold; border:1px solid #eee;'>DATE</td>		
 					</tr>");
 
 			foreach ($sales as $row => $item){
@@ -543,9 +543,9 @@ class ControllerSales{
 		 		}
 
 		 		echo utf8_decode("</td>
-					<td style='border:1px solid #eee;'>$ ".number_format($item["tax"],2)."</td>
-					<td style='border:1px solid #eee;'>$ ".number_format($item["netPrice"],2)."</td>	
-					<td style='border:1px solid #eee;'>$ ".number_format($item["totalPrice"],2)."</td>
+					<td style='border:1px solid #eee;'>₱ ".number_format($item["tax"],2)."</td>
+					<td style='border:1px solid #eee;'>₱ ".number_format($item["netPrice"],2)."</td>	
+					<td style='border:1px solid #eee;'>₱ ".number_format($item["totalPrice"],2)."</td>
 					<td style='border:1px solid #eee;'>".$item["paymentMethod"]."</td>
 					<td style='border:1px solid #eee;'>".substr($item["saledate"],0,10)."</td>		
 		 			</tr>");
