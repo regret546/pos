@@ -14,7 +14,7 @@ LOAD DYNAMIC PRODUCTS TABLE
 // })
 
 $(".salesTable").DataTable({
-  ajax: "ajax/datatable-sales.ajax.php",
+  ajax: "ajax/datatable-products.ajax.php",
   deferRender: true,
   retrieve: true,
   processing: true,

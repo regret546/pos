@@ -3,9 +3,6 @@
 require_once "../controllers/products.controller.php";
 require_once "../models/products.model.php";
 
-require_once "../controllers/customers.controller.php";
-require_once "../models/customers.model.php";
-
 
 class productsTableSales{
 
@@ -33,7 +30,6 @@ class productsTableSales{
 			"data":[';
 
 				for($i=0; $i < count($products); $i++){
-
 
 					/*=============================================
 					We bring the image
@@ -65,15 +61,12 @@ class productsTableSales{
 
 		  			$buttons =  "<div class='btn-group'><button class='btn btn-primary addProductSale recoverButton' idProduct='".$products[$i]["id"]."'><i class='fa fa-plus'></i></button></div>";
 
-
-
 					$jsonData .='[
 						"'.($i+1).'",
 						"'.$image.'",
 						"'.$products[$i]["code"].'",
 						"'.$products[$i]["description"].'",
 						"'.$stock.'",
-						"₱'.$products[$i]["sellingPrice"].'",
 						"'.$buttons.'"
 					],';
 				}
@@ -86,7 +79,6 @@ class productsTableSales{
 		echo $jsonData;
 	}
 }
-
 
 /*=============================================
 ACTIVATE PRODUCTS TABLE
