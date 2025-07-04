@@ -834,7 +834,9 @@ function addProductToSale(product) {
 
 // Add form submission handler
 $(".saleForm").on("submit", function (e) {
+  // Always prevent default form submission
   e.preventDefault();
+  e.stopPropagation();
 
   // Validate if products have been added
   if ($(".newProduct").children().length === 0) {
@@ -890,18 +892,26 @@ $(".saleForm").on("submit", function (e) {
   // Set payment method
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
-  // If all validations pass, submit the form
+  // If all validations pass, submit via AJAX
   var formData = new FormData(this);
 
   $.ajax({
-    url: "ajax/sales.ajax.php",
+    url: "index.php?route=create-sale",
     method: "POST",
     data: formData,
     cache: false,
     contentType: false,
     processData: false,
     success: function (response) {
-      if (response === "ok") {
+      if (response.includes("error")) {
+        swal({
+          type: "error",
+          title: "Error",
+          text: "Cannot process sale with negative change",
+          showConfirmButton: true,
+          confirmButtonText: "Close",
+        });
+      } else if (response.includes("success")) {
         swal({
           type: "success",
           title: "Sale added successfully",
@@ -912,15 +922,16 @@ $(".saleForm").on("submit", function (e) {
             window.location = "create-sale";
           }
         });
-      } else {
-        swal({
-          type: "error",
-          title: "Error",
-          text: "There was an error processing the sale",
-          showConfirmButton: true,
-          confirmButtonText: "Close",
-        });
       }
+    },
+    error: function () {
+      swal({
+        type: "error",
+        title: "Error",
+        text: "There was an error processing the sale",
+        showConfirmButton: true,
+        confirmButtonText: "Close",
+      });
     },
   });
 

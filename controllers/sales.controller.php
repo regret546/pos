@@ -30,6 +30,26 @@ class ControllerSales{
 
 		if(isset($_POST["newSale"])){
 
+			// Validate cash payment first
+			if($_POST["newPaymentMethod"] === "cash") {
+				$cash = floatval(str_replace(',', '', $_POST["newCashValue"] ?? "0"));
+				$total = floatval(str_replace(',', '', $_POST["saleTotal"] ?? "0"));
+				$change = $cash - $total;
+
+				if($change < 0) {
+					echo '<script>
+						swal({
+							type: "error",
+							title: "Invalid Cash Amount",
+							text: "Cash amount must be greater than or equal to total amount. Change cannot be negative.",
+							showConfirmButton: true,
+							confirmButtonText: "Close"
+						});
+					</script>';
+					return "error";
+				}
+			}
+
 			/*=============================================
 			UPDATE CUSTOMER'S PURCHASES AND REDUCE THE STOCK AND INCREMENT THE SALES OF THE PRODUCT
 			=============================================*/
@@ -99,7 +119,7 @@ class ControllerSales{
 				"products"=>$_POST["productsList"],
 				"tax"=>$_POST["newTaxPrice"],
 				"totalPrice"=>$_POST["saleTotal"],
-				"paymentMethod"=>$_POST["listPaymentMethod"]
+				"paymentMethod"=>$_POST["newPaymentMethod"]
 			);
 
 			$answer = ModelSales::mdlAddSale($table, $data);
