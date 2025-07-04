@@ -38,38 +38,24 @@ if($_SESSION["profile"] == "Special" || $_SESSION["profile"] == "Seller"){
     <div class="box">
 
       <div class="box-header with-border">
-
         <div class="input-group">
-          <button type="button" class="btn btn-default pull-right" id="daterange-btn2">
-            <span>
-              <i class="fa fa-calendar"></i> Date Range
-            </span>
-            <i class="fa fa-caret-down"></i>
-          </button>
+          <div class="input-group-addon">
+            <i class="fa fa-calendar"></i>
+          </div>
+          <input type="text" class="form-control pull-right" id="daterange-btn2">
         </div>
-		<!-- Log on to codeastro.com for more projects! -->
-        <div class="box-tools pull-right">
 
+        <div class="box-tools pull-right" style="margin-top: 3px;">
         <?php
-
         if(isset($_GET["inicialDate"])){
-
           echo '<a href="views/modules/download-report.php?report=report&inicialDate='.$_GET["inicialDate"].'&finalDate='.$_GET["finalDate"].'">';
-
         }else{
-
            echo '<a href="views/modules/download-report.php?report=report">';
-
         }         
-
         ?>
-           
            <button class="btn btn-success" style="margin-top:5px">Export to Excel</button>
-
           </a>
-
         </div>
-         
       </div>
 
       <div class="box-body">
