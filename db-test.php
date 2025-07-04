@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 echo "<h2>Database Connection Test</h2>";
 
 $host = 'localhost';
-$dbname = 'u735263260_posystem';
+$dbname = 'u735263260_pos';
 $username = 'u735263260_jkduran1998';
 $password = 'Vupodan!97';
 

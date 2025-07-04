@@ -5,7 +5,7 @@ class Connection{
 	public static function connect(){
 		try {
 			$link = new PDO(
-				"mysql:host=localhost;dbname=u735263260_posystem",
+				"mysql:host=localhost;dbname=u735263260_pos",
 				"u735263260_jkduran1998",
 				"Vupodan!97"
 			);
