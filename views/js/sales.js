@@ -537,6 +537,20 @@ function updateCashChange() {
 
   // Format to exactly 2 decimal places
   $("#newCashChange").val(change.toFixed(2));
+
+  // If change is negative, show error and prevent form submission
+  if (change < 0) {
+    swal({
+      type: "error",
+      title: "Invalid Cash Amount",
+      text: "Cash amount must be greater than or equal to total amount. Change cannot be negative.",
+      showConfirmButton: true,
+      confirmButtonText: "Close",
+    });
+    $("#newCashValue").val("");
+    $("#newCashChange").val("");
+    return false;
+  }
 }
 
 /*=============================================
@@ -863,13 +877,12 @@ $(".saleForm").on("submit", function (e) {
       swal({
         type: "error",
         title: "Invalid Cash Amount",
-        text:
-          "The cash amount must be greater than or equal to the total amount. Current change: " +
-          change,
+        text: "Cash amount must be greater than or equal to total amount. Change cannot be negative.",
         showConfirmButton: true,
         confirmButtonText: "Close",
       });
-      $("#newCashValue").focus();
+      $("#newCashValue").val("");
+      $("#newCashChange").val("");
       return false;
     }
   }
@@ -877,8 +890,41 @@ $(".saleForm").on("submit", function (e) {
   // Set payment method
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
-  // Submit form
-  this.submit();
+  // If all validations pass, submit the form
+  var formData = new FormData(this);
+
+  $.ajax({
+    url: "ajax/sales.ajax.php",
+    method: "POST",
+    data: formData,
+    cache: false,
+    contentType: false,
+    processData: false,
+    success: function (response) {
+      if (response === "ok") {
+        swal({
+          type: "success",
+          title: "Sale added successfully",
+          showConfirmButton: true,
+          confirmButtonText: "Close",
+        }).then(function (result) {
+          if (result.value) {
+            window.location = "create-sale";
+          }
+        });
+      } else {
+        swal({
+          type: "error",
+          title: "Error",
+          text: "There was an error processing the sale",
+          showConfirmButton: true,
+          confirmButtonText: "Close",
+        });
+      }
+    },
+  });
+
+  return false;
 });
 
 // Prevent the default click behavior of the submit button
