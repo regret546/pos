@@ -14,7 +14,7 @@ LOAD DYNAMIC PRODUCTS TABLE
 // })
 
 $(".salesTable").DataTable({
-  ajax: "ajax/datatable-products.ajax.php",
+  ajax: "ajax/datatable-sales.ajax.php",
   deferRender: true,
   retrieve: true,
   processing: true,
@@ -528,7 +528,7 @@ function listMethods() {
 }
 
 /*=============================================
-UPDATE CASH CHANGE
+CASH CHANGE
 =============================================*/
 function updateCashChange() {
   var cash = Number($("#newCashValue").val().replace(/,/g, "")) || 0;
@@ -538,33 +538,6 @@ function updateCashChange() {
   // Format to exactly 2 decimal places
   $("#newCashChange").val(change.toFixed(2));
 }
-
-/*=============================================
-FORM SUBMIT
-=============================================*/
-$(document).ready(function () {
-  $(".saleForm").on("submit", function (e) {
-    e.preventDefault();
-
-    // Check for cash payment with negative change
-    if ($("#newPaymentMethod").val() === "cash") {
-      var change = Number($("#newCashChange").val().replace(/,/g, "")) || 0;
-      if (change < 0) {
-        swal({
-          type: "error",
-          title: "Invalid Cash Amount",
-          text: "The cash amount must be greater than or equal to the total amount",
-          showConfirmButton: true,
-          confirmButtonText: "Close",
-        });
-        return false;
-      }
-    }
-
-    // If validation passes, submit the form
-    $(this).unbind("submit").submit();
-  });
-});
 
 /*=============================================
 EDIT SALE BUTTON
@@ -847,7 +820,6 @@ function addProductToSale(product) {
 
 // Add form submission handler
 $(".saleForm").on("submit", function (e) {
-  // Always prevent default form submission
   e.preventDefault();
 
   // Validate if products have been added
@@ -858,7 +830,7 @@ $(".saleForm").on("submit", function (e) {
       showConfirmButton: true,
       confirmButtonText: "Close",
     });
-    return;
+    return false;
   }
 
   // Validate if customer is selected
@@ -869,7 +841,7 @@ $(".saleForm").on("submit", function (e) {
       showConfirmButton: true,
       confirmButtonText: "Close",
     });
-    return;
+    return false;
   }
 
   // Validate if payment method is selected
@@ -880,7 +852,7 @@ $(".saleForm").on("submit", function (e) {
       showConfirmButton: true,
       confirmButtonText: "Close",
     });
-    return;
+    return false;
   }
 
   // For cash payments, validate that change is not negative
@@ -897,23 +869,39 @@ $(".saleForm").on("submit", function (e) {
         showConfirmButton: true,
         confirmButtonText: "Close",
       });
-      return;
+      $("#newCashValue").focus();
+      return false;
     }
   }
 
   // Set payment method
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
-  // If all validations pass, submit the form
+  // Submit form
   this.submit();
 });
 
-// Add click handler for the save button
-$(".saleForm button[type='submit']").on("click", function (e) {
+// Prevent the default click behavior of the submit button
+$("#saveSaleBtn").on("click", function (e) {
   if ($("#newPaymentMethod").val() === "cash") {
     var change = Number($("#newCashChange").val().replace(/,/g, "")) || 0;
     if (change < 0) {
       e.preventDefault();
+      e.stopPropagation();
+
+      // Store current products
+      var currentProducts = [];
+      $(".newProduct .row").each(function () {
+        var $row = $(this);
+        currentProducts.push({
+          id: $row.find(".newProductDescription").attr("idProduct"),
+          description: $row.find(".newProductDescription").val(),
+          quantity: Number($row.find(".newProductQuantity").val()),
+          stock: Number($row.find(".newProductQuantity").attr("stock")),
+          price: Number($row.find(".newProductPrice").attr("realPrice")),
+        });
+      });
+
       swal({
         type: "error",
         title: "Invalid Cash Amount",
@@ -922,6 +910,14 @@ $(".saleForm button[type='submit']").on("click", function (e) {
           change,
         showConfirmButton: true,
         confirmButtonText: "Close",
+      }).then((result) => {
+        // Restore products after error
+        $(".newProduct").empty();
+        currentProducts.forEach(function (product) {
+          addProductToSale(product);
+        });
+        // Keep focus on cash value input after error
+        $("#newCashValue").focus();
       });
       return false;
     }

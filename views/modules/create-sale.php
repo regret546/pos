@@ -221,10 +221,24 @@ if($_SESSION["profile"] == "Special"){
           </form>
 
           <?php
-            if(isset($_POST["newSale"])) {
-              $saveSale = new ControllerSales();
-              $saveSale -> ctrCreateSale();
+            if(isset($_POST["newSale"]) && $_POST["newPaymentMethod"] === "cash") {
+              $change = floatval(str_replace(',', '', $_POST["newCashChange"] ?? "0"));
+              if($change < 0) {
+                echo '<script>
+                  swal({
+                    type: "error",
+                    title: "Invalid Cash Amount",
+                    text: "The cash amount must be greater than or equal to the total amount.",
+                    showConfirmButton: true,
+                    confirmButtonText: "Close"
+                  });
+                </script>';
+                return;
+              }
             }
+
+            $saveSale = new ControllerSales();
+            $saveSale -> ctrCreateSale();
           ?>
 
         </div>
@@ -256,6 +270,7 @@ if($_SESSION["profile"] == "Special"){
                      <th style="width:30px">Code</th>
                      <th>Description</th>
                      <th>Stock</th>
+                     <th>Price</th>
                      <th>Actions</th>
 
                    </tr> 
