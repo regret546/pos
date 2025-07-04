@@ -174,6 +174,8 @@ if($_SESSION["profile"] == "Special"){
                     <div class="row">
                         <!-- Hidden field for total calculation -->
                         <input type="hidden" name="saleTotal" id="saleTotal" value="0">
+                        <!-- Hidden field for tax calculation -->
+                        <input type="hidden" name="newTaxPrice" id="newTaxPrice" value="0">
                     </div>
 
                     <hr>
