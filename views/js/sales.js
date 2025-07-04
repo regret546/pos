@@ -781,7 +781,7 @@ $(".saleForm").on("submit", function (e) {
       showConfirmButton: true,
       confirmButtonText: "Close",
     });
-    return;
+    return false;
   }
 
   // Validate if customer is selected
@@ -792,7 +792,7 @@ $(".saleForm").on("submit", function (e) {
       showConfirmButton: true,
       confirmButtonText: "Close",
     });
-    return;
+    return false;
   }
 
   // Validate if payment method is selected
@@ -803,13 +803,37 @@ $(".saleForm").on("submit", function (e) {
       showConfirmButton: true,
       confirmButtonText: "Close",
     });
-    return;
+    return false;
   }
 
-  // For cash payments, validate that change is not negative
+  // For cash payments, validate that change is not negative and cash value exists
   if ($("#newPaymentMethod").val() === "cash") {
-    var change = Number($("#newCashChange").val().replace(/,/g, "")) || 0;
-    if (change < 0) {
+    var cashValue = $("#newCashValue").val();
+    var changeValue = $("#newCashChange").val();
+
+    // Check if cash value is empty or not provided
+    if (
+      !cashValue ||
+      cashValue === "" ||
+      cashValue === "0" ||
+      cashValue === "0.00"
+    ) {
+      swal({
+        type: "error",
+        title: "Invalid Cash Amount",
+        text: "Please enter the cash amount received from customer",
+        showConfirmButton: true,
+        confirmButtonText: "Close",
+      });
+      return false;
+    }
+
+    // Convert and check if change is negative
+    var change = Number(changeValue.replace(/,/g, "")) || 0;
+    var cash = Number(cashValue.replace(/,/g, "")) || 0;
+    var total = Number($("#saleTotal").val().replace(/,/g, "")) || 0;
+
+    if (cash < total || change < 0) {
       swal({
         type: "error",
         title: "Invalid Cash Amount",
@@ -817,15 +841,54 @@ $(".saleForm").on("submit", function (e) {
         showConfirmButton: true,
         confirmButtonText: "Close",
       });
-      return;
+      return false;
     }
   }
 
   // Set payment method
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
-  // Submit form
-  this.submit();
+  // All validations passed, now we can submit
+  var formData = new FormData(this);
+
+  $.ajax({
+    url: $(this).attr("action"),
+    method: "POST",
+    data: formData,
+    cache: false,
+    contentType: false,
+    processData: false,
+    success: function (response) {
+      if (response === "ok") {
+        swal({
+          type: "success",
+          title: "Sale added successfully",
+          showConfirmButton: true,
+          confirmButtonText: "Close",
+        }).then((result) => {
+          if (result.value) {
+            window.location = "create-sale";
+          }
+        });
+      } else {
+        swal({
+          type: "error",
+          title: "Error",
+          text: "There was an error processing the sale",
+          showConfirmButton: true,
+          confirmButtonText: "Close",
+        });
+      }
+    },
+  });
+
+  return false; // Prevent traditional form submission
+});
+
+// Additional handler to prevent direct form submission
+$(document).on("submit", ".saleForm", function (e) {
+  e.preventDefault();
+  return false;
 });
 
 /*=============================================
