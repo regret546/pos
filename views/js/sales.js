@@ -820,6 +820,7 @@ function addProductToSale(product) {
 
 // Add form submission handler
 $(".saleForm").on("submit", function (e) {
+  // Always prevent default form submission
   e.preventDefault();
 
   // Validate if products have been added
@@ -830,7 +831,7 @@ $(".saleForm").on("submit", function (e) {
       showConfirmButton: true,
       confirmButtonText: "Close",
     });
-    return false;
+    return;
   }
 
   // Validate if customer is selected
@@ -841,7 +842,7 @@ $(".saleForm").on("submit", function (e) {
       showConfirmButton: true,
       confirmButtonText: "Close",
     });
-    return false;
+    return;
   }
 
   // Validate if payment method is selected
@@ -852,7 +853,7 @@ $(".saleForm").on("submit", function (e) {
       showConfirmButton: true,
       confirmButtonText: "Close",
     });
-    return false;
+    return;
   }
 
   // For cash payments, validate that change is not negative
@@ -869,7 +870,7 @@ $(".saleForm").on("submit", function (e) {
         showConfirmButton: true,
         confirmButtonText: "Close",
       });
-      return false;
+      return;
     }
   }
 
@@ -877,7 +878,7 @@ $(".saleForm").on("submit", function (e) {
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
   // If all validations pass, submit the form
-  return true;
+  this.submit();
 });
 
 // Add click handler for the save button
