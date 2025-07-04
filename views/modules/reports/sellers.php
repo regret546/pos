@@ -6,8 +6,8 @@ $value = null;
 $sales = ControllerSales::ctrShowSales($item, $value);
 $users = ControllerUsers::ctrShowUsers($item, $value);
 
-$arraySellers = array();
-$arraySellersList = array();
+$arrayCashiers = array();
+$arrayCashiersList = array();
 
 foreach ($sales as $key => $valueSales) {
 
@@ -15,17 +15,16 @@ foreach ($sales as $key => $valueSales) {
 
     if($valueUsers["id"] == $valueSales["idSeller"]){
 
-        #We capture sellers in an array
-        array_push($arraySellers, $valueUsers["name"]);
+        #We capture cashiers in an array
+        array_push($arrayCashiers, $valueUsers["name"]);
 
-        #We capture the names and net values in the same array
-        $arraySellersList = array($valueUsers["name"] => $valueSales["totalPrice"]);
+        #We add all values for each cashier
+        $arrayCashiersList = array($valueUsers["name"] => $valueSales["totalPrice"]);
 
-        #We add the netprice of each seller
+        #We add the netprice of each cashier
+        foreach ($arrayCashiersList as $key => $value) {
 
-        foreach ($arraySellersList as $key => $value) {
-
-            $addingTotalSales[$key] += $value;
+            $sumTotal[$valueUsers["name"]] += $value;
 
          }
 
@@ -35,21 +34,21 @@ foreach ($sales as $key => $valueSales) {
 
 }
 
-#Avoiding repeated names
-$dontrepeatnames = array_unique($arraySellers);
+#Avoiding repeating cashiers names
+$dontrepeatnames = array_unique($arrayCashiers);
 
 ?>
 <!-- Log on to codeastro.com for more projects! -->
 
 <!--=====================================
-Sellers
+CASHIERS
 ======================================-->
 
-<div class="box box-default">
+<div class="box box-success">
 	
 	<div class="box-header with-border">
     
-    	<h3 class="box-title">Sellers</h3>
+    	<h3 class="box-title">Cashiers</h3>
   
   	</div>
 
@@ -57,7 +56,7 @@ Sellers
   		
 		<div class="chart-responsive">
 			
-			<div class="chart" id="bar-chart1" style="height: 300px;"></div>
+			<div class="chart" id="bar-chart2" style="height: 300px;"></div>
 
 		</div>
 
@@ -69,7 +68,7 @@ Sellers
 	
 //BAR CHART
 var bar = new Morris.Bar({
-  element: 'bar-chart1',
+  element: 'bar-chart2',
   resize: true,
   data: [
 
@@ -77,7 +76,7 @@ var bar = new Morris.Bar({
     
     foreach($dontrepeatnames as $value){
 
-      echo "{y: '".$value."', a: '".$addingTotalSales[$value]."'},";
+      echo "{y: '".$value."', a: '".$sumTotal[$value]."'},";
 
     }
 

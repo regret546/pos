@@ -58,7 +58,7 @@
 
 			}
 
-			if($_SESSION["profile"] == "Administrator" || $_SESSION["profile"] == "Seller"){
+			if($_SESSION["profile"] == "Administrator" || $_SESSION["profile"] == "Cashier"){
 				echo '
 					
 					<li>
@@ -76,7 +76,7 @@
 				';
 			}
 
-			if($_SESSION["profile"] == "Administrator" || $_SESSION["profile"] == "Seller"){
+			if($_SESSION["profile"] == "Administrator" || $_SESSION["profile"] == "Cashier"){
 
 			echo'
 

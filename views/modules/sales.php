@@ -68,7 +68,7 @@ if($_SESSION["profile"] == "Special"){
              <th style="width:10px">#</th>
              <th>Bill</th>
              <th>Customer</th>
-             <th>Seller</th>
+             <th>Cashier</th>
              <th>Payment Method</th>
              <th>Total Cost</th>
              <th>Date</th>
