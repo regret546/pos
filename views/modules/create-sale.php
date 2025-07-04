@@ -325,7 +325,7 @@ if($_SESSION["profile"] == "Special"){
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-phone"></i></span>
-                <input class="form-control input-lg" type="text" name="newPhone" placeholder="phone" data-inputmask="'mask':'(999) 999-9999'" data-mask required>
+                <input class="form-control input-lg" type="text" name="newPhone" placeholder="phone" required>
               </div>
             </div>
 
