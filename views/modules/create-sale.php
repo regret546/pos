@@ -1,4 +1,4 @@
-<?php
+gi<?php
 
 if($_SESSION["profile"] == "Special"){
 
@@ -221,27 +221,8 @@ if($_SESSION["profile"] == "Special"){
           </form>
 
           <?php
-            // Only process if it's not an AJAX request
-            if(!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
-              if(isset($_POST["newSale"]) && $_POST["newPaymentMethod"] === "cash") {
-                $change = floatval(str_replace(',', '', $_POST["newCashChange"] ?? "0"));
-                if($change < 0) {
-                  echo '<script>
-                    swal({
-                      type: "error",
-                      title: "Invalid Cash Amount",
-                      text: "Cash amount must be greater than or equal to total amount. Change cannot be negative.",
-                      showConfirmButton: true,
-                      confirmButtonText: "Close"
-                    });
-                  </script>';
-                  return;
-                }
-              }
-
-              $saveSale = new ControllerSales();
-              $saveSale -> ctrCreateSale();
-            }
+            $saveSale = new ControllerSales();
+            $saveSale -> ctrCreateSale();
           ?>
 
         </div>
