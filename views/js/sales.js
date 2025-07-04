@@ -531,15 +531,21 @@ function listMethods() {
 CASH CHANGE
 =============================================*/
 function updateCashChange() {
-  var cash = Number($("#newCashValue").val().replace(/,/g, "")) || 0;
-  var total = Number($("#saleTotal").val().replace(/,/g, "")) || 0;
-  var change = cash - total;
+  // Parse the values and remove commas
+  var cash = parseFloat($("#newCashValue").val().replace(/,/g, "")) || 0;
+  var total = parseFloat($("#saleTotal").val().replace(/,/g, "")) || 0;
 
-  // Format to exactly 2 decimal places
-  $("#newCashChange").val(change.toFixed(2));
+  // Calculate change
+  var change = (cash - total).toFixed(2);
+
+  // Convert back to float for comparison
+  var changeNum = parseFloat(change);
+
+  // Format and display the change
+  $("#newCashChange").val(change);
 
   // If change is negative, show error and prevent form submission
-  if (change < 0) {
+  if (changeNum < 0) {
     swal({
       type: "error",
       title: "Invalid Cash Amount",
@@ -873,9 +879,12 @@ $(".saleForm").on("submit", function (e) {
 
   // For cash payments, validate that change is not negative
   if ($("#newPaymentMethod").val() === "cash") {
-    var change = Number($("#newCashChange").val().replace(/,/g, "")) || 0;
+    var cash = parseFloat($("#newCashValue").val().replace(/,/g, "")) || 0;
+    var total = parseFloat($("#saleTotal").val().replace(/,/g, "")) || 0;
+    var change = (cash - total).toFixed(2);
+    var changeNum = parseFloat(change);
 
-    if (change < 0) {
+    if (changeNum < 0) {
       swal({
         type: "error",
         title: "Invalid Cash Amount",
