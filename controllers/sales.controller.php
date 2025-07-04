@@ -493,13 +493,16 @@ class ControllerSales{
 
 			header('Expires: 0');
 			header('Cache-control: private');
-			header("Content-type: application/vnd.ms-excel"); // Excel file
+			header("Content-type: application/vnd.ms-excel; charset=UTF-8"); // Added charset
 			header("Cache-Control: cache, must-revalidate"); 
 			header('Content-Description: File Transfer');
 			header('Last-Modified: '.date('D, d M Y H:i:s'));
 			header("Pragma: public"); 
 			header('Content-Disposition:; filename="'.$name.'"');
 			header("Content-Transfer-Encoding: binary");
+            
+            // Define peso sign - using PHP chr() function
+            $pesoSign = chr(0x20B1); // Unicode for peso sign
 
 			echo utf8_decode("<table border='0'> 
 
@@ -543,9 +546,9 @@ class ControllerSales{
 		 		}
 
 		 		echo utf8_decode("</td>
-					<td style='border:1px solid #eee;'>₱ ".number_format($item["tax"],2)."</td>
-					<td style='border:1px solid #eee;'>₱ ".number_format($item["netPrice"],2)."</td>	
-					<td style='border:1px solid #eee;'>₱ ".number_format($item["totalPrice"],2)."</td>
+					<td style='border:1px solid #eee;'>PHP ".number_format($item["tax"],2)."</td>
+					<td style='border:1px solid #eee;'>PHP ".number_format($item["netPrice"],2)."</td>	
+					<td style='border:1px solid #eee;'>PHP ".number_format($item["totalPrice"],2)."</td>
 					<td style='border:1px solid #eee;'>".$item["paymentMethod"]."</td>
 					<td style='border:1px solid #eee;'>".substr($item["saledate"],0,10)."</td>		
 		 			</tr>");
