@@ -39,13 +39,15 @@ if($_SESSION["profile"] == "Special" || $_SESSION["profile"] == "Seller"){
 
       <div class="box-header with-border">
         <div class="input-group">
-          <div class="input-group-addon">
-            <i class="fa fa-calendar"></i>
-          </div>
-          <input type="text" class="form-control pull-right" id="daterange-btn2">
+          <button type="button" class="btn btn-default" id="daterange-btn2">
+            <span>
+              <i class="fa fa-calendar"></i> Date Range
+            </span>
+            <i class="fa fa-caret-down"></i>
+          </button>
         </div>
 
-        <div class="box-tools pull-right" style="margin-top: 3px;">
+        <div class="box-tools pull-right">
         <?php
         if(isset($_GET["inicialDate"])){
           echo '<a href="views/modules/download-report.php?report=report&inicialDate='.$_GET["inicialDate"].'&finalDate='.$_GET["finalDate"].'">';
