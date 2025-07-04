@@ -31,6 +31,25 @@ class ControllerSales{
 		if(isset($_POST["newSale"])){
 
 			/*=============================================
+			VALIDATE CASH PAYMENT
+			=============================================*/
+			if(isset($_POST["listPaymentMethod"]) && $_POST["listPaymentMethod"] == "cash"){
+				if(!isset($_POST["newCashValue"]) || !isset($_POST["saleTotal"])){
+					echo json_encode(array("status" => "error", "message" => "Invalid cash payment data"));
+					return;
+				}
+
+				$cash = floatval(str_replace(',', '', $_POST["newCashValue"]));
+				$total = floatval(str_replace(',', '', $_POST["saleTotal"]));
+				$change = $cash - $total;
+
+				if($change < 0){
+					echo json_encode(array("status" => "error", "message" => "Insufficient cash amount"));
+					return;
+				}
+			}
+
+			/*=============================================
 			UPDATE CUSTOMER'S PURCHASES AND REDUCE THE STOCK AND INCREMENT THE SALES OF THE PRODUCT
 			=============================================*/
 
@@ -105,30 +124,11 @@ class ControllerSales{
 			$answer = ModelSales::mdlAddSale($table, $data);
 
 			if($answer == "ok"){
-
-				echo'<script>
-
-				localStorage.removeItem("range");
-
-				swal({
-					  type: "success",
-					  title: "Sale added successfully",
-					  showConfirmButton: true,
-					  confirmButtonText: "Close"
-					  }).then((result) => {
-								if (result.value) {
-
-								window.location = "create-sale";
-
-								}
-							})
-
-				</script>';
-
+				echo json_encode(array("status" => "success", "message" => "Sale added successfully"));
+			} else {
+				echo json_encode(array("status" => "error", "message" => "Error adding sale"));
 			}
-
 		}
-
 	}
 	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================

@@ -46,6 +46,16 @@ if (empty($route)) {
 // Store the clean route
 $_GET['route'] = $route;
 
+// Handle AJAX requests
+$isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+          strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+
+if ($isAjax && $route === 'create-sale') {
+    // Let the sales controller handle the request
+    // The controller will output JSON response
+    exit;
+}
+
 // Debug information (remove in production)
 if (isset($_GET['debug'])) {
     echo "<pre>";

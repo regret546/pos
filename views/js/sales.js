@@ -848,29 +848,46 @@ $(".saleForm").on("submit", function (e) {
   // Set payment method
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
-  // All validations passed, now we can submit
+  // Create form data including cash value
   var formData = new FormData(this);
+  if ($("#newPaymentMethod").val() === "cash") {
+    formData.append("newCashValue", $("#newCashValue").val());
+  }
 
+  // Submit via AJAX
   $.ajax({
-    url: $(this).attr("action"),
+    url: "index.php?route=create-sale",
     method: "POST",
     data: formData,
     cache: false,
     contentType: false,
     processData: false,
     success: function (response) {
-      if (response === "ok") {
-        swal({
-          type: "success",
-          title: "Sale added successfully",
-          showConfirmButton: true,
-          confirmButtonText: "Close",
-        }).then((result) => {
-          if (result.value) {
-            window.location = "create-sale";
-          }
-        });
-      } else {
+      try {
+        var result = JSON.parse(response);
+        if (result.status === "success") {
+          localStorage.removeItem("range");
+          swal({
+            type: "success",
+            title: result.message,
+            showConfirmButton: true,
+            confirmButtonText: "Close",
+          }).then((result) => {
+            if (result.value) {
+              window.location = "create-sale";
+            }
+          });
+        } else {
+          swal({
+            type: "error",
+            title: "Error",
+            text: result.message || "There was an error processing the sale",
+            showConfirmButton: true,
+            confirmButtonText: "Close",
+          });
+        }
+      } catch (e) {
+        console.error("Error parsing response:", e);
         swal({
           type: "error",
           title: "Error",
@@ -880,9 +897,19 @@ $(".saleForm").on("submit", function (e) {
         });
       }
     },
+    error: function (xhr, status, error) {
+      console.error("AJAX Error:", error);
+      swal({
+        type: "error",
+        title: "Error",
+        text: "There was an error processing the sale",
+        showConfirmButton: true,
+        confirmButtonText: "Close",
+      });
+    },
   });
 
-  return false; // Prevent traditional form submission
+  return false;
 });
 
 // Additional handler to prevent direct form submission
