@@ -534,11 +534,13 @@ function updateCashChange() {
   var cash = Number($("#newCashValue").val().replace(/,/g, "")) || 0;
   var total = Number($("#saleTotal").val().replace(/,/g, "")) || 0;
 
-  if (cash < total) {
+  var change = cash - total;
+
+  if (change < 0) {
     swal({
-      title: "Cash amount is less than total",
-      text: "Please enter an amount equal to or greater than the total",
-      type: "warning",
+      title: "Insufficient Cash",
+      text: "The cash amount must be equal to or greater than the total amount",
+      type: "error",
       confirmButtonText: "OK",
     });
     $("#newCashValue").val("");
@@ -546,7 +548,6 @@ function updateCashChange() {
     return;
   }
 
-  var change = cash - total;
   $("#newCashChange").val(change.toFixed(2));
 }
 
@@ -803,6 +804,21 @@ $(".saleForm").on("submit", function (e) {
       confirmButtonText: "Close",
     });
     return;
+  }
+
+  // For cash payments, validate that change is not negative
+  if ($("#newPaymentMethod").val() === "cash") {
+    var change = Number($("#newCashChange").val().replace(/,/g, "")) || 0;
+    if (change < 0) {
+      swal({
+        type: "error",
+        title: "Invalid Cash Amount",
+        text: "Cannot complete sale with insufficient cash amount",
+        showConfirmButton: true,
+        confirmButtonText: "Close",
+      });
+      return;
+    }
   }
 
   // Set payment method
