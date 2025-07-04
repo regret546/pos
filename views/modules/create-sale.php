@@ -256,6 +256,7 @@ if($_SESSION["profile"] == "Special"){
                      <th style="width:30px">Code</th>
                      <th>Description</th>
                      <th>Stock</th>
+                     <th>Price</th>
                      <th>Actions</th>
 
                    </tr> 
