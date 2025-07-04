@@ -182,7 +182,7 @@
 <script src="views/js/products.js"></script>
 <script src="views/js/customers.js"></script>
 <script src="views/js/sales.js"></script>
-<script src="views/js/reports.js"></script>
+<script src="views/js/reports.js?v=<?php echo time(); ?>"></script>
 
 </body>
 </html>
