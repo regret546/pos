@@ -216,7 +216,7 @@ if($_SESSION["profile"] == "Special"){
             </div>
 
             <div class="box-footer">
-              <button type="submit" id="saveSaleBtn" class="btn btn-success pull-right">Save Sale</button>
+              <button type="submit" class="btn btn-success pull-right">Save Sale</button>
             </div>
           </form>
 
@@ -231,15 +231,6 @@ if($_SESSION["profile"] == "Special"){
                     text: "The cash amount must be greater than or equal to the total amount.",
                     showConfirmButton: true,
                     confirmButtonText: "Close"
-                  }).then((result) => {
-                    // Restore form values
-                    if(isset($_POST["productsList"])) {
-                      echo "var productsList = " . $_POST["productsList"] . ";";
-                      echo "productsList.forEach(function(product) {";
-                      echo "  addProductToSale(product);";
-                      echo "});";
-                    }
-                    $("#newCashValue").focus();
                   });
                 </script>';
                 return;

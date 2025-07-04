@@ -821,20 +821,6 @@ function addProductToSale(product) {
 // Add form submission handler
 $(".saleForm").on("submit", function (e) {
   e.preventDefault();
-  e.stopPropagation();
-
-  // Store current products list before validation
-  var currentProducts = [];
-  $(".newProduct .row").each(function () {
-    var $row = $(this);
-    currentProducts.push({
-      id: $row.find(".newProductDescription").attr("idProduct"),
-      description: $row.find(".newProductDescription").val(),
-      quantity: Number($row.find(".newProductQuantity").val()),
-      stock: Number($row.find(".newProductQuantity").attr("stock")),
-      price: Number($row.find(".newProductPrice").attr("realPrice")),
-    });
-  });
 
   // Validate if products have been added
   if ($(".newProduct").children().length === 0) {
@@ -882,15 +868,8 @@ $(".saleForm").on("submit", function (e) {
           change,
         showConfirmButton: true,
         confirmButtonText: "Close",
-      }).then((result) => {
-        // Restore products after error
-        $(".newProduct").empty();
-        currentProducts.forEach(function (product) {
-          addProductToSale(product);
-        });
-        // Keep focus on cash value input after error
-        $("#newCashValue").focus();
       });
+      $("#newCashValue").focus();
       return false;
     }
   }
@@ -898,8 +877,8 @@ $(".saleForm").on("submit", function (e) {
   // Set payment method
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
-  // If we get here, all validations passed, allow form submission
-  return true;
+  // Submit form
+  this.submit();
 });
 
 // Prevent the default click behavior of the submit button
