@@ -40,17 +40,12 @@ if($_SESSION["profile"] == "Special" || $_SESSION["profile"] == "Seller"){
       <div class="box-header with-border">
 
         <div class="input-group">
-
-          <button type="button" class="btn btn-default" id="daterange-btn2">
-           
+          <button type="button" class="btn btn-default pull-right" id="daterange-btn2">
             <span>
-              <i class="fa fa-calendar"></i> Date range
+              <i class="fa fa-calendar"></i> Date Range
             </span>
-
             <i class="fa fa-caret-down"></i>
-
           </button>
-
         </div>
 		<!-- Log on to codeastro.com for more projects! -->
         <div class="box-tools pull-right">
