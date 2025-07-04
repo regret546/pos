@@ -472,7 +472,7 @@ $("#newPaymentMethod").change(function () {
         "<label>Customer Cash</label>" +
         '<div class="input-group">' +
         '<span class="input-group-addon"><i class="fa fa-money"></i></span>' +
-        '<input type="text" class="form-control" id="newCashValue" name="newCashValue" placeholder="0.00" required>' +
+        '<input type="text" class="form-control" id="newCashValue" placeholder="0.00" required>' +
         "</div>" +
         "</div>" +
         "</div>" +
@@ -487,16 +487,16 @@ $("#newPaymentMethod").change(function () {
         "</div>"
     );
 
-    // Initialize number formatting for cash fields
+    // Initialize number formatting
     $("#newCashValue").number(true, 2);
     $("#newCashChange").number(true, 2);
 
     // Listen for cash value changes
-    $("#newCashValue").on("input change", function () {
-      updateCashChange();
+    $("#newCashValue").change(function () {
+      var cash = $(this).val();
+      var change = Number(cash) - Number($("#saleTotal").val());
+      $("#newCashChange").val(change);
     });
-
-    $("#newCashValue").focus();
   } else {
     $(this).parent().parent().removeClass("col-xs-4");
     $(this).parent().parent().addClass("col-xs-6");
@@ -504,7 +504,7 @@ $("#newPaymentMethod").change(function () {
     $(".paymentMethodBoxes").html(
       '<div class="col-xs-6" style="padding-left:0px">' +
         '<div class="input-group">' +
-        '<input type="text" class="form-control" id="newTransactionCode" name="newTransactionCode" placeholder="Transaction code" required>' +
+        '<input type="text" class="form-control" id="newTransactionCode" placeholder="Transaction code" required>' +
         '<span class="input-group-addon"><i class="fa fa-lock"></i></span>' +
         "</div>" +
         "</div>"
@@ -845,9 +845,7 @@ function addProductToSale(product) {
 
 // Add form submission handler
 $(".saleForm").on("submit", function (e) {
-  // Always prevent default form submission
   e.preventDefault();
-  e.stopPropagation();
 
   // Validate if products have been added
   if ($(".newProduct").children().length === 0) {
@@ -884,26 +882,14 @@ $(".saleForm").on("submit", function (e) {
 
   // For cash payments, validate that change is not negative
   if ($("#newPaymentMethod").val() === "cash") {
-    // Get the input values and clean them
-    var cashInput = $("#newCashValue").val() || "0";
-    var totalInput = $("#saleTotal").val() || "0";
+    var cash = Number($("#newCashValue").val());
+    var total = Number($("#saleTotal").val());
 
-    // Remove commas and convert to numbers with 2 decimal precision
-    var cash = parseFloat(cashInput.replace(/,/g, ""));
-    var total = parseFloat(totalInput.replace(/,/g, ""));
-
-    // Ensure we have valid numbers
-    cash = isNaN(cash) ? 0 : cash;
-    total = isNaN(total) ? 0 : total;
-
-    // Calculate change with 2 decimal precision
-    var change = (Math.round((cash - total) * 100) / 100).toFixed(2);
-
-    if (parseFloat(change) < 0) {
+    if (cash < total) {
       swal({
         type: "error",
         title: "Invalid Cash Amount",
-        text: "Cash amount must be greater than or equal to total amount. Change cannot be negative.",
+        text: "Cash amount must be greater than or equal to total amount",
         showConfirmButton: true,
         confirmButtonText: "Close",
       });
@@ -914,103 +900,8 @@ $(".saleForm").on("submit", function (e) {
   // Set payment method
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
-  // If all validations pass, submit via AJAX
-  var formData = new FormData(this);
-
-  $.ajax({
-    url: "index.php?route=create-sale",
-    method: "POST",
-    data: formData,
-    cache: false,
-    contentType: false,
-    processData: false,
-    success: function (response) {
-      if (response.includes("error")) {
-        swal({
-          type: "error",
-          title: "Error",
-          text: "Cannot process sale with negative change",
-          showConfirmButton: true,
-          confirmButtonText: "Close",
-        });
-      } else if (response.includes("success")) {
-        swal({
-          type: "success",
-          title: "Sale added successfully",
-          showConfirmButton: true,
-          confirmButtonText: "Close",
-        }).then(function (result) {
-          if (result.value) {
-            window.location = "create-sale";
-          }
-        });
-      }
-    },
-    error: function () {
-      swal({
-        type: "error",
-        title: "Error",
-        text: "There was an error processing the sale",
-        showConfirmButton: true,
-        confirmButtonText: "Close",
-      });
-    },
-  });
-
-  return false;
-});
-
-// Prevent the default click behavior of the submit button
-$("#saveSaleBtn").on("click", function (e) {
-  if ($("#newPaymentMethod").val() === "cash") {
-    var change = Number($("#newCashChange").val().replace(/,/g, "")) || 0;
-    if (change < 0) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Store current products
-      var currentProducts = [];
-      $(".newProduct .row").each(function () {
-        var $row = $(this);
-        currentProducts.push({
-          id: $row.find(".newProductDescription").attr("idProduct"),
-          description: $row.find(".newProductDescription").val(),
-          quantity: Number($row.find(".newProductQuantity").val()),
-          stock: Number($row.find(".newProductQuantity").attr("stock")),
-          price: Number($row.find(".newProductPrice").attr("realPrice")),
-        });
-      });
-
-      swal({
-        type: "error",
-        title: "Invalid Cash Amount",
-        text:
-          "The cash amount must be greater than or equal to the total amount. Current change: " +
-          change,
-        showConfirmButton: true,
-        confirmButtonText: "Close",
-      }).then((result) => {
-        // Restore products after error
-        $(".newProduct").empty();
-        currentProducts.forEach(function (product) {
-          addProductToSale(product);
-        });
-        // Keep focus on cash value input after error
-        $("#newCashValue").focus();
-      });
-      return false;
-    }
-  }
-});
-
-// Add hidden input for cash change
-$(".saleForm").append(
-  '<input type="hidden" name="newCashChange" id="hiddenCashChange">'
-);
-
-// Update hidden cash change input when visible input changes
-$("#newCashChange").on("change keyup", function () {
-  $("#hiddenCashChange").val($(this).val());
+  // Submit form
+  this.submit();
 });
 
 /*=============================================
