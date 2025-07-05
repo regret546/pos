@@ -919,3 +919,40 @@ $("#customerCash").change(function () {
     $("#cashChange").val("");
   }
 });
+
+/*=============================================
+CHECK IF CUSTOMER AND PRODUCT ARE SELECTED TO SHOW PAYMENT METHOD
+=============================================*/
+
+function checkPaymentMethodVisibility() {
+  var hasCustomer = $("#selectCustomer").val() !== "";
+  var hasProducts = $(".newProduct .row").length > 0;
+
+  if (hasCustomer && hasProducts) {
+    $(".payment-method-section").show();
+  } else {
+    $(".payment-method-section").hide();
+    $("#newPaymentMethod").val(""); // Reset payment method when hidden
+    $(".paymentMethodBoxes").empty(); // Clear any payment method specific fields
+  }
+}
+
+// Check when customer is selected
+$("#selectCustomer").change(function () {
+  checkPaymentMethodVisibility();
+});
+
+// Check when product is added
+$(".salesTable tbody").on("click", "button.addProductSale", function () {
+  // Wait for the product to be added to the DOM
+  setTimeout(function () {
+    checkPaymentMethodVisibility();
+  }, 100);
+});
+
+// Check when product is removed
+$(".saleForm").on("click", "button.removeProduct", function () {
+  setTimeout(function () {
+    checkPaymentMethodVisibility();
+  }, 100);
+});

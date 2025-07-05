@@ -184,7 +184,7 @@ if($_SESSION["profile"] == "Special"){
                       PAYMENT METHOD
                       ======================================-->
 
-                    <div class="form-group row">
+                    <div class="form-group row payment-method-section" style="display: none;">
                       
                       <div class="col-xs-6" style="padding-right: 0">
 
