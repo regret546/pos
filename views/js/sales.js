@@ -921,38 +921,21 @@ $("#customerCash").change(function () {
 });
 
 /*=============================================
-CHECK IF CUSTOMER AND PRODUCT ARE SELECTED TO SHOW PAYMENT METHOD
+SHOW/HIDE PAYMENT METHOD BASED ON CUSTOMER SELECTION
 =============================================*/
 
-function checkPaymentMethodVisibility() {
-  var hasCustomer = $("#selectCustomer").val() !== "";
-  var hasProducts = $(".newProduct .row").length > 0;
+$(document).ready(function () {
+  // Hide payment method section initially
+  $(".payment-method-section").hide();
 
-  if (hasCustomer && hasProducts) {
-    $(".payment-method-section").show();
-  } else {
-    $(".payment-method-section").hide();
-    $("#newPaymentMethod").val(""); // Reset payment method when hidden
-    $(".paymentMethodBoxes").empty(); // Clear any payment method specific fields
-  }
-}
-
-// Check when customer is selected
-$("#selectCustomer").change(function () {
-  checkPaymentMethodVisibility();
-});
-
-// Check when product is added
-$(".salesTable tbody").on("click", "button.addProductSale", function () {
-  // Wait for the product to be added to the DOM
-  setTimeout(function () {
-    checkPaymentMethodVisibility();
-  }, 100);
-});
-
-// Check when product is removed
-$(".saleForm").on("click", "button.removeProduct", function () {
-  setTimeout(function () {
-    checkPaymentMethodVisibility();
-  }, 100);
+  // Show/hide payment method when customer is selected
+  $("#selectCustomer").change(function () {
+    if ($(this).val() !== "") {
+      $(".payment-method-section").show();
+    } else {
+      $(".payment-method-section").hide();
+      $("#newPaymentMethod").val(""); // Reset payment method when hidden
+      $(".paymentMethodBoxes").empty(); // Clear any payment method specific fields
+    }
+  });
 });
