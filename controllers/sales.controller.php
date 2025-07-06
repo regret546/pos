@@ -508,8 +508,6 @@ class ControllerSales{
 					<td style='font-weight:bold; border:1px solid #eee;'>SELLER</td>
 					<td style='font-weight:bold; border:1px solid #eee;'>QUANTITY</td>
 					<td style='font-weight:bold; border:1px solid #eee;'>PRODUCTS</td>
-					<td style='font-weight:bold; border:1px solid #eee;'>TAX</td>
-					<td style='font-weight:bold; border:1px solid #eee;'>NET PRICE</td>		
 					<td style='font-weight:bold; border:1px solid #eee;'>TOTAL</td>		
 					<td style='font-weight:bold; border:1px solid #eee;'>METHOD OF PAYMENT</td>	
 					<td style='font-weight:bold; border:1px solid #eee;'>DATE</td>		
@@ -542,8 +540,6 @@ class ControllerSales{
 		 		}
 
 		 		echo utf8_decode("</td>
-					<td style='border:1px solid #eee;'>PHP ".number_format($item["tax"],2)."</td>
-					<td style='border:1px solid #eee;'>PHP ".number_format($item["netPrice"],2)."</td>	
 					<td style='border:1px solid #eee;'>PHP ".number_format($item["totalPrice"],2)."</td>
 					<td style='border:1px solid #eee;'>".$item["paymentMethod"]."</td>
 					<td style='border:1px solid #eee;'>".substr($item["saledate"],0,10)."</td>		
