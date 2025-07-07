@@ -12,7 +12,7 @@
 
       <li><a href="home"><i class="fa fa-dashboard"></i> Home</a></li>
 
-      <li class="active">Dashboard</li>
+      <li class="active">Sales</li>
 
     </ol>
 
@@ -25,13 +25,11 @@
       <div class="box-header with-border">
 
         <a href="create-sales">
-          <button class="btn btn-success" >
-        
-          <i class="fa fa-plus"></i> Add Sale
-  
+          <button class="btn btn-primary">
+            <i class="fa fa-plus"></i> Add sale
           </button>
         </a>
-		<!-- Log on to codeastro.com for more projects! -->
+
       </div>
 
       <div class="box-body">
@@ -55,7 +53,7 @@
            </tr> 
 
           </thead>
-			<!-- Log on to codeastro.com for more projects! -->
+
           <tbody>
 
             <?php
@@ -98,11 +96,15 @@
 
                     <div class="btn-group">
                         
-                      <button class="btn btn-warning"><i class="fa fa-print"></i></button>
+                      <button class="btn btn-info"><i class="fa fa-print"></i></button>
 
-                      <button class="btn btn-primary btnEditarVenta" idVenta="'.$value["id"].'"><i class="fa fa-pencil"></i></button>
+                      <button class="btn btn-primary btnEditarVenta" idVenta="'.$value["id"].'">
+                        <i class="fa fa-pencil"></i>
+                      </button>
 
-                      <button class="btn btn-danger btnEliminarVenta" idVenta="'.$value["id"].'"><i class="fa fa-trash"></i></button>
+                      <button class="btn btn-danger btnEliminarVenta" idVenta="'.$value["id"].'">
+                        <i class="fa fa-trash"></i>
+                      </button>
 
                     </div>  
 
@@ -121,7 +123,7 @@
       </div>
     
     </div>
-	<!-- Log on to codeastro.com for more projects! -->
+
   </section>
 
 </div>

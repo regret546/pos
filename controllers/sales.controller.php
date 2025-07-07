@@ -7,7 +7,6 @@ use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 
 
 class ControllerSales{
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	SHOW SALES
 	=============================================*/
@@ -31,7 +30,7 @@ class ControllerSales{
 		if(isset($_POST["newSale"])){
 
 			/*=============================================
-			UPDATE CUSTOMER'S PURCHASES AND REDUCE THE STOCK AND INCREMENT THE SALES OF THE PRODUCT
+			UPDATE CUSTOMER'S PURCHASES AND REDUCE THE STOCK AND INCREASE THE SALES OF THE PRODUCT
 			=============================================*/
 
 			$productsList = json_decode($_POST["productsList"], true);
@@ -45,20 +44,20 @@ class ControllerSales{
 			   $tableProducts = "products";
 
 			    $item = "id";
-			    $valueProduct = $value["id"];
+			    $valueProductId = $value["id"];
 			    $order = "id";
 
-			    $getProduct = ProductsModel::mdlShowProducts($tableProducts, $item, $valueProduct, $order);
+			    $getProduct = ProductsModel::mdlShowProducts($tableProducts, $item, $valueProductId, $order);
 
 				$item1a = "sales";
 				$value1a = $value["quantity"] + $getProduct["sales"];
 
-			    $newSales = ProductsModel::mdlUpdateProduct($tableProducts, $item1a, $value1a, $valueProduct);
+			    $newSales = ProductsModel::mdlUpdateProduct($tableProducts, $item1a, $value1a, $valueProductId);
 
 				$item1b = "stock";
 				$value1b = $getProduct["stock"] - $value["quantity"];
 
-				$newStock = ProductsModel::mdlUpdateProduct($tableProducts, $item1b, $value1b, $valueProduct);
+				$newStock = ProductsModel::mdlUpdateProduct($tableProducts, $item1b, $value1b, $valueProductId);
 
 			}
 
@@ -74,15 +73,13 @@ class ControllerSales{
 
 			$customerPurchases = ModelCustomers::mdlUpdateCustomer($tableCustomers, $item1a, $value1a, $valueCustomer);
 
-			/*=============================================
-			UPDATE CUSTOMER'S LAST PURCHASE
-			=============================================*/
-
-			require_once "models/date.helper.php";
-			DateHelper::init();
-
 			$item1b = "lastPurchase";
-			$value1b = DateHelper::getDateTime();
+
+			date_default_timezone_set('America/Bogota');
+
+			$date = date('Y-m-d');
+			$hour = date('H:i:s');
+			$value1b = $date.' '.$hour;
 
 			$dateCustomer = ModelCustomers::mdlUpdateCustomer($tableCustomers, $item1b, $value1b, $valueCustomer);
 
@@ -92,15 +89,14 @@ class ControllerSales{
 
 			$table = "sales";
 
-			$data = array(
-				"code"=>$_POST["newSale"],
-				"idSeller"=>$_POST["idSeller"],
-				"idCustomer"=>$_POST["selectCustomer"],
-				"products"=>$_POST["productsList"],
-				"tax"=>$_POST["newTaxPrice"],
-				"totalPrice"=>$_POST["saleTotal"],
-				"paymentMethod"=>$_POST["newPaymentMethod"]
-			);
+			$data = array("code"=>$_POST["newSale"],
+						   "idSeller"=>$_POST["idSeller"],
+						   "idCustomer"=>$_POST["selectCustomer"],
+						   "products"=>$_POST["productsList"],
+						   "tax"=>$_POST["newTaxPrice"],
+						   "netPrice"=>$_POST["newNetPrice"],
+						   "totalPrice"=>$_POST["saleTotal"],
+						   "paymentMethod"=>$_POST["newPaymentMethod"]);
 
 			$answer = ModelSales::mdlAddSale($table, $data);
 
@@ -112,7 +108,7 @@ class ControllerSales{
 
 				swal({
 					  type: "success",
-					  title: "Sale added successfully",
+					  title: "The sale has been successfully added",
 					  showConfirmButton: true,
 					  confirmButtonText: "Close"
 					  }).then((result) => {
@@ -130,7 +126,6 @@ class ControllerSales{
 		}
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	EDIT SALE
 	=============================================*/
@@ -300,7 +295,6 @@ class ControllerSales{
 		}
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	Delete Sale
 	=============================================*/
@@ -369,7 +363,6 @@ class ControllerSales{
 				$customerPurchases = ModelCustomers::mdlUpdateCustomer($tableCustomers, $item, $value, $valueIdCustomer);
 
 			}
-			/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 			/*=============================================
 			FORMAT PRODUCTS AND CUSTOMERS TABLE
 			=============================================*/
@@ -443,7 +436,6 @@ class ControllerSales{
 		}
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	DATES RANGE
 	=============================================*/	
@@ -554,7 +546,6 @@ class ControllerSales{
 
 	}
 
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	Adding TOTAL sales
 	=============================================*/

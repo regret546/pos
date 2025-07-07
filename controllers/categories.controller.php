@@ -1,65 +1,43 @@
 <?php
 
- class ControllerCategories{
-
- 	/*=============================================
+class ControllerCategories {
+	/*=============================================
 	CREATE CATEGORY
 	=============================================*/
-	
-	static public function ctrCreateCategory(){
+	public function ctrCreateCategory() {
+		if(isset($_POST["newCategory"])) {
+			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["newCategory"])) {
+				$table = "categories";
+				$data = $_POST["newCategory"];
+				$answer = CategoriesModel::mdlAddCategory($table, $data);
 
-		if(isset($_POST['newCategory'])){
-
-			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["newCategory"])){
-
-				$table = 'categories';
-
-				$data = strtoupper($_POST['newCategory']);
-
-				$answer = ModelCategories::mdlAddCategory($table, $data);
-				// var_dump($answer);
-
-				if($answer == 'ok'){
-
+				if($answer == "ok") {
 					echo '<script>
-						
 						swal({
 							type: "success",
-							title: "Category has been successfully saved ",
+							title: "Category has been successfully saved",
 							showConfirmButton: true,
 							confirmButtonText: "Close"
-
-							}).then(function(result){
-								if (result.value) {
-
-									window.location = "categories";
-
-								}
-							});
-						
+						}).then(function(result) {
+							if (result.value) {
+								window.location = "categories";
+							}
+						});
 					</script>';
 				}
-				
-
-			}else{
-
+			} else {
 				echo '<script>
-						
-						swal({
-							type: "error",
-							title: "No especial characters or blank fields",
-							showConfirmButton: true,
-							confirmButtonText: "Close"
-				
-							 }).then(function(result){
-
-								if (result.value) {
-									window.location = "categories";
-								}
-							});
-						
+					swal({
+						type: "error",
+						title: "No special characters or numbers allowed",
+						showConfirmButton: true,
+						confirmButtonText: "Close"
+					}).then(function(result) {
+						if (result.value) {
+							window.location = "categories";
+						}
+					});
 				</script>';
-				
 			}
 		}
 	}
@@ -67,117 +45,80 @@
 	/*=============================================
 	SHOW CATEGORIES
 	=============================================*/
-
-	static public function ctrShowCategories($item, $value){
-
+	static public function ctrShowCategories($item, $value) {
 		$table = "categories";
-
 		$answer = ModelCategories::mdlShowCategories($table, $item, $value);
-
 		return $answer;
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	EDIT CATEGORY
 	=============================================*/
-
-	static public function ctrEditCategory(){
-
-		if(isset($_POST["editCategory"])){
-
-			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["editCategory"])){
-
+	public function ctrEditCategory() {
+		if(isset($_POST["editCategory"])) {
+			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["editCategory"])) {
 				$table = "categories";
+				$data = array(
+					"category" => $_POST["editCategory"],
+					"id" => $_POST["idCategory"]
+				);
 
-				$data = array("Category"=>strtoupper($_POST["editCategory"]),
-							   "id"=>$_POST["idCategory"]);
+				$answer = CategoriesModel::mdlEditCategory($table, $data);
 
-				$answer = ModelCategories::mdlEditCategory($table, $data);
-				// var_dump($answer);
-
-				if($answer == "ok"){
-
-					echo'<script>
-
-					swal({
-						  type: "success",
-						  title: "Category has been successfully saved ",
-						  showConfirmButton: true,
-						  confirmButtonText: "Close"
-						  }).then(function(result){
-									if (result.value) {
-
-									window.location = "categories";
-
-									}
-								})
-
-					</script>';
-
-				}
-
-
-			}else{
-
-				echo'<script>
-
-					swal({
-						  type: "error",
-						  title: "No especial characters or blank fields",
-						  showConfirmButton: true,
-						  confirmButtonText: "Close"
-						  }).then(function(result){
+				if($answer == "ok") {
+					echo '<script>
+						swal({
+							type: "success",
+							title: "Category has been successfully edited",
+							showConfirmButton: true,
+							confirmButtonText: "Close"
+						}).then(function(result) {
 							if (result.value) {
-
-							window.location = "categories";
-
+								window.location = "categories";
 							}
-						})
-
-			  	</script>';
-
+						});
+					</script>';
+				}
+			} else {
+				echo '<script>
+					swal({
+						type: "error",
+						title: "No special characters or numbers allowed",
+						showConfirmButton: true,
+						confirmButtonText: "Close"
+					}).then(function(result) {
+						if (result.value) {
+							window.location = "categories";
+						}
+					});
+				</script>';
 			}
-
 		}
-
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	DELETE CATEGORY
 	=============================================*/
-
-	static public function ctrDeleteCategory(){
-
-		if(isset($_GET["idCategory"])){
-
-			$table ="categories";
+	static public function ctrDeleteCategory() {
+		if(isset($_GET["idCategory"])) {
+			$table = "categories";
 			$data = $_GET["idCategory"];
-
 			$answer = ModelCategories::mdlDeleteCategory($table, $data);
-			// var_dump($answer);
 
-			if($answer == "ok"){
-
-				echo'<script>
-
+			if($answer == "ok") {
+				echo '<script>
 					swal({
-						  type: "success",
-						  title: "The category has been successfully deleted",
-						  showConfirmButton: true,
-						  confirmButtonText: "Close"
-						  }).then(function(result){
-									if (result.value) {
-
-									window.location = "categories";
-
-									}
-								})
-
-					</script>';
+						type: "success",
+						title: "The category has been successfully deleted",
+						showConfirmButton: true,
+						confirmButtonText: "Close"
+					}).then(function(result) {
+						if (result.value) {
+							window.location = "categories";
+						}
+					});
+				</script>';
 			}
-		
 		}
-		
 	}
-
 }

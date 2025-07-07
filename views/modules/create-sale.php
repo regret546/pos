@@ -1,4 +1,4 @@
-gi<?php
+<?php
 
 if($_SESSION["profile"] == "Special"){
 
@@ -13,14 +13,14 @@ if($_SESSION["profile"] == "Special"){
 }
 
 ?>
-<!-- Log on to codeastro.com for more projects! -->
+
 <div class="content-wrapper">
 
   <section class="content-header">
 
     <h1>
 
-      Sales Management
+      Create sale
 
     </h1>
 
@@ -28,7 +28,7 @@ if($_SESSION["profile"] == "Special"){
 
       <li><a href="home"><i class="fa fa-dashboard"></i> Home</a></li>
 
-      <li class="active">Create Sale</li>
+      <li class="active">Create sale</li>
 
     </ol>
 
@@ -43,7 +43,7 @@ if($_SESSION["profile"] == "Special"){
       =============================================-->
       <div class="col-lg-5 col-xs-12">
         
-        <div class="box box-default">
+        <div class="box box-primary">
 
           <div class="box-header with-border"></div>
 
@@ -64,7 +64,7 @@ if($_SESSION["profile"] == "Special"){
                         
                         <span class="input-group-addon"><i class="fa fa-user"></i></span>
 
-                        <input type="text" class="form-control" name="newSeller" id="newSeller" value="<?php echo $_SESSION["name"]; ?>" readonly>
+                        <input type="text" class="form-control" id="newSeller" value="<?php echo $_SESSION["name"]; ?>" readonly>
 
                         <input type="hidden" name="idSeller" value="<?php echo $_SESSION["id"]; ?>">
 
@@ -93,7 +93,7 @@ if($_SESSION["profile"] == "Special"){
 
                           if(!$sales){
 
-                            echo '<input type="text" class="form-control" name="newSale" id="newSale" value="10001" readonly>';
+                            echo '<input type="text" class="form-control" id="newSale" name="newSale" value="10001" readonly>';
                           }
                           else{
 
@@ -103,7 +103,7 @@ if($_SESSION["profile"] == "Special"){
 
                             $code = $value["code"] +1;
 
-                            echo '<input type="text" class="form-control" name="newSale" id="newSale" value="'.$code.'" readonly>';
+                            echo '<input type="text" class="form-control" id="newSale" name="newSale" value="'.$code.'" readonly>';
 
                           }
 
@@ -119,15 +119,14 @@ if($_SESSION["profile"] == "Special"){
                     =            CUSTOMER INPUT           =
                     ======================================-->
                   
-                    <!-- Log on to codeastro.com for more projects! -->
                     <div class="form-group">
 
                       <div class="input-group">
                         
                         <span class="input-group-addon"><i class="fa fa-users"></i></span>
-                        <select class="form-control" name="selectCustomer" id="selectCustomer" required>
+                        <select class="form-control" id="selectCustomer" name="selectCustomer" required>
                           
-                            <option value="">Select Customer</option>
+                            <option value="">Select customer</option>
 
                             <?php 
 
@@ -145,12 +144,11 @@ if($_SESSION["profile"] == "Special"){
 
                         </select>
 
-                        <span class="input-group-addon"><button type="button" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modalAddCustomer" data-dismiss="modal">Add Customer</button></span>
+                        <span class="input-group-addon"><button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#modalAddCustomer" data-dismiss="modal">Add customer</button></span>
 
                       </div>
 
                     </div>
-					<!-- Log on to codeastro.com for more projects! -->
                     <!--=====================================
                     =            PRODUCT INPUT           =
                     ======================================-->
@@ -161,13 +159,13 @@ if($_SESSION["profile"] == "Special"){
 
                     </div>
 
-                    <input type="hidden" name="productsList" id="productsList">
+                    <input type="hidden" id="productsList" name="productsList">
 
                     <!--=====================================
                     =            ADD PRODUCT BUTTON          =
                     ======================================-->
                     
-                    <button type="button" class="btn btn-default hidden-lg btnAddProduct">Add Product</button>
+                    <button type="button" class="btn btn-default hidden-lg btnAddProduct">Add product</button>
 
                     <hr>
 
@@ -184,18 +182,18 @@ if($_SESSION["profile"] == "Special"){
                       PAYMENT METHOD
                       ======================================-->
 
-                    <div class="form-group row payment-method-section">
+                    <div class="form-group row">
                       
-                      <div class="col-xs-6" style="padding-right: 0">
+                      <div class="col-xs-6">
 
                         <div class="input-group">
                       
                           <select class="form-control" name="newPaymentMethod" id="newPaymentMethod" required>
                             
-                              <option value="">-Select Payment Method-</option>
+                              <option value="">-Select payment method-</option>
                               <option value="cash">Cash</option>
-                              <option value="CC">Credit Card</option>
-                              <option value="DC">Debit Card</option>
+                              <option value="CC">Credit card</option>
+                              <option value="DC">Debit card</option>
 
                           </select>
 
@@ -203,7 +201,14 @@ if($_SESSION["profile"] == "Special"){
 
                       </div>
 
-                      <div class="paymentMethodBoxes"></div>
+                      <div class="col-xs-6">
+
+                        <div class="input-group">
+                          <input type="text" class="form-control" name="newCodeTransaction" id="newCodeTransaction" placeholder="Transaction code">
+                          <span class="input-group-addon"><i class="fa fa-lock"></i></span>
+                        </div>
+
+                      </div>
 
                       <input type="hidden" name="listPaymentMethod" id="listPaymentMethod" required>
 
@@ -216,7 +221,7 @@ if($_SESSION["profile"] == "Special"){
             </div>
 
             <div class="box-footer">
-              <button type="submit" class="btn btn-success pull-right">Save Sale</button>
+              <button type="submit" class="btn btn-primary pull-right">Save sale</button>
             </div>
           </form>
 
@@ -237,13 +242,13 @@ if($_SESSION["profile"] == "Special"){
 		<!-- Log on to codeastro.com for more projects! -->
       <div class="col-lg-7 hidden-md hidden-sm hidden-xs">
         
-          <div class="box box-default">
+          <div class="box box-warning">
             
             <div class="box-header with-border"></div>
 
             <div class="box-body">
               
-              <table class="table table-bordered table-hover table-striped dt-responsive salesTable">
+              <table class="table table-bordered table-striped dt-responsive salesTable">
                   
                 <thead>
 
@@ -254,7 +259,6 @@ if($_SESSION["profile"] == "Special"){
                      <th style="width:30px">Code</th>
                      <th>Description</th>
                      <th>Stock</th>
-                     <th>Price</th>
                      <th>Actions</th>
 
                    </tr> 
@@ -288,9 +292,9 @@ if($_SESSION["profile"] == "Special"){
     <!-- Modal content-->
     <div class="modal-content">
       <form role="form" method="POST">
-        <div class="modal-header" style="background: #DD4B39; color: #fff">
+        <div class="modal-header" style="background: #3c8dbc; color: #fff">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Add Customer</h4>
+          <h4 class="modal-title">Add customer</h4>
         </div>
         <div class="modal-body">
           <div class="box-body">
@@ -299,7 +303,7 @@ if($_SESSION["profile"] == "Special"){
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-user"></i></span>
-                <input class="form-control input-lg" type="text" name="newCustomer" placeholder="Write name" required>
+                <input class="form-control input-lg" type="text" name="newCustomer" placeholder="Enter name" required>
               </div>
             </div>
 
@@ -307,7 +311,7 @@ if($_SESSION["profile"] == "Special"){
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-key"></i></span>
-                <input class="form-control input-lg" type="number" min="0" name="newIdDocument" placeholder="Write your ID" required>
+                <input class="form-control input-lg" type="number" min="0" name="newIdDocument" placeholder="Enter ID" required>
               </div>
             </div>
 
@@ -315,7 +319,7 @@ if($_SESSION["profile"] == "Special"){
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
-                <input class="form-control input-lg" type="text" name="newEmail" placeholder="Email" required>
+                <input class="form-control input-lg" type="email" name="newEmail" placeholder="Enter email" required>
               </div>
             </div>
 
@@ -323,7 +327,7 @@ if($_SESSION["profile"] == "Special"){
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-phone"></i></span>
-                <input class="form-control input-lg" type="text" name="newPhone" placeholder="phone" required>
+                <input class="form-control input-lg" type="tel" name="newPhone" placeholder="Enter phone number" required>
               </div>
             </div>
 
@@ -331,7 +335,7 @@ if($_SESSION["profile"] == "Special"){
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-map-marker"></i></span>
-                <input class="form-control input-lg" type="text" name="newAddress" placeholder="Address" required>
+                <input class="form-control input-lg" type="text" name="newAddress" placeholder="Enter address" required>
               </div>
             </div>
 
@@ -340,15 +344,15 @@ if($_SESSION["profile"] == "Special"){
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                <input class="form-control input-lg" type="text" name="newBirthdate" placeholder="Birth Date" data-inputmask="'alias': 'yyyy/mm/dd'" data-mask required>
+                <input class="form-control input-lg" type="date" name="newBirthdate" placeholder="Enter birthdate" required>
               </div>
             </div>
 
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-success">Save Customer</button>
+          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save</button>
         </div>
       </form>
 

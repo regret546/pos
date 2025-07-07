@@ -17,7 +17,7 @@ if($_SESSION["profile"] == "Special" || $_SESSION["profile"] == "Cashier"){
 
   <section class="content-header">
     
-    <h1><!-- Log on to codeastro.com for more projects! -->
+    <h1>
       
       Sales report
     
@@ -44,7 +44,7 @@ if($_SESSION["profile"] == "Special" || $_SESSION["profile"] == "Cashier"){
           <button type="button" class="btn btn-default" id="daterange-btn2">
            
             <span>
-              <i class="fa fa-calendar"></i> Date range
+              <i class="fa fa-calendar"></i> Date Range
             </span>
 
             <i class="fa fa-caret-down"></i>
@@ -57,9 +57,9 @@ if($_SESSION["profile"] == "Special" || $_SESSION["profile"] == "Cashier"){
 
         <?php
 
-        if(isset($_GET["inicialDate"])){
+        if(isset($_GET["initialDate"])){
 
-          echo '<a href="views/modules/download-report.php?report=report&inicialDate='.$_GET["inicialDate"].'&finalDate='.$_GET["finalDate"].'">';
+          echo '<a href="views/modules/download-report.php?report=report&initialDate='.$_GET["initialDate"].'&finalDate='.$_GET["finalDate"].'">';
 
         }else{
 
@@ -99,27 +99,27 @@ if($_SESSION["profile"] == "Special" || $_SESSION["profile"] == "Cashier"){
 
             ?>
 
-          </div>
+           </div>
 
-          <div class="col-md-6 col-xs-12">
-           
-            <?php
-
-            include "reports/sellers.php";
-
-            ?>
-
-         </div>
-
-         <div class="col-md-6 col-xs-12">
-           
+            <div class="col-md-6 col-xs-12">
+             
             <?php
 
             include "reports/buyers.php";
 
             ?>
 
-         </div>
+           </div>
+
+           <div class="col-md-6 col-xs-12">
+             
+            <?php
+
+            include "reports/sellers.php";
+
+            ?>
+
+           </div>
           
         </div>
 
@@ -128,5 +128,5 @@ if($_SESSION["profile"] == "Special" || $_SESSION["profile"] == "Cashier"){
     </div>
 
   </section>
-	<!-- Log on to codeastro.com for more projects! -->
- </div>
+
+</div>

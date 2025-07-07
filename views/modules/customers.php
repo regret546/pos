@@ -13,7 +13,7 @@ if($_SESSION["profile"] == "Special"){
 }
 
 ?>
-<!-- Log on to codeastro.com for more projects! -->
+
 <div class="content-wrapper">
 
   <section class="content-header">
@@ -28,7 +28,7 @@ if($_SESSION["profile"] == "Special"){
 
       <li><a href="home"><i class="fa fa-dashboard"></i> Home</a></li>
 
-      <li class="active">Dashboard</li>
+      <li class="active">Customers</li>
 
     </ol>
 
@@ -40,9 +40,9 @@ if($_SESSION["profile"] == "Special"){
 
       <div class="box-header with-border">
 
-        <button class="btn btn-success" data-toggle="modal" data-target="#addCustomer">
+        <button class="btn btn-primary" data-toggle="modal" data-target="#addCustomer">
 
-        Add Customer
+          <i class="fa fa-plus"></i> Add customer
 
         </button>
 
@@ -120,7 +120,6 @@ if($_SESSION["profile"] == "Special"){
           ?>
             
           </tbody>
-		<!-- Log on to codeastro.com for more projects! -->
         </table>
 
       </div>
@@ -147,11 +146,11 @@ MODAL ADD CUSTOMER
         MODAL HEADER
         ======================================-->
 
-        <div class="modal-header" style="background: #DD4B39; color: #fff">
+        <div class="modal-header" style="background: #3c8dbc; color: #fff">
           
           <button type="button" class="close" data-dismiss="modal">&times;</button>
           
-          <h4 class="modal-title">Add Customer</h4>
+          <h4 class="modal-title">Add customer</h4>
 
         </div>
 
@@ -168,7 +167,7 @@ MODAL ADD CUSTOMER
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-user"></i></span>
-                <input class="form-control input-lg" type="text" name="newCustomer" placeholder="Write name" required>
+                <input class="form-control input-lg" type="text" name="newCustomer" placeholder="Enter name" required>
               </div>
             </div>
 
@@ -177,7 +176,7 @@ MODAL ADD CUSTOMER
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-key"></i></span>
-                <input class="form-control input-lg" type="number" min="0" name="newIdDocument" placeholder="Write your ID" required>
+                <input class="form-control input-lg" type="number" min="0" name="newIdDocument" placeholder="Enter ID" required>
               </div>
             </div>
 
@@ -186,7 +185,7 @@ MODAL ADD CUSTOMER
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
-                <input class="form-control input-lg" type="text" name="newEmail" placeholder="Email" required>
+                <input class="form-control input-lg" type="email" name="newEmail" placeholder="Enter email" required>
               </div>
             </div>
 
@@ -195,7 +194,7 @@ MODAL ADD CUSTOMER
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-phone"></i></span>
-                <input class="form-control input-lg" type="text" name="newPhone" placeholder="phone" required>
+                <input class="form-control input-lg" type="tel" name="newPhone" placeholder="Enter phone number" required>
               </div>
             </div>
 
@@ -204,7 +203,7 @@ MODAL ADD CUSTOMER
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-map-marker"></i></span>
-                <input class="form-control input-lg" type="text" name="newAddress" placeholder="Address" required>
+                <input class="form-control input-lg" type="text" name="newAddress" placeholder="Enter address" required>
               </div>
             </div>
 
@@ -214,7 +213,7 @@ MODAL ADD CUSTOMER
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                <input class="form-control input-lg" type="text" name="newBirthdate" placeholder="Birth Date" data-inputmask="'alias': 'yyyy/mm/dd'" data-mask required>
+                <input class="form-control input-lg" type="date" name="newBirthdate" placeholder="Enter birthdate" required>
               </div>
             </div>
 
@@ -227,8 +226,8 @@ MODAL ADD CUSTOMER
         ======================================-->
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-success">Save Customer</button>
+          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save</button>
         </div>
       </form>
 
@@ -255,20 +254,20 @@ MODAL EDIT CUSTOMER
 
     <div class="modal-content">
 
-      <form role="form" method="post">
+      <form role="form" method="POST">
 
         <!--=====================================
         MODAL HEADER
         ======================================-->
 
-        <div class="modal-header" style="background:#DD4B39; color:white">
+        <div class="modal-header" style="background: #3c8dbc; color: #fff">
 
           <button type="button" class="close" data-dismiss="modal">&times;</button>
 
-          <h4 class="modal-title">Edit Customer</h4>
+          <h4 class="modal-title">Edit customer</h4>
 
         </div>
-		<!-- Log on to codeastro.com for more projects! -->
+
         <!--=====================================
         MODAL BODY
         ======================================-->
@@ -327,7 +326,7 @@ MODAL EDIT CUSTOMER
               
                 <span class="input-group-addon"><i class="fa fa-phone"></i></span>
 
-                <input type="text" class="form-control input-lg" name="editPhone" id="editPhone" required>
+                <input type="tel" class="form-control input-lg" name="editPhone" id="editPhone" required>
 
               </div>
 
@@ -355,7 +354,7 @@ MODAL EDIT CUSTOMER
               
                 <span class="input-group-addon"><i class="fa fa-calendar"></i></span> 
 
-                <input type="text" class="form-control input-lg" name="editBirthdate" id="editBirthdate"  data-inputmask="'alias': 'yyyy/mm/dd'" data-mask required>
+                <input type="date" class="form-control input-lg" name="editBirthdate" id="editBirthdate"  required>
 
               </div>
 
@@ -371,9 +370,9 @@ MODAL EDIT CUSTOMER
 
         <div class="modal-footer">
 
-          <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
 
-          <button type="submit" class="btn btn-success">Save Changes</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
 
         </div>
 
@@ -389,7 +388,6 @@ MODAL EDIT CUSTOMER
     
 
     </div>
-	<!-- Log on to codeastro.com for more projects! -->
   </div>
 
 </div>

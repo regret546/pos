@@ -4,7 +4,7 @@
 
     <h1>
 
-      Edit Sale
+      Edit sale
 
     </h1>
 
@@ -12,8 +12,8 @@
 
       <li><a href="home"><i class="fa fa-dashboard"></i> Home</a></li>
 
-      <li class="active">Edit Sale</li>
-		<!-- Log on to codeastro.com for more projects! -->
+      <li class="active">Edit sale</li>
+
     </ol>
 
   </section>
@@ -27,7 +27,7 @@
       =============================================-->
       <div class="col-lg-5 col-xs-12">
         
-        <div class="box box-default">
+        <div class="box box-success">
 
           <div class="box-header with-border"></div>
 
@@ -68,12 +68,12 @@
                         
                         <span class="input-group-addon"><i class="fa fa-user"></i></span>
 
-                        <input type="text" class="form-control" name="newSeller" id="newSeller" value="<?php echo $seller["name"]; ?>" readonly>
+                        <input type="text" class="form-control" name="newSeller" value="<?php echo $seller["name"]; ?>" readonly>
 
                         <input type="hidden" name="idSeller" value="<?php echo $seller["id"]; ?>">
 
                       </div>
-					<!-- Log on to codeastro.com for more projects! -->
+
                     </div>
 
 
@@ -100,14 +100,13 @@
                     =            CUSTOMER INPUT           =
                     ======================================-->
                   
-                    <!-- Log on to codeastro.com for more projects! -->
                     <div class="form-group">
 
                       <div class="input-group">
                         
                         <span class="input-group-addon"><i class="fa fa-users"></i></span>
 
-                        <select class="form-control" name="selectCustomer" id="selectCustomer" required>
+                        <select class="form-control" id="selectCustomer" name="selectCustomer" required>
                           
                             <option value="<?php echo $customers["id"]; ?>"><?php echo $customers["name"]; ?></option>
 
@@ -116,9 +115,9 @@
                             $item = null;
                             $value = null;
 
-                            $customers = ControllerCustomers::ctrShowCustomers($item, $value);
+                            $categories = ControllerCustomers::ctrShowCustomers($item, $value);
 
-                            foreach ($customers as $key => $value) {
+                            foreach ($categories as $key => $value) {
                               echo '<option value="'.$value["id"].'">'.$value["name"].'</option>';
                             }
 
@@ -127,10 +126,10 @@
 
                         </select>
 
-                        <span class="input-group-addon"><button type="button" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modalAddCustomer" data-dismiss="modal">Add Customer</button></span>
+                        <span class="input-group-addon"><button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#modalAddCustomer" data-dismiss="modal">Add customer</button></span>
 
                       </div>
-					<!-- Log on to codeastro.com for more projects! -->
+
                     </div>
 
                     <!--=====================================
@@ -141,15 +140,15 @@
                     <div class="form-group row newProduct">
                       <?php
 
-                        $productList = json_decode($sale["products"], true);
+                        $productsList = json_decode($sale["products"], true);
 
-                        foreach ($productList as $key => $value) {
+                        foreach ($productsList as $key => $value) {
 
                           $item = "id";
                           $valueProduct = $value["id"];
                           $order = "id";
 
-                          $answer = ControllerProducts::ctrShowproducts($item, $valueProduct, $order);
+                          $answer = ProductsModel::mdlShowProducts($table, $item, $valueProduct, $order);
 
                           $lastStock = $answer["stock"] + $value["quantity"];
                           
@@ -159,7 +158,7 @@
                     
                                   <div class="input-group">
                         
-                                    <span class="input-group-addon"><button type="button" class="btn btn-danger btn-xs removeProduct" idProduct="'.$value["id"].'"><i class="fa fa-trash"></i></button></span>
+                                    <span class="input-group-addon"><button type="button" class="btn btn-danger btn-xs removeProduct" idProduct="'.$value["id"].'"><i class="fa fa-times"></i></button></span>
 
                                     <input type="text" class="form-control newProductDescription" idProduct="'.$value["id"].'" name="addProduct" value="'.$value["description"].'" readonly required>
 
@@ -177,9 +176,9 @@
 
                                   <div class="input-group">
 
-                                    <span class="input-group-addon">₱</span>
+                                    <span class="input-group-addon"><i class="ion ion-social-usd"></i></span>
                            
-                                    <input type="text" class="form-control newProductPrice" realPrice="'.$answer["sellingPrice"].'" name="newProductPrice" value="'.$value["totalPrice"].'" readonly required>
+                                    <input type="text" class="form-control newProductPrice" realPrice="'.$answer["selling_price"].'" name="newProductPrice" value="'.$value["totalPrice"].'" readonly required>
            
                                   </div>
                        
@@ -193,16 +192,16 @@
 
                     </div>
 
-                    <input type="hidden" name="productsList" id="productsList">
+                    <input type="hidden" id="productsList" name="productsList">
 
                     <!--=====================================
                     =            ADD PRODUCT BUTTON          =
                     ======================================-->
                     
-                    <button type="button" class="btn btn-default hidden-lg btnAddProduct">Add Product</button>
+                    <button type="button" class="btn btn-default hidden-lg btnAddProduct">Add product</button>
 
                     <hr>
-					<!-- Log on to codeastro.com for more projects! -->
+
                     <div class="row">
 
                       <!--=====================================
@@ -215,8 +214,13 @@
                           
                           <thead>
                             
-                            <th>Taxes</th>
-                            <th>Total</th>
+                            <tr>
+                              
+                              <th>Tax</th>
+                              <th>Total</th>
+
+                            </tr>
+
 
                           </thead>
 
@@ -229,22 +233,24 @@
 
                                 <div class="input-group">
                                   
-                                  <input type="number" class="form-control" name="newTaxSale" id="newTaxSale" value="<?php echo $taxPercentage; ?>" min="0" required>
+                                  <input type="number" class="form-control" min="0" id="newTaxSale" name="newTaxSale" value="<?php echo $taxPercentage; ?>" required>
 
                                   <input type="hidden" name="newTaxPrice" id="newTaxPrice" value="<?php echo $sale["tax"]; ?>" required>
+
+                                  <input type="hidden" name="newNetPrice" id="newNetPrice" value="<?php echo $sale["netPrice"]; ?>" required>
 
                                   <span class="input-group-addon"><i class="fa fa-percent"></i></span>
 
                                 </div>
                               </td>
-								<!-- Log on to codeastro.com for more projects! -->
+
                               <td style="width: 50%">
 
                                 <div class="input-group">
                                   
-                                  <span class="input-group-addon">₱</span>
+                                  <span class="input-group-addon"><i class="ion ion-social-usd"></i></span>
                                   
-                                  <input type="number" class="form-control" name="newSaleTotal" id="newSaleTotal" placeholder="00000" totalSale="<?php echo $sale["totalPrice"]; ?>" value="<?php echo $sale["totalPrice"]; ?>" readonly required>
+                                  <input type="number" class="form-control" id="newSaleTotal" name="newSaleTotal" total="<?php echo $sale["netPrice"]; ?>" value="<?php echo $sale["totalPrice"]; ?>" readonly required>
 
                                   <input type="hidden" name="saleTotal" id="saleTotal" value="<?php echo $sale["totalPrice"]; ?>" required>
 
@@ -272,16 +278,16 @@
 
                     <div class="form-group row">
                       
-                      <div class="col-xs-6" style="padding-right: 0">
+                      <div class="col-xs-6">
 
                         <div class="input-group">
                       
                           <select class="form-control" name="newPaymentMethod" id="newPaymentMethod" required>
                             
-                              <option value="">-Select Payment Method-</option>
+                              <option value="">-Select payment method-</option>
                               <option value="cash">Cash</option>
-                              <option value="CC">Credit Card</option>
-                              <option value="DC">Debit Card</option>
+                              <option value="CC">Credit card</option>
+                              <option value="DC">Debit card</option>
 
                           </select>
 
@@ -289,7 +295,9 @@
 
                       </div>
 
-                      <div class="paymentMethodBoxes"></div>
+                      <div class="col-xs-6 paymentMethodBoxes">
+
+                      </div>
 
                       <input type="hidden" name="listPaymentMethod" id="listPaymentMethod" required>
 
@@ -300,9 +308,9 @@
                 </div>
 
             </div>
-			<!-- Log on to codeastro.com for more projects! -->
+
             <div class="box-footer">
-              <button type="submit" class="btn btn-success pull-right">Save Changes</button>
+              <button type="submit" class="btn btn-primary pull-right">Save changes</button>
             </div>
           </form>
 
@@ -325,13 +333,13 @@
 
       <div class="col-lg-7 hidden-md hidden-sm hidden-xs">
         
-          <div class="box box-default">
+          <div class="box box-warning">
             
             <div class="box-header with-border"></div>
 
             <div class="box-body">
               
-              <table class="table table-bordered table-hover table-striped dt-responsive salesTable">
+              <table class="table table-bordered table-striped dt-responsive salesTable">
                   
                 <thead>
 
@@ -343,7 +351,6 @@
                      <th>Description</th>
                      <th>Stock</th>
                      <th>Actions</th>
-					<!-- Log on to codeastro.com for more projects! -->
                    </tr> 
 
                 </thead>
@@ -375,9 +382,9 @@
     <!-- Modal content-->
     <div class="modal-content">
       <form role="form" method="POST">
-        <div class="modal-header" style="background: #DD4B39; color: #fff">
+        <div class="modal-header" style="background: #3c8dbc; color: #fff">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Add Customer</h4>
+          <h4 class="modal-title">Add customer</h4>
         </div>
         <div class="modal-body">
           <div class="box-body">
@@ -394,7 +401,7 @@
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-key"></i></span>
-                <input class="form-control input-lg" type="number" min="0" name="newIdDocument" placeholder="Write your ID" required>
+                <input class="form-control input-lg" type="number" min="0" name="newId" placeholder="Write ID" required>
               </div>
             </div>
 
@@ -434,10 +441,10 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-success">Save Customer</button>
+          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save customer</button>
         </div>
-      </form><!-- Log on to codeastro.com for more projects! -->
+      </form>
 
       <?php
 
@@ -448,6 +455,6 @@
     </div>
 
   </div>
-</div><!-- Log on to codeastro.com for more projects! -->
+</div>
 
 <!--====  End of module add Customer  ====-->

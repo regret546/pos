@@ -38,7 +38,6 @@ foreach ($sales as $key => $valueSales) {
 $dontrepeatnames = array_unique($arrayCashiers);
 
 ?>
-<!-- Log on to codeastro.com for more projects! -->
 
 <!--=====================================
 CASHIERS

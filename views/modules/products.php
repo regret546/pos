@@ -19,15 +19,15 @@ if($_SESSION["profile"] == "Cashier"){
 
     <h1>
 
-      Product Management
+      Products management
 
     </h1>
 
     <ol class="breadcrumb">
-		<!-- Log on to codeastro.com for more projects! -->
+
       <li><a href="home"><i class="fa fa-dashboard"></i> Home</a></li>
 
-      <li class="active">Dashboard</li>
+      <li class="active">Products management</li>
 
     </ol>
 
@@ -39,16 +39,19 @@ if($_SESSION["profile"] == "Cashier"){
 
       <div class="box-header with-border">
 
-        <button class="btn btn-success" data-toggle="modal" data-target="#addProduct"> <i class="fa fa-plus"></i> Add Product</button>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#addProduct">
+
+          Add product
+
+        </button>
 
       </div>
 
       <div class="box-body">
 
-        <table class="table table-bordered table-hover table-striped dt-responsive productsTable" width="100%">
+        <table class="table table-bordered table-striped dt-responsive productsTable" width="100%">
        
           <thead>
-			<!-- Log on to codeastro.com for more projects! -->
            <tr>
              
              <th style="width:10px">#</th>
@@ -57,8 +60,8 @@ if($_SESSION["profile"] == "Cashier"){
              <th>Description</th>
              <th>Category</th>
              <th>Stock</th>
-             <th>Buying Price</th>
-             <th>Selling Price</th>
+             <th>Buying price</th>
+             <th>Selling price</th>
              <th>Date added</th>
              <th>Actions</th>
 
@@ -84,22 +87,21 @@ if($_SESSION["profile"] == "Cashier"){
 
 <!-- Modal -->
 <div id="addProduct" class="modal fade" role="dialog">
-	<!-- Log on to codeastro.com for more projects! -->
   <div class="modal-dialog">
 
     <div class="modal-content">
 
-      <form role="form" method="POST" enctype="multipart/form-data">
+      <form role="form" method="post" enctype="multipart/form-data">
 
         <!--=====================================
         HEADER
         ======================================-->
 
-        <div class="modal-header" style="background: #DD4B39; color: #fff">
+        <div class="modal-header" style="background:#3c8dbc; color:white">
 
           <button type="button" class="close" data-dismiss="modal">&times;</button>
 
-          <h4 class="modal-title">Add Product</h4>
+          <h4 class="modal-title">Add product</h4>
 
         </div>
 
@@ -118,16 +120,16 @@ if($_SESSION["profile"] == "Cashier"){
 
                 <span class="input-group-addon"><i class="fa fa-th"></i></span>
 
-                <select class="form-control input-lg" id="newCategory" name="newCategory">
+                <select class="form-control input-lg" id="newCategory" name="newCategory" required>
 
-                  <option value="">Select Category</option>
+                  <option value="">Select category</option>
 
                    <?php
 
                     $item = null;
-                    $value1 = null;
+                    $value = null;
 
-                    $categories = controllerCategories::ctrShowCategories($item, $value1);
+                    $categories = ControllerCategories::ctrShowCategories($item, $value);
 
                     foreach ($categories as $key => $value) {
                       
@@ -149,7 +151,7 @@ if($_SESSION["profile"] == "Cashier"){
 
                 <span class="input-group-addon"><i class="fa fa-code"></i></span>
 
-                <input class="form-control input-lg" type="text" id="newCode" name="newCode" placeholder="Add Product Code" required>
+                <input class="form-control input-lg" type="text" id="newCode" name="newCode" placeholder="Add Code" required>
 
               </div>
 
@@ -162,7 +164,7 @@ if($_SESSION["profile"] == "Cashier"){
 
                 <span class="input-group-addon"><i class="fa fa-product-hunt"></i></span>
 
-                <input class="form-control input-lg" type="text" id="newDescription" name="newDescription" placeholder="Add Description/Product Name" required>
+                <input class="form-control input-lg" type="text" id="newDescription" name="newDescription" placeholder="Add Description" required>
 
               </div>
 
@@ -184,27 +186,26 @@ if($_SESSION["profile"] == "Cashier"){
             <!-- INPUT BUYING PRICE -->
             <div class="form-group row">
 
-              <div class="col-xs-12 col-sm-6">
+              <div class="col-xs-6">
 
                 <div class="input-group"> 
 
                   <span class="input-group-addon"><i class="fa fa-arrow-up"></i></span> 
 
-                  <input type="number" class="form-control input-lg" id="newBuyingPrice" name="newBuyingPrice" step="any" min="0" placeholder="Buying Price" required>
+                  <input type="number" class="form-control input-lg" id="newBuyingPrice" name="newBuyingPrice" step="any" min="0" placeholder="Buying price" required>
 
                 </div>
 
               </div>
-			  <!-- Log on to codeastro.com for more projects! -->
 
               <!-- INPUT SELLING PRICE -->
-              <div class="col-xs-12 col-sm-6">  
+              <div class="col-xs-6">  
 
                 <div class="input-group"> 
 
                   <span class="input-group-addon"><i class="fa fa-arrow-down"></i></span> 
 
-                  <input type="number" class="form-control input-lg" id="newSellingPrice" name="newSellingPrice" step="any" min="0" placeholder="Selling Price" required>
+                  <input type="number" class="form-control input-lg" id="newSellingPrice" name="newSellingPrice" step="any" min="0" placeholder="Selling price" required>
 
                 </div> 
 
@@ -219,7 +220,7 @@ if($_SESSION["profile"] == "Cashier"){
 
                       <input type="checkbox" class="minimal percentage" checked>
 
-                      Use Percentage
+                      Use percentage
 
                     </label>
 
@@ -249,11 +250,11 @@ if($_SESSION["profile"] == "Cashier"){
 
               <div class="panel">Upload image</div>
 
-              <input id="newProdPhoto" type="file" class="newImage" name="newProdPhoto">
+              <input type="file" class="newImage" name="newProdPhoto">
 
-              <p class="help-block">Maximum size 2Mb</p>
+              <p class="help-block">Maximum size 2MB</p>
 
-              <img src="views/img/products/default/anonymous.png" class="img-thumbnail preview" alt="" width="100px">
+              <img src="views/img/products/default/anonymous.png" class="img-thumbnail preview" width="100px">
 
             </div> 
 
@@ -267,16 +268,15 @@ if($_SESSION["profile"] == "Cashier"){
 
         <div class="modal-footer">
 
-          <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
 
-          <button type="submit" class="btn btn-success">Save Product</button>
+          <button type="submit" class="btn btn-primary">Save product</button>
 
         </div>
 
       </form>
-	  <!-- Log on to codeastro.com for more projects! -->
 
-      <?php
+        <?php
 
           $createProduct = new ControllerProducts();
           $createProduct -> ctrCreateProducts();
@@ -306,7 +306,7 @@ EDIT PRODUCT
         HEADER
         ======================================-->
 
-        <div class="modal-header" style="background:#DD4B39; color:white">
+        <div class="modal-header" style="background:#3c8dbc; color:white">
 
           <button type="button" class="close" data-dismiss="modal">&times;</button>
 
@@ -317,7 +317,6 @@ EDIT PRODUCT
         <!--=====================================
          BODY
         ======================================-->
-		<!-- Log on to codeastro.com for more projects! -->
         <div class="modal-body">
 
           <div class="box-body">
@@ -329,7 +328,7 @@ EDIT PRODUCT
               
                 <span class="input-group-addon"><i class="fa fa-th"></i></span> 
 
-                <select class="form-control input-lg" name="editCategory" readonly required>
+                <select class="form-control input-lg"  name="editCategory" readonly required>
                   
                   <option id="editCategory"></option>
 
@@ -381,7 +380,7 @@ EDIT PRODUCT
              <!-- INPUT FOR BUYING PRICE -->
              <div class="form-group row">
 
-                <div class="col-xs-12 col-sm-6">
+                <div class="col-xs-6">
                 
                   <div class="input-group">
                   
@@ -391,10 +390,10 @@ EDIT PRODUCT
 
                   </div>
 
-                </div><!-- Log on to codeastro.com for more projects! -->
+                </div>
 
                 <!-- INPUT FOR SELLING PRICE -->
-                <div class="col-xs-12 col-sm-6">
+                <div class="col-xs-6">
                 
                   <div class="input-group">
                   
@@ -415,7 +414,7 @@ EDIT PRODUCT
                         
                         <input type="checkbox" class="minimal percentage" checked>
                         
-                        Use Percentage
+                        Use percentage
 
                       </label>
 
@@ -443,11 +442,11 @@ EDIT PRODUCT
             <!-- INPUT TO UPLOAD IMAGE -->
              <div class="form-group">
               
-              <div class="panel">Upload Image</div>
+              <div class="panel">Upload image</div>
 
               <input type="file" class="newImage" name="editImage">
 
-              <p class="help-block">2MB max</p>
+              <p class="help-block">Maximum size 2MB</p>
 
               <img src="views/img/products/default/anonymous.png" class="img-thumbnail preview" width="100px">
 
@@ -465,9 +464,9 @@ EDIT PRODUCT
 
         <div class="modal-footer">
 
-          <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
 
-          <button type="submit" class="btn btn-success">Save Changes</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
 
         </div>
 
@@ -475,7 +474,7 @@ EDIT PRODUCT
 
         <?php
 
-          $editProduct = new controllerProducts();
+          $editProduct = new ControllerProducts();
           $editProduct -> ctrEditProduct();
 
         ?>      
@@ -484,11 +483,11 @@ EDIT PRODUCT
 
   </div>
 
-</div><!-- Log on to codeastro.com for more projects! -->
+</div>
 
 <?php
 
-  $deleteProduct = new controllerProducts();
+  $deleteProduct = new ControllerProducts();
   $deleteProduct -> ctrDeleteProduct();
 
 ?>

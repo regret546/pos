@@ -1,7 +1,6 @@
 <?php
 
-class controllerProducts{
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+class ControllerProducts{
 	/*=============================================
 	SHOW PRODUCTS
 	=============================================*/
@@ -38,7 +37,7 @@ class controllerProducts{
 
 			   	$route = "views/img/products/default/anonymous.png";
 
-			   	if(isset($_FILES["newProdPhoto"]["tmp_name"]) && !empty($_FILES["newProdPhoto"]["tmp_name"])){
+			   	if(isset($_FILES["newProdPhoto"]["tmp_name"])){
 					error_log("Processing uploaded image");
 					list($width, $height) = getimagesize($_FILES["newProdPhoto"]["tmp_name"]);
 
@@ -46,46 +45,54 @@ class controllerProducts{
 					$newHeight = 500;
 
 					/*=============================================
-					we create the directory to save the photo
+					we create the folder to save the picture
 					=============================================*/
 
-					$directory = "views/img/products/".$_POST["newCode"];
+					$folder = "views/img/products/".$_POST["newCode"];
 
-					mkdir($directory, 0755);
+					mkdir($folder, 0755);
 
 					/*=============================================
-					PHP functions depending on the image
+					WE APPLY DEFAULT PHP FUNCTIONS ACCORDING TO THE IMAGE FORMAT
 					=============================================*/
 
 					if($_FILES["newProdPhoto"]["type"] == "image/jpeg"){
 
-						$randomNumber = mt_rand(100,999);
-						
-						$route = "views/img/products/".$_POST["newCode"]."/".$randomNumber.".jpg";
+						/*=============================================
+						WE SAVE THE IMAGE IN THE FOLDER
+						=============================================*/
 
-						$source = imagecreatefromjpeg($_FILES["newProdPhoto"]["tmp_name"]);						
+						$random = mt_rand(100,999);
 
-						$destination = imagecreatetruecolor($newWidth, $newHeight);
+						$route = "views/img/products/".$_POST["newCode"]."/".$random.".jpg";
 
-						imagecopyresized($destination, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+						$origin = imagecreatefromjpeg($_FILES["newProdPhoto"]["tmp_name"]);						
 
-						imagejpeg($destination, $route);
+						$destiny = imagecreatetruecolor($newWidth, $newHeight);
+
+						imagecopyresized($destiny, $origin, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+						imagejpeg($destiny, $route);
 
 					}
 
 					if($_FILES["newProdPhoto"]["type"] == "image/png"){
 
-						$randomNumber = mt_rand(100,999);
-						
-						$route = "views/img/products/".$_POST["newCode"]."/".$randomNumber.".png";
+						/*=============================================
+						WE SAVE THE IMAGE IN THE FOLDER
+						=============================================*/
 
-						$source = imagecreatefrompng($_FILES["newProdPhoto"]["tmp_name"]);						
+						$random = mt_rand(100,999);
 
-						$destination = imagecreatetruecolor($newWidth, $newHeight);
+						$route = "views/img/products/".$_POST["newCode"]."/".$random.".png";
 
-						imagecopyresized($destination, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+						$origin = imagecreatefrompng($_FILES["newProdPhoto"]["tmp_name"]);						
 
-						imagepng($destination, $route);
+						$destiny = imagecreatetruecolor($newWidth, $newHeight);
+
+						imagecopyresized($destiny, $origin, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+						imagepng($destiny, $route);
 
 					}
 
@@ -93,13 +100,12 @@ class controllerProducts{
 
 				$table = "products";
 
-				$data = array("idCategory" => $_POST["newCategory"],
+				$data = array("id_category" => $_POST["newCategory"],
 							   "code" => $_POST["newCode"],
 							   "description" => $_POST["newDescription"],
 							   "stock" => $_POST["newStock"],
-							   "buyingPrice" => $_POST["newBuyingPrice"],
-							   "sellingPrice" => $_POST["newSellingPrice"],
-							   "sales" => 0,
+							   "buying_price" => $_POST["newBuyingPrice"],
+							   "selling_price" => $_POST["newSellingPrice"],
 							   "image" => $route);
 
 				$answer = ProductsModel::mdlAddProduct($table, $data);
@@ -132,7 +138,7 @@ class controllerProducts{
 
 					swal({
 						  type: "error",
-						  title: "¡Product cannot go with empty fields or carry special characters!",
+						  title: "¡Product cannot be empty or have special characters!",
 						  showConfirmButton: true,
 						  confirmButtonText: "Close"
 						  }).then(function(result){
@@ -149,7 +155,6 @@ class controllerProducts{
 		}
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	EDIT PRODUCT
 	=============================================*/
@@ -299,7 +304,6 @@ class controllerProducts{
 		}
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	DELETE PRODUCT
 	=============================================*/
@@ -343,7 +347,6 @@ class controllerProducts{
 		}
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	SHOW ADDING OF THE SALES
 	=============================================*/
