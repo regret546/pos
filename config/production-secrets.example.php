@@ -13,7 +13,7 @@
 
 // Production Database Password
 // Replace 'YOUR_HOSTINGER_DB_PASSWORD' with your actual password from Hostinger
-define('PRODUCTION_DB_PASSWORD', 'YOUR_HOSTINGER_DB_PASSWORD');
+define('Pa07xyav!', 'Pa07xyav!');
 
 // Optional: Additional production settings
 define('PRODUCTION_DEBUG', false);
