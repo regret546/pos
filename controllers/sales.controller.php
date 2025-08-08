@@ -5,7 +5,6 @@ use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 
-
 class ControllerSales{
 	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
@@ -105,6 +104,63 @@ class ControllerSales{
 			$answer = ModelSales::mdlAddSale($table, $data);
 
 			if($answer == "ok"){
+				// Check if this is an installment payment
+				if(strpos($_POST["listPaymentMethod"], "installment") === 0) {
+					
+					// Get number of payments from form data
+					$numberOfPayments = isset($_POST["installmentMonths"]) ? intval($_POST["installmentMonths"]) : 3;
+					$interestRate = isset($_POST["installmentInterest"]) ? floatval($_POST["installmentInterest"]) : 0;
+					
+					// Get the last inserted sale ID
+					$lastSaleId = ModelSales::mdlGetLastInsertId();
+					
+					// Calculate total amount with interest
+					$baseAmount = floatval($_POST["saleTotal"]);
+					$monthlyInterest = $interestRate / 100;
+					$totalAmount = $baseAmount * (1 + ($monthlyInterest * $numberOfPayments));
+					$paymentAmount = $totalAmount / $numberOfPayments;
+					$startDate = date('Y-m-d');
+					
+					try {
+						// Create installment plan directly
+						$stmt = Connection::connect()->prepare("INSERT INTO installment_plans(sale_id, customer_id, total_amount, base_amount, number_of_payments, payment_amount, interest_rate, start_date, status) VALUES (:sale_id, :customer_id, :total_amount, :base_amount, :number_of_payments, :payment_amount, :interest_rate, :start_date, :status)");
+						
+						$stmt->bindParam(":sale_id", $lastSaleId, PDO::PARAM_INT);
+						$stmt->bindParam(":customer_id", $_POST["selectCustomer"], PDO::PARAM_INT);
+						$stmt->bindParam(":total_amount", $totalAmount, PDO::PARAM_STR);
+						$stmt->bindParam(":base_amount", $baseAmount, PDO::PARAM_STR);
+						$stmt->bindParam(":number_of_payments", $numberOfPayments, PDO::PARAM_INT);
+						$stmt->bindParam(":payment_amount", $paymentAmount, PDO::PARAM_STR);
+						$stmt->bindParam(":interest_rate", $interestRate, PDO::PARAM_STR);
+						$stmt->bindParam(":start_date", $startDate, PDO::PARAM_STR);
+						$status = "active";
+						$stmt->bindParam(":status", $status, PDO::PARAM_STR);
+						
+						if($stmt->execute()) {
+							$planId = Connection::connect()->lastInsertId();
+							
+							// Create individual payment records
+							for($i = 1; $i <= $numberOfPayments; $i++) {
+								$dueDate = date('Y-m-d', strtotime($startDate . " + " . $i . " months"));
+								
+								$paymentStmt = Connection::connect()->prepare("INSERT INTO installment_payments(installment_plan_id, payment_number, amount, due_date, status) VALUES (:installment_plan_id, :payment_number, :amount, :due_date, :status)");
+								
+								$paymentStmt->bindParam(":installment_plan_id", $planId, PDO::PARAM_INT);
+								$paymentStmt->bindParam(":payment_number", $i, PDO::PARAM_INT);
+								$paymentStmt->bindParam(":amount", $paymentAmount, PDO::PARAM_STR);
+								$paymentStmt->bindParam(":due_date", $dueDate, PDO::PARAM_STR);
+								$pendingStatus = "pending";
+								$paymentStmt->bindParam(":status", $pendingStatus, PDO::PARAM_STR);
+								
+								$paymentStmt->execute();
+							}
+						}
+						
+					} catch(Exception $e) {
+						// Installment plan creation failed, but sale was successful
+						// Could log error or show warning
+					}
+				}
 
 				echo'<script>
 

@@ -118,7 +118,7 @@ if($_SESSION["profile"] == "Seller"){
 
                 <span class="input-group-addon"><i class="fa fa-th"></i></span>
 
-                <select class="form-control input-lg" id="newCategory" name="newCategory">
+                <select class="form-control input-lg" id="newCategory" name="newCategory" required>
 
                   <option value="">Select Category</option>
 

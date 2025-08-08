@@ -24,6 +24,30 @@ class controllerProducts{
 
 		if(isset($_POST["newDescription"])){
 
+			// Check if category is selected
+			if(empty($_POST["newCategory"]) || $_POST["newCategory"] == ""){
+				
+				echo'<script>
+
+					swal({
+						  type: "error",
+						  title: "Category must be selected!",
+						  text: "Please select a category for the product.",
+						  showConfirmButton: true,
+						  confirmButtonText: "Close"
+						  }).then(function(result){
+							if (result.value) {
+
+							window.location = "products";
+
+							}
+						})
+
+			  	</script>';
+
+			  	return;
+			}
+
 			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["newDescription"]) &&
 			   preg_match('/^[0-9]+$/', $_POST["newStock"]) &&	
 			   preg_match('/^[0-9.]+$/', $_POST["newBuyingPrice"]) &&
@@ -157,6 +181,30 @@ class controllerProducts{
 	static public function ctrEditProduct(){
 
 		if(isset($_POST["editDescription"])){
+
+			// Check if category is selected
+			if(empty($_POST["editCategory"]) || $_POST["editCategory"] == ""){
+				
+				echo'<script>
+
+					swal({
+						  type: "error",
+						  title: "Category must be selected!",
+						  text: "Please select a category for the product.",
+						  showConfirmButton: true,
+						  confirmButtonText: "Close"
+						  }).then(function(result){
+							if (result.value) {
+
+							window.location = "products";
+
+							}
+						})
+
+			  	</script>';
+
+			  	return;
+			}
 
 			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["editDescription"]) &&
 			   preg_match('/^[0-9]+$/', $_POST["editStock"]) &&	

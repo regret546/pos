@@ -73,6 +73,7 @@ class productsTableSales{
 						"'.$products[$i]["code"].'",
 						"'.$products[$i]["description"].'",
 						"'.$stock.'",
+						"₱'.$products[$i]["sellingPrice"].'",
 						"'.$buttons.'"
 					],';
 				}

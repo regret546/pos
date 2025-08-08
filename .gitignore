@@ -1,0 +1,69 @@
+# Environment and Configuration
+config/production.php
+config/local.php
+.env
+.env.local
+.env.production
+
+# Database
+*.sql
+DATABASE FILE/*.sql
+!DATABASE FILE/schema.sql
+
+# Uploads and User Generated Content
+views/img/products/*/
+!views/img/products/default/
+views/img/users/*/
+!views/img/users/default/
+
+# Logs
+*.log
+logs/
+error.log
+access.log
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Composer
+vendor/
+composer.lock
+
+# Development tools
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Sensitive files that should not be in version control
+config/production-secrets.php
+install/
+setup/
+
+# Test files
+test/
+tests/
+phpunit.xml
+*.phpunit.result.cache 

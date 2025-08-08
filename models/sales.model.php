@@ -46,13 +46,14 @@ class ModelSales{
 		DateHelper::init();
 		$saledate = DateHelper::getDateTime();
 
-		$stmt = Connection::connect()->prepare("INSERT INTO $table(code, idSeller, idCustomer, products, tax, totalPrice, paymentMethod, saledate) VALUES (:code, :idSeller, :idCustomer, :products, :tax, :totalPrice, :paymentMethod, :saledate)");
+		$stmt = Connection::connect()->prepare("INSERT INTO $table(code, idSeller, idCustomer, products, tax, netPrice, totalPrice, paymentMethod, saledate) VALUES (:code, :idSeller, :idCustomer, :products, :tax, :netPrice, :totalPrice, :paymentMethod, :saledate)");
 
 		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
 		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
 		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
 		$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
 		$stmt->bindParam(":tax", $data["tax"], PDO::PARAM_STR);
+		$stmt->bindParam(":netPrice", $data["totalPrice"], PDO::PARAM_STR); // Use totalPrice before tax
 		$stmt->bindParam(":totalPrice", $data["totalPrice"], PDO::PARAM_STR);
 		$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
 		$stmt->bindParam(":saledate", $saledate, PDO::PARAM_STR);
@@ -81,13 +82,14 @@ class ModelSales{
 		DateHelper::init();
 		$saledate = DateHelper::getDateTime();
 		
-		$stmt = Connection::connect()->prepare("UPDATE $table SET  idCustomer = :idCustomer, idSeller = :idSeller, products = :products, tax = :tax, totalPrice= :totalPrice, paymentMethod = :paymentMethod, saledate = :saledate WHERE code = :code");
+		$stmt = Connection::connect()->prepare("UPDATE $table SET idCustomer = :idCustomer, idSeller = :idSeller, products = :products, tax = :tax, netPrice = :netPrice, totalPrice = :totalPrice, paymentMethod = :paymentMethod, saledate = :saledate WHERE code = :code");
 
 		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
 		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
 		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
 		$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
 		$stmt->bindParam(":tax", $data["tax"], PDO::PARAM_STR);
+		$stmt->bindParam(":netPrice", $data["totalPrice"], PDO::PARAM_STR); // Use totalPrice before tax
 		$stmt->bindParam(":totalPrice", $data["totalPrice"], PDO::PARAM_STR);
 		$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
 		$stmt->bindParam(":saledate", $saledate, PDO::PARAM_STR);
@@ -185,6 +187,10 @@ class ModelSales{
 
 		}
 
+	}
+
+	static public function mdlGetLastInsertId(){
+		return Connection::connect()->lastInsertId();
 	}
 
 	/*=============================================

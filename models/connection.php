@@ -1,21 +1,62 @@
 <?php
 
-class Connection{
+// Include configuration
+require_once __DIR__ . '/../config/config.php';
 
-	public static function connect(){
+class Connection
+{
+	public static function connect()
+	{
 		try {
+			// Get database configuration based on environment
+			$dbConfig = Config::getDatabaseConfig();
+			
+			// Create PDO connection string
+			$dsn = "mysql:host={$dbConfig['host']};dbname={$dbConfig['database']};charset={$dbConfig['charset']}";
+			
+			// Create PDO instance
 			$link = new PDO(
-				"mysql:host=localhost;dbname=u735263260_pos",
-				"u735263260_jkduran1998",
-				"Vupodan!97"
+				$dsn,
+				$dbConfig['username'],
+				$dbConfig['password']
 			);
+			
+			// Set PDO options
 			$link->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-			$link->exec("set names utf8");
+			$link->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+			$link->exec("set names {$dbConfig['charset']}");
+			
+			// Log successful connection in development
+			if ($dbConfig['environment'] === 'development') {
+				error_log("Connected to {$dbConfig['environment']} database: {$dbConfig['database']}");
+			}
+			
 			return $link;
-		} catch(PDOException $e) {
+			
+		} catch (PDOException $e) {
+			// Log the error
 			error_log("Database connection error: " . $e->getMessage());
-			throw $e;
+			
+			// In development, show detailed error
+			if (Config::getAppConfig()['debug']) {
+				throw new Exception("Database connection failed: " . $e->getMessage());
+			} else {
+				// In production, show generic error
+				throw new Exception("Database connection failed. Please try again later.");
+			}
 		}
 	}
-
+	
+	/**
+	 * Get current environment info (for debugging)
+	 */
+	public static function getEnvironmentInfo()
+	{
+		$dbConfig = Config::getDatabaseConfig();
+		return [
+			'environment' => $dbConfig['environment'],
+			'database' => $dbConfig['database'],
+			'host' => $dbConfig['host']
+		];
+	}
 }

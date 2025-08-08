@@ -138,6 +138,18 @@
 						</a>
 
 					</li>
+
+					<li>
+
+						<a href="installments">
+
+							<i class="fa fa-calendar"></i>
+
+							<span>Installment Plans</span>
+
+						</a>
+
+					</li>
 					
 					
 					<li>

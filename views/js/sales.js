@@ -1,4 +1,76 @@
 /*=============================================
+PAYMENT METHOD HANDLING
+=============================================*/
+
+$(document).ready(function() {
+    console.log('Payment method handler loaded');
+    
+    $('#newPaymentMethod').change(function() {
+        var method = $(this).val();
+        console.log('Payment method changed to:', method);
+        
+        // Clear payment method boxes
+        $('.paymentMethodBoxes').empty();
+        
+        if (method === 'installment') {
+            console.log('Installment selected - adding month options');
+            // Add installment options to payment method boxes
+            var html = '<div class="col-xs-6">' +
+                       '<div class="input-group">' +
+                       '<select class="form-control" name="installmentMonths" id="installmentMonths" required>' +
+                       '<option value="">Select Payment Plan</option>' +
+                       '<option value="3">3 Months</option>' +
+                       '<option value="6">6 Months</option>' +
+                       '<option value="9">9 Months</option>' +
+                       '<option value="12">12 Months</option>' +
+                       '</select>' +
+                       '</div>' +
+                       '</div>' +
+                       '<div class="col-xs-12" id="installmentInterestDiv" style="display: none; margin-top: 10px;">' +
+                       '<div class="input-group">' +
+                       '<span class="input-group-addon"><i class="fa fa-percent"></i></span>' +
+                       '<input type="number" class="form-control" name="installmentInterest" id="installmentInterest" ' +
+                       'min="0" max="100" step="0.01" placeholder="Interest Rate %" required>' +
+                       '</div>' +
+                       '</div>';
+            
+            $('.paymentMethodBoxes').html(html);
+            $('#listPaymentMethod').val('');
+            
+            // Add event handlers for the new elements
+            $('#installmentMonths').change(function() {
+                var months = $(this).val();
+                console.log('Months selected:', months);
+                if (months) {
+                    $('#installmentInterestDiv').show();
+                    $('#listPaymentMethod').val('installment_' + months);
+                } else {
+                    $('#installmentInterestDiv').hide();
+                    $('#listPaymentMethod').val('');
+                }
+            });
+            
+            $('#installmentInterest').on('input', function() {
+                var interest = parseFloat($(this).val()) || 0;
+                var months = $('#installmentMonths').val();
+                var total = parseFloat($('#saleTotal').val()) || 0;
+                
+                if (interest >= 0 && months && total > 0) {
+                    var monthlyInterest = interest / 100;
+                    var totalWithInterest = total * (1 + (monthlyInterest * months));
+                    var monthlyPayment = totalWithInterest / months;
+                    
+                    console.log('Monthly Payment:', monthlyPayment.toFixed(2));
+                }
+            });
+        } else {
+            // For non-installment payments
+            $('#listPaymentMethod').val(method);
+        }
+    });
+});
+
+/*=============================================
 LOAD DYNAMIC PRODUCTS TABLE
 =============================================*/
 

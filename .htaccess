@@ -3,7 +3,7 @@ DirectoryIndex index.php
 # Enable URL rewriting
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /
+    RewriteBase /POS-PHP/
     
     # If the request is not for a file
     RewriteCond %{REQUEST_FILENAME} !-f
@@ -16,7 +16,7 @@ DirectoryIndex index.php
 # Fallback if mod_rewrite is not available
 <IfModule !mod_rewrite.c>
     # Redirect all requests to index.php
-    FallbackResource /index.php
+    FallbackResource /POS-PHP/index.php
 </IfModule>
 
 # Prevent directory listing
@@ -24,7 +24,7 @@ Options -Indexes
 
 # PHP settings
 <IfModule mod_php7.c>
-    php_flag display_errors off
+    php_flag display_errors On
 </IfModule>
 
 # Security headers
