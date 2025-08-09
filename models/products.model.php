@@ -27,7 +27,6 @@ class ProductsModel{
 			return $result ?: array();
 
 		} catch(Exception $e) {
-			error_log("Error in mdlShowProducts: " . $e->getMessage());
 			return array();
 		} finally {
 			if($stmt) {
@@ -43,7 +42,6 @@ class ProductsModel{
 	static public function mdlAddProduct($table, $data){
 		$stmt = null;
 		try {
-			error_log("Attempting to insert product: " . print_r($data, true));
 			$conn = Connection::connect();
 			$stmt = $conn->prepare("INSERT INTO $table(idCategory, code, description, image, stock, buyingPrice, sellingPrice, sales) VALUES (:idCategory, :code, :description, :image, :stock, :buyingPrice, :sellingPrice, :sales)");
 
@@ -57,16 +55,12 @@ class ProductsModel{
 			$stmt->bindParam(":sales", $data["sales"], PDO::PARAM_INT);
 
 			if($stmt->execute()){
-				error_log("Product inserted successfully");
 				return "ok";
 			}
 
-			$errorInfo = $stmt->errorInfo();
-			error_log("Database error in mdlAddProduct: " . print_r($errorInfo, true));
 			return "error";
 
 		} catch(Exception $e) {
-			error_log("Exception in mdlAddProduct: " . $e->getMessage());
 			return "error";
 		} finally {
 			if($stmt) {

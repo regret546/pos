@@ -1,25 +1,26 @@
 <?php
 
- class ControllerCategories{
+class ControllerCategories
+{
 
- 	/*=============================================
+	/*=============================================
 	CREATE CATEGORY
 	=============================================*/
-	
-	static public function ctrCreateCategory(){
 
-		if(isset($_POST['newCategory'])){
+	static public function ctrCreateCategory()
+	{
 
-			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["newCategory"])){
+		if (isset($_POST['newCategory'])) {
+
+			if (preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["newCategory"])) {
 
 				$table = 'categories';
 
 				$data = strtoupper($_POST['newCategory']);
 
 				$answer = ModelCategories::mdlAddCategory($table, $data);
-				// var_dump($answer);
 
-				if($answer == 'ok'){
+				if ($answer == 'ok') {
 
 					echo '<script>
 						
@@ -39,9 +40,7 @@
 						
 					</script>';
 				}
-				
-
-			}else{
+			} else {
 
 				echo '<script>
 						
@@ -59,7 +58,6 @@
 							});
 						
 				</script>';
-				
 			}
 		}
 	}
@@ -68,7 +66,8 @@
 	SHOW CATEGORIES
 	=============================================*/
 
-	static public function ctrShowCategories($item, $value){
+	static public function ctrShowCategories($item, $value)
+	{
 
 		$table = "categories";
 
@@ -81,23 +80,25 @@
 	EDIT CATEGORY
 	=============================================*/
 
-	static public function ctrEditCategory(){
+	static public function ctrEditCategory()
+	{
 
-		if(isset($_POST["editCategory"])){
+		if (isset($_POST["editCategory"])) {
 
-			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["editCategory"])){
+			if (preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["editCategory"])) {
 
 				$table = "categories";
 
-				$data = array("Category"=>strtoupper($_POST["editCategory"]),
-							   "id"=>$_POST["idCategory"]);
+				$data = array(
+					"Category" => strtoupper($_POST["editCategory"]),
+					"id" => $_POST["idCategory"]
+				);
 
 				$answer = ModelCategories::mdlEditCategory($table, $data);
-				// var_dump($answer);
 
-				if($answer == "ok"){
+				if ($answer == "ok") {
 
-					echo'<script>
+					echo '<script>
 
 					swal({
 						  type: "success",
@@ -113,13 +114,10 @@
 								})
 
 					</script>';
-
 				}
+			} else {
 
-
-			}else{
-
-				echo'<script>
+				echo '<script>
 
 					swal({
 						  type: "error",
@@ -135,30 +133,27 @@
 						})
 
 			  	</script>';
-
 			}
-
 		}
-
 	}
 	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	DELETE CATEGORY
 	=============================================*/
 
-	static public function ctrDeleteCategory(){
+	static public function ctrDeleteCategory()
+	{
 
-		if(isset($_GET["idCategory"])){
+		if (isset($_GET["idCategory"])) {
 
-			$table ="categories";
+			$table = "categories";
 			$data = $_GET["idCategory"];
 
 			$answer = ModelCategories::mdlDeleteCategory($table, $data);
-			// var_dump($answer);
 
-			if($answer == "ok"){
+			if ($answer == "ok") {
 
-				echo'<script>
+				echo '<script>
 
 					swal({
 						  type: "success",
@@ -175,9 +170,6 @@
 
 					</script>';
 			}
-		
 		}
-		
 	}
-
 }

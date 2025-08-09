@@ -399,17 +399,14 @@ if($_SESSION["profile"] == "Special"){
 
 <script>
 $(document).ready(function() {
-    console.log('Create sale page loaded - Payment method handler ready');
     
     $('#newPaymentMethod').change(function() {
         var method = $(this).val();
-        console.log('Payment method changed to:', method);
         
         // Clear payment method boxes
         $('.paymentMethodBoxes').empty();
         
         if (method === 'installment') {
-            console.log('Installment selected - adding month options');
             
             // Add installment options to payment method boxes
             var html = '<div class="col-xs-6">' +
@@ -447,7 +444,6 @@ $(document).ready(function() {
             // Add event handlers for the new elements
             $(document).on('change', '#installmentMonths', function() {
                 var months = $(this).val();
-                console.log('Months selected:', months);
                 if (months) {
                     $('#installmentInterestDiv').show();
                     $('#listPaymentMethod').val('installment_' + months);
@@ -458,7 +454,6 @@ $(document).ready(function() {
             });
             
             $(document).on('input', '#installmentInterest', function() {
-                console.log('DEBUG - Interest input detected, calling updateInstallmentSummary');
                 updateInstallmentSummary();
             });
             
@@ -467,10 +462,6 @@ $(document).ready(function() {
                 var interest = parseFloat($('#installmentInterest').val()) || 0;
                 var months = parseInt($('#installmentMonths').val()) || 0;
                 var total = parseFloat($('#saleTotal').val()) || 0;
-                
-                console.log('DEBUG - Interest:', interest, 'Months:', months, 'Total:', total);
-                console.log('DEBUG - saleTotal element exists:', $('#saleTotal').length > 0);
-                console.log('DEBUG - saleTotal value:', $('#saleTotal').val());
                 
                 // Show summary even if total is 0 for demonstration purposes
                 if (interest >= 0 && months > 0) {
@@ -507,8 +498,6 @@ $(document).ready(function() {
                         var summaryDiv = $('#installmentSummaryDiv');
                         var summaryContent = $('#installmentSummary');
                         
-                        console.log('DEBUG - Element exists check:', summaryDiv.length, summaryContent.length);
-                        
                         if (summaryDiv.length > 0 && summaryContent.length > 0) {
                             summaryContent.html(summaryHTML);
                             summaryDiv.show();
@@ -517,13 +506,7 @@ $(document).ready(function() {
                                 'visibility': 'visible',
                                 'opacity': '1'
                             });
-                            
-                            console.log('DEBUG - Summary displayed successfully');
-                            console.log('DEBUG - installmentSummaryDiv visible:', summaryDiv.is(':visible'));
-                            console.log('DEBUG - installmentSummaryDiv height:', summaryDiv.height());
-                            console.log('DEBUG - installmentSummary content length:', summaryContent.html().length);
                         } else {
-                            console.log('DEBUG - Elements not found in DOM, creating manually');
                             // Create the summary div manually and append it
                             var manualSummaryHtml = '<div class="col-xs-12" id="installmentSummaryDiv" style="display: block !important; margin-top: 10px;">' +
                                                   '<div class="alert alert-info" style="margin-bottom: 0; background-color: #f9f9f9; border: 1px solid #ddd; color: #333;">' +
@@ -532,11 +515,9 @@ $(document).ready(function() {
                                                   '</div>' +
                                                   '</div>';
                             $('.paymentMethodBoxes').append(manualSummaryHtml);
-                            console.log('DEBUG - Manual summary created and appended');
                         }
                     }, 200);
                 } else {
-                    console.log('DEBUG - Hiding summary - Invalid input');
                     $('#installmentSummaryDiv').hide();
                 }
             }

@@ -1,7 +1,4 @@
 <?php
-// Enable error reporting for debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 // Start output buffering
 ob_start();
@@ -94,7 +91,6 @@ class productsTable{
 			echo json_encode(array("data" => $data));
 
 		} catch (Exception $e) {
-			error_log("Error in showProductsTable: " . $e->getMessage());
 			echo json_encode(array("data" => array()));
 		}
 	}

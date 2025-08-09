@@ -59,8 +59,6 @@ if($_SESSION["profile"] == "Seller"){
 
                 $categories = ControllerCategories::ctrShowCategories($item, $value);
 
-                // var_dump($categories);
-
                 foreach ($categories as $key => $value) {
 
                   echo '<tr>

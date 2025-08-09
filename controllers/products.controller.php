@@ -53,9 +53,6 @@ class controllerProducts{
 			   preg_match('/^[0-9.]+$/', $_POST["newBuyingPrice"]) &&
 			   preg_match('/^[0-9.]+$/', $_POST["newSellingPrice"])){
 
-				error_log("Product validation passed");
-				error_log("POST data: " . print_r($_POST, true));
-
 		   		/*=============================================
 				VALIDATE IMAGE
 				=============================================*/
@@ -63,7 +60,7 @@ class controllerProducts{
 			   	$route = "views/img/products/default/anonymous.png";
 
 			   	if(isset($_FILES["newProdPhoto"]["tmp_name"]) && !empty($_FILES["newProdPhoto"]["tmp_name"])){
-					error_log("Processing uploaded image");
+
 					list($width, $height) = getimagesize($_FILES["newProdPhoto"]["tmp_name"]);
 
 					$newWidth = 500;

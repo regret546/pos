@@ -1,62 +1,46 @@
 <?php
 
-// Include configuration
-require_once __DIR__ . '/../config/config.php';
-
 class Connection
 {
-	public static function connect()
-	{
-		try {
-			// Get database configuration based on environment
-			$dbConfig = Config::getDatabaseConfig();
-			
-			// Create PDO connection string
-			$dsn = "mysql:host={$dbConfig['host']};dbname={$dbConfig['database']};charset={$dbConfig['charset']}";
-			
-			// Create PDO instance
-			$link = new PDO(
-				$dsn,
-				$dbConfig['username'],
-				$dbConfig['password']
-			);
-			
-			// Set PDO options
-			$link->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-			$link->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-			$link->exec("set names {$dbConfig['charset']}");
-			
-			// Log successful connection in development
-			if ($dbConfig['environment'] === 'development') {
-				error_log("Connected to {$dbConfig['environment']} database: {$dbConfig['database']}");
-			}
-			
-			return $link;
-			
-		} catch (PDOException $e) {
-			// Log the error
-			error_log("Database connection error: " . $e->getMessage());
-			
-			// In development, show detailed error
-			if (Config::getAppConfig()['debug']) {
-				throw new Exception("Database connection failed: " . $e->getMessage());
-			} else {
-				// In production, show generic error
-				throw new Exception("Database connection failed. Please try again later.");
-			}
-		}
-	}
-	
-	/**
-	 * Get current environment info (for debugging)
-	 */
-	public static function getEnvironmentInfo()
-	{
-		$dbConfig = Config::getDatabaseConfig();
-		return [
-			'environment' => $dbConfig['environment'],
-			'database' => $dbConfig['database'],
-			'host' => $dbConfig['host']
-		];
-	}
+    /**
+     * Create and return a PDO connection.
+     * 
+     * Credentials are read from environment variables when available:
+     * - DB_HOST
+     * - DB_NAME
+     * - DB_USER
+     * - DB_PASS
+     * 
+     * Falls back to local development defaults when env vars are not set.
+     */
+    public static function connect()
+    {
+        // Helper to read an env var with fallback; checks getenv, $_ENV, then $_SERVER
+        $env = function (string $key, ?string $default = null): ?string {
+            $value = getenv($key);
+            if ($value === false || $value === '') {
+                $value = $_ENV[$key] ?? $_SERVER[$key] ?? $default;
+            }
+            return $value;
+        };
+
+        $dbHost = $env('DB_HOST', 'localhost');
+        $dbName = $env('DB_NAME', 'pos_sys');
+        $dbUser = $env('DB_USER', 'db_admin');
+        $dbPass = $env('DB_PASS', 'Pa07xyav!');
+
+        $dsn = sprintf('mysql:host=%s;dbname=%s;charset=utf8', $dbHost, $dbName);
+
+        try {
+            $link = new PDO($dsn, $dbUser, $dbPass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]);
+
+            return $link;
+        } catch (PDOException $e) {
+            throw $e;
+        }
+    }
 }
