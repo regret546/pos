@@ -1,30 +1,32 @@
 DirectoryIndex index.php
 
-# Enable URL rewriting
+# Environment variables
+<IfModule mod_env.c>
+    SetEnv DB_HOST "auth-db445.hstgr.io"
+    SetEnv DB_NAME "u735263260_pos"
+    SetEnv DB_USER "u735263260_jkduran199"
+    SetEnv DB_PASS "Pa07xyav!"
+    SetEnv APP_ENV "production"
+</IfModule>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /POS-PHP/
-    
-    # If the request is not for a file
+    RewriteBase /
     RewriteCond %{REQUEST_FILENAME} !-f
-    # If the request is not for a directory
     RewriteCond %{REQUEST_FILENAME} !-d
-    # Route everything through index.php
     RewriteRule ^(.*)$ index.php?route=$1 [QSA,L]
 </IfModule>
 
-# Fallback if mod_rewrite is not available
 <IfModule !mod_rewrite.c>
-    # Redirect all requests to index.php
-    FallbackResource /POS-PHP/index.php
+    FallbackResource /index.php
 </IfModule>
 
-# Prevent directory listing
+# Disable directory listing
 Options -Indexes
 
 # PHP settings
-<IfModule mod_php7.c>
-    php_flag display_errors On
+<IfModule mod_php.c>
+    php_flag display_errors off
 </IfModule>
 
 # Security headers
