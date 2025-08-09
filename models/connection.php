@@ -15,11 +15,11 @@ class Connection
      */
     public static function connect()
     {
-        // Helper to read an env var with fallback; checks getenv, $_ENV, then $_SERVER
+        // Helper to read an env var with fallback; checks getenv, $_ENV, $_SERVER, and REDIRECT_* variants
         $env = function (string $key, ?string $default = null): ?string {
             $value = getenv($key);
             if ($value === false || $value === '') {
-                $value = $_ENV[$key] ?? $_SERVER[$key] ?? $default;
+                $value = $_ENV[$key] ?? $_SERVER[$key] ?? $_SERVER['REDIRECT_'.$key] ?? $default;
             }
             return $value;
         };
