@@ -67,3 +67,5 @@ test/
 tests/
 phpunit.xml
 *.phpunit.result.cache 
+
+.htaccess 

@@ -1,9 +1,25 @@
+# Sample .htaccess for Hostinger production
+# Copy this to your Hostinger public_html/.htaccess and update the DB values
+
 DirectoryIndex index.php
+
+# Environment variables for production (UPDATE THESE VALUES)
+<IfModule mod_env.c>
+    SetEnv DB_HOST "localhost"
+    SetEnv DB_NAME "your_hostinger_db_name"
+    SetEnv DB_USER "your_hostinger_db_user"
+    SetEnv DB_PASS "your_hostinger_db_password"
+    SetEnv APP_ENV "production"
+</IfModule>
 
 # Enable URL rewriting
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /POS-PHP/
+    RewriteBase /
+    
+    # Fallback env vars (if SetEnv doesn't work)
+    # Uncomment and update these if the SetEnv above doesn't work
+    # RewriteRule ^ - [E=DB_HOST:localhost,E=DB_NAME:your_db_name,E=DB_USER:your_db_user,E=DB_PASS:your_db_pass,E=APP_ENV:production]
     
     # If the request is not for a file
     RewriteCond %{REQUEST_FILENAME} !-f
@@ -16,7 +32,7 @@ DirectoryIndex index.php
 # Fallback if mod_rewrite is not available
 <IfModule !mod_rewrite.c>
     # Redirect all requests to index.php
-    FallbackResource /POS-PHP/index.php
+    FallbackResource /index.php
 </IfModule>
 
 # Prevent directory listing
@@ -24,7 +40,7 @@ Options -Indexes
 
 # PHP settings
 <IfModule mod_php7.c>
-    php_flag display_errors On
+    php_flag display_errors off
 </IfModule>
 
 # Security headers
