@@ -33,7 +33,7 @@ class ControllerCategories
 							}).then(function(result){
 								if (result.value) {
 
-									window.location = "categories";
+									window.location = "index.php?route=categories";
 
 								}
 							});
@@ -53,7 +53,7 @@ class ControllerCategories
 							 }).then(function(result){
 
 								if (result.value) {
-									window.location = "categories";
+									window.location = "index.php?route=categories";
 								}
 							});
 						
@@ -108,7 +108,7 @@ class ControllerCategories
 						  }).then(function(result){
 									if (result.value) {
 
-									window.location = "categories";
+									window.location = "index.php?route=categories";
 
 									}
 								})
@@ -127,7 +127,7 @@ class ControllerCategories
 						  }).then(function(result){
 							if (result.value) {
 
-							window.location = "categories";
+							window.location = "index.php?route=categories";
 
 							}
 						})
@@ -163,7 +163,7 @@ class ControllerCategories
 						  }).then(function(result){
 									if (result.value) {
 
-									window.location = "categories";
+									window.location = "index.php?route=categories";
 
 									}
 								})

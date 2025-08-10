@@ -4,7 +4,7 @@ if($_SESSION["profile"] == "Special"){
 
   echo '<script>
 
-    window.location = "home";
+    window.location = "index.php?route=home";
 
   </script>';
 
@@ -23,7 +23,7 @@ if($_SESSION["profile"] == "Special"){
 
     <ol class="breadcrumb">
 
-      <li><a href="home"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li><a href="index.php?route=home"><i class="fa fa-dashboard"></i> Home</a></li>
 
       <li class="active">Dashboard</li>
 

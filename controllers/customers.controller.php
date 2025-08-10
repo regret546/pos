@@ -41,7 +41,7 @@ class ControllerCustomers{
 						  }).then(function(result){
 									if (result.value) {
 
-									window.location = "customers";
+									window.location = "index.php?route=customers";
 
 									}
 								})
@@ -62,7 +62,7 @@ class ControllerCustomers{
 						  }).then(function(result){
 							if (result.value) {
 
-							window.location = "customers";
+							window.location = "index.php?route=customers";
 
 							}
 						})
@@ -127,7 +127,7 @@ class ControllerCustomers{
 						  }).then(function(result){
 									if (result.value) {
 
-									window.location = "customers";
+									window.location = "index.php?route=customers";
 
 									}
 								})
@@ -148,7 +148,7 @@ class ControllerCustomers{
 						  }).then(function(result){
 							if (result.value) {
 
-							window.location = "customers";
+							window.location = "index.php?route=customers";
 
 							}
 						})
@@ -188,7 +188,7 @@ class ControllerCustomers{
 					  }).then(function(result){
 								if (result.value) {
 
-								window.location = "customers";
+								window.location = "index.php?route=customers";
 
 								}
 							})

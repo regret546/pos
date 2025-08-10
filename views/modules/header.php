@@ -2,7 +2,7 @@
 	<!--==========================
 	=            logo            =
 	===========================-->
-	<a href="home" class="logo">
+	<a href="index.php?route=home" class="logo">
 		
 		<!-- mini logo -->
 		<span class="logo-mini">

@@ -174,7 +174,7 @@ class ControllerSales{
 					  }).then((result) => {
 								if (result.value) {
 
-								window.location = "create-sale";
+								window.location = "index.php?route=create-sale";
 
 								}
 							})
@@ -344,7 +344,7 @@ class ControllerSales{
 					  }).then((result) => {
 								if (result.value) {
 
-								window.location = "sales";
+								window.location = "index.php?route=sales";
 
 								}
 							})
@@ -488,7 +488,7 @@ class ControllerSales{
 					  }).then((result) => {
 								if (result.value) {
 
-								window.location = "sales";
+								window.location = "index.php?route=sales";
 
 								}
 							})

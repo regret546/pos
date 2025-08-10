@@ -38,7 +38,7 @@ class controllerProducts{
 						  }).then(function(result){
 							if (result.value) {
 
-							window.location = "products";
+							window.location = "index.php?route=products";
 
 							}
 						})
@@ -137,7 +137,7 @@ class controllerProducts{
 							  }).then(function(result){
 										if (result.value) {
 
-										window.location = "products";
+										window.location = "index.php?route=products";
 
 										}
 									})
@@ -159,7 +159,7 @@ class controllerProducts{
 						  }).then(function(result){
 							if (result.value) {
 
-							window.location = "products";
+							window.location = "index.php?route=products";
 
 							}
 						})
@@ -193,7 +193,7 @@ class controllerProducts{
 						  }).then(function(result){
 							if (result.value) {
 
-							window.location = "products";
+							window.location = "index.php?route=products";
 
 							}
 						})
@@ -311,7 +311,7 @@ class controllerProducts{
 							  }).then(function(result){
 										if (result.value) {
 
-										window.location = "products";
+										window.location = "index.php?route=products";
 
 										}
 									})
@@ -333,7 +333,7 @@ class controllerProducts{
 						  }).then(function(result){
 							if (result.value) {
 
-							window.location = "products";
+							window.location = "index.php?route=products";
 
 							}
 						})
@@ -376,7 +376,7 @@ class controllerProducts{
 					  }).then(function(result){
 								if (result.value) {
 
-								window.location = "products";
+								window.location = "index.php?route=products";
 
 								}
 							})

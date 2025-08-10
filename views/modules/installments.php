@@ -1,7 +1,7 @@
 <?php
 
 if($_SESSION["profile"] == "Special"){
-  echo '<script>window.location = "home";</script>';
+  echo '<script>window.location = "index.php?route=home";</script>';
   return;
 }
 
@@ -14,7 +14,7 @@ if($_SESSION["profile"] == "Special"){
       <small>Control Panel</small>
     </h1>
     <ol class="breadcrumb">
-      <li><a href="home"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li><a href="index.php?route=home"><i class="fa fa-dashboard"></i> Home</a></li>
       <li class="active">Installment Plans</li>
     </ol>
   </section>
@@ -260,7 +260,7 @@ MODAL MARK PAYMENT
                 showConfirmButton: true,
                 confirmButtonText: "Close"
               }).then(function(result){
-                window.location = "installments";
+                window.location = "index.php?route=installments";
               });
             </script>';
             

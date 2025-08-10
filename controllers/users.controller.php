@@ -178,7 +178,7 @@ class ControllerUsers{
 
 							if(result.value){
 
-								window.location = "users";
+								window.location = "index.php?route=users";
 							}
 
 						});
@@ -201,7 +201,7 @@ class ControllerUsers{
 
 							if(result.value){
 
-								window.location = "users";
+								window.location = "index.php?route=users";
 							}
 
 						});
@@ -334,7 +334,7 @@ class ControllerUsers{
 										
 									if (result.value) {
 						
-										window.location = "users";
+										window.location = "index.php?route=users";
 
 									}
 								});
@@ -370,7 +370,7 @@ class ControllerUsers{
 							
 							if (result.value) {
 
-								window.location = "users";
+								window.location = "index.php?route=users";
 							}
 
 						});
@@ -389,7 +389,7 @@ class ControllerUsers{
 									
 								if (result.value) {
 
-									window.location = "users";
+									window.location = "index.php?route=users";
 								
 								}
 
