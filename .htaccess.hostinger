@@ -19,7 +19,7 @@ DirectoryIndex index.php
     
     # Fallback env vars (if SetEnv doesn't work)
     # Uncomment and update these if the SetEnv above doesn't work
-    # RewriteRule ^ - [E=DB_HOST:localhost,E=DB_NAME:your_db_name,E=DB_USER:your_db_user,E=DB_PASS:your_db_pass,E=APP_ENV:production]
+    RewriteRule ^ - [E=DB_HOST:localhost,E=DB_NAME:u735263260_pos,E=DB_USER:u735263260_jkduran199,E=DB_PASS:your_password,E=APP_ENV:production]
     
     # If the request is not for a file
     RewriteCond %{REQUEST_FILENAME} !-f

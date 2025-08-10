@@ -52,7 +52,7 @@ class ControllerUsers{
 
 							echo '<script>
 
-								window.location = "home";
+								window.location = "index.php?route=home";
 
 							</script>';
 
