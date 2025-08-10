@@ -68,4 +68,5 @@ tests/
 phpunit.xml
 *.phpunit.result.cache 
 
-.htaccess 
+.htaccess.hostinger
+.htaccess

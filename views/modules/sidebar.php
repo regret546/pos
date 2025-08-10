@@ -12,7 +12,7 @@
 
 					<li class="active">
 
-						<a href="home">
+						<a href="index.php?route=home">
 
 							<i class="fa fa-home"></i>
 
@@ -33,7 +33,7 @@
 
 					<li>
 
-						<a href="categories">
+						<a href="index.php?route=categories">
 
 							<i class="fa fa-th"></i>
 
@@ -45,7 +45,7 @@
 
 					<li>
 
-						<a href="products">
+						<a href="index.php?route=products">
 
 							<i class="fa fa-product-hunt"></i>
 
@@ -63,7 +63,7 @@
 					
 					<li>
 
-						<a href="customers">
+						<a href="index.php?route=customers">
 
 							<i class="fa fa-users"></i>
 
@@ -101,7 +101,7 @@
 
 					<li>
 
-						<a href="sales">
+						<a href="index.php?route=sales">
 
 							<i class="fa fa-circle"></i>
 
@@ -113,7 +113,7 @@
 
 					<li>
 
-						<a href="create-sale">
+						<a href="index.php?route=create-sale">
 
 							<i class="fa fa-circle"></i>
 
@@ -129,7 +129,7 @@
 
 					echo '<li>
 
-						<a href="reports">
+						<a href="index.php?route=reports">
 
 							<i class="fa fa-file"></i>
 
@@ -141,7 +141,7 @@
 
 					<li>
 
-						<a href="installments">
+						<a href="index.php?route=installments">
 
 							<i class="fa fa-calendar"></i>
 
@@ -154,7 +154,7 @@
 					
 					<li>
 
-						<a href="users">
+						<a href="index.php?route=users">
 
 							<i class="fa fa-user"></i>
 

@@ -10,7 +10,7 @@
 
     <ol class="breadcrumb">
 
-      <li><a href="home"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li><a href="index.php?route=home"><i class="fa fa-dashboard"></i> Home</a></li>
 
       <li class="active">404 Page not found</li>
 
@@ -36,7 +36,7 @@
 
         <p>
 
-          Go to the sidebar en click in any button or go to <a href="home">Home page.</a>
+          Go to the sidebar en click in any button or go to <a href="index.php?route=home">Home page.</a>
 
         </p>
 
