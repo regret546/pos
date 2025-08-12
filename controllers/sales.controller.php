@@ -332,6 +332,79 @@ class ControllerSales{
 
 			if($answer == "ok"){
 
+				// Check if this is an installment payment and update installment plan
+				if(strpos($_POST["listPaymentMethod"], "installment") === 0) {
+					
+					// Get installment data from form
+					$numberOfPayments = isset($_POST["installmentMonths"]) ? intval($_POST["installmentMonths"]) : 3;
+					$interestRate = isset($_POST["installmentInterest"]) ? floatval($_POST["installmentInterest"]) : 0;
+					
+					// Calculate new totals
+					$baseAmount = floatval($_POST["saleTotal"]);
+					$monthlyInterest = $interestRate / 100;
+					$totalAmount = $baseAmount * (1 + ($monthlyInterest * $numberOfPayments));
+					$paymentAmount = $totalAmount / $numberOfPayments;
+					
+					try {
+						// Get the sale ID
+						$saleId = $getSale["id"];
+						
+						// Update existing installment plan
+						$stmt = Connection::connect()->prepare("UPDATE installment_plans SET 
+							total_amount = :total_amount, 
+							base_amount = :base_amount, 
+							number_of_payments = :number_of_payments, 
+							payment_amount = :payment_amount, 
+							interest_rate = :interest_rate 
+							WHERE sale_id = :sale_id");
+						
+						$stmt->bindParam(":total_amount", $totalAmount, PDO::PARAM_STR);
+						$stmt->bindParam(":base_amount", $baseAmount, PDO::PARAM_STR);
+						$stmt->bindParam(":number_of_payments", $numberOfPayments, PDO::PARAM_INT);
+						$stmt->bindParam(":payment_amount", $paymentAmount, PDO::PARAM_STR);
+						$stmt->bindParam(":interest_rate", $interestRate, PDO::PARAM_STR);
+						$stmt->bindParam(":sale_id", $saleId, PDO::PARAM_INT);
+						
+						if($stmt->execute()) {
+							// Get the installment plan ID
+							$planStmt = Connection::connect()->prepare("SELECT id FROM installment_plans WHERE sale_id = :sale_id");
+							$planStmt->bindParam(":sale_id", $saleId, PDO::PARAM_INT);
+							$planStmt->execute();
+							$plan = $planStmt->fetch();
+							
+							if($plan) {
+								$planId = $plan["id"];
+								
+								// Delete existing payment records
+								$deleteStmt = Connection::connect()->prepare("DELETE FROM installment_payments WHERE installment_plan_id = :plan_id");
+								$deleteStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
+								$deleteStmt->execute();
+								
+								// Create new payment records with updated amounts
+								$startDate = date('Y-m-d');
+								for($i = 1; $i <= $numberOfPayments; $i++) {
+									$dueDate = date('Y-m-d', strtotime($startDate . " + " . $i . " months"));
+									
+									$paymentStmt = Connection::connect()->prepare("INSERT INTO installment_payments(installment_plan_id, payment_number, amount, due_date, status) VALUES (:installment_plan_id, :payment_number, :amount, :due_date, :status)");
+									
+									$paymentStmt->bindParam(":installment_plan_id", $planId, PDO::PARAM_INT);
+									$paymentStmt->bindParam(":payment_number", $i, PDO::PARAM_INT);
+									$paymentStmt->bindParam(":amount", $paymentAmount, PDO::PARAM_STR);
+									$paymentStmt->bindParam(":due_date", $dueDate, PDO::PARAM_STR);
+									$pendingStatus = "pending";
+									$paymentStmt->bindParam(":status", $pendingStatus, PDO::PARAM_STR);
+									
+									$paymentStmt->execute();
+								}
+							}
+						}
+						
+					} catch(Exception $e) {
+						// Installment plan update failed, but sale was successful
+						// Could log error or show warning
+					}
+				}
+
 				echo'<script>
 
 				localStorage.removeItem("range");

@@ -5,6 +5,13 @@ PAYMENT METHOD HANDLING
 $(document).ready(function () {
   console.log("Payment method handler loaded");
 
+  // Check if we're on edit-sale page, if so, don't initialize this handler
+  var currentPath = window.location.href;
+  if (currentPath.indexOf("edit-sale") !== -1) {
+    console.log("Edit-sale page detected, skipping global installment handler");
+    return;
+  }
+
   $("#newPaymentMethod").change(function () {
     var method = $(this).val();
     console.log("Payment method changed to:", method);
@@ -532,58 +539,76 @@ $("#newSaleTotal").number(true, 2);
 SELECT PAYMENT METHOD
 =============================================*/
 
-$("#newPaymentMethod").change(function () {
-  var method = $(this).val();
-
-  if (method == "cash") {
-    $(this).parent().parent().removeClass("col-xs-6");
-    $(this).parent().parent().addClass("col-xs-4");
-
-    $(".paymentMethodBoxes").html(
-      '<div class="col-xs-4">' +
-        '<div class="form-group">' +
-        "<label>Customer Cash</label>" +
-        '<div class="input-group">' +
-        '<span class="input-group-addon"><i class="fa fa-money"></i></span>' +
-        '<input type="text" class="form-control" id="newCashValue" placeholder="0.00" required>' +
-        "</div>" +
-        "</div>" +
-        "</div>" +
-        '<div class="col-xs-4" id="getCashChange" style="padding-left:0px">' +
-        '<div class="form-group">' +
-        "<label>Change</label>" +
-        '<div class="input-group">' +
-        '<span class="input-group-addon"><i class="fa fa-money"></i></span>' +
-        '<input type="text" class="form-control" id="newCashChange" name="newCashChange" placeholder="0.00" readonly required>' +
-        "</div>" +
-        "</div>" +
-        "</div>"
+// Only bind this handler if not on edit-sale page
+$(document).ready(function () {
+  var currentPath = window.location.href;
+  if (currentPath.indexOf("edit-sale") !== -1) {
+    console.log(
+      "Edit-sale page detected, skipping secondary payment method handler"
     );
-
-    // Initialize number formatting
-    $("#newCashValue, #newCashChange").number(true, 2);
-
-    // Listen for cash value changes
-    $("#newCashValue").change(function () {
-      updateCashChange();
-    });
-
-    $("#newCashValue").focus();
-  } else {
-    $(this).parent().parent().removeClass("col-xs-4");
-    $(this).parent().parent().addClass("col-xs-6");
-
-    $(".paymentMethodBoxes").html(
-      '<div class="col-xs-6" style="padding-left:0px">' +
-        '<div class="input-group">' +
-        '<input type="text" class="form-control" id="newTransactionCode" placeholder="Transaction code" required>' +
-        '<span class="input-group-addon"><i class="fa fa-lock"></i></span>' +
-        "</div>" +
-        "</div>"
-    );
+    return;
   }
 
-  listMethods();
+  $("#newPaymentMethod").change(function () {
+    var method = $(this).val();
+
+    if (method == "cash") {
+      $(this).parent().parent().removeClass("col-xs-6");
+      $(this).parent().parent().addClass("col-xs-4");
+
+      $(".paymentMethodBoxes").html(
+        '<div class="col-xs-4">' +
+          '<div class="form-group">' +
+          "<label>Customer Cash</label>" +
+          '<div class="input-group">' +
+          '<span class="input-group-addon"><i class="fa fa-money"></i></span>' +
+          '<input type="text" class="form-control" id="newCashValue" placeholder="0.00" required>' +
+          "</div>" +
+          "</div>" +
+          "</div>" +
+          '<div class="col-xs-4" id="getCashChange" style="padding-left:0px">' +
+          '<div class="form-group">' +
+          "<label>Change</label>" +
+          '<div class="input-group">' +
+          '<span class="input-group-addon"><i class="fa fa-money"></i></span>' +
+          '<input type="text" class="form-control" id="newCashChange" name="newCashChange" placeholder="0.00" readonly required>' +
+          "</div>" +
+          "</div>" +
+          "</div>"
+      );
+
+      // Initialize number formatting
+      $("#newCashValue, #newCashChange").number(true, 2);
+
+      // Listen for cash value changes
+      $("#newCashValue").change(function () {
+        updateCashChange();
+      });
+
+      $("#newCashValue").focus();
+    } else if (method == "installment") {
+      // Don't override installment handling - let the installment handler take care of it
+      $(this).parent().parent().removeClass("col-xs-4");
+      $(this).parent().parent().addClass("col-xs-6");
+
+      // The installment handler at the top of this file will handle the content
+      // Don't add transaction code for installments
+    } else {
+      $(this).parent().parent().removeClass("col-xs-4");
+      $(this).parent().parent().addClass("col-xs-6");
+
+      $(".paymentMethodBoxes").html(
+        '<div class="col-xs-6" style="padding-left:0px">' +
+          '<div class="input-group">' +
+          '<input type="text" class="form-control" id="newTransactionCode" placeholder="Transaction code" required>' +
+          '<span class="input-group-addon"><i class="fa fa-lock"></i></span>' +
+          "</div>" +
+          "</div>"
+      );
+    }
+
+    listMethods();
+  });
 });
 
 /*=============================================
@@ -594,6 +619,9 @@ function listMethods() {
 
   if (paymentMethod == "cash") {
     $("#listPaymentMethod").val("cash");
+  } else if (paymentMethod == "installment") {
+    // For installments, the value is set by the installment handler
+    // Don't override it here
   } else {
     var transactionCode = $("#newTransactionCode").val();
     $("#listPaymentMethod").val(paymentMethod + "-" + transactionCode);

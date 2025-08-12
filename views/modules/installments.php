@@ -82,11 +82,14 @@ if($_SESSION["profile"] == "Special"){
                             <td><span class="label label-success">'.$plan["status"].'</span></td>
                             <td>
                               <div class="btn-group">
-                                <button class="btn btn-info btn-xs btnViewPayments" data-toggle="modal" data-target="#modalViewPayments" planId="'.$plan["id"].'" customerName="'.$customerName.'">
+                                <button class="btn btn-info btn-xs btnViewPayments" data-toggle="modal" data-target="#modalViewPayments" planId="'.$plan["id"].'" customerName="'.$customerName.'" title="View Payments">
                                   <i class="fa fa-eye"></i>
                                 </button>
-                                <button class="btn btn-success btn-xs btnMarkPayment" data-toggle="modal" data-target="#modalMarkPayment" planId="'.$plan["id"].'" customerName="'.$customerName.'">
+                                <button class="btn btn-success btn-xs btnMarkPayment" data-toggle="modal" data-target="#modalMarkPayment" planId="'.$plan["id"].'" customerName="'.$customerName.'" title="Mark Payment">
                                   <i class="fa fa-check"></i>
+                                </button>
+                                <button class="btn btn-danger btn-xs btnDeletePlan" data-toggle="modal" data-target="#modalDeletePlan" planId="'.$plan["id"].'" customerName="'.$customerName.'" saleId="'.$plan["sale_id"].'" title="Delete Plan">
+                                  <i class="fa fa-trash"></i>
                                 </button>
                               </div>
                             </td>
@@ -294,6 +297,143 @@ MODAL MARK PAYMENT
   </div>
 </div>
 
+<!--=====================================
+MODAL DELETE INSTALLMENT PLAN
+======================================-->
+
+<div id="modalDeletePlan" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form role="form" method="post">
+        
+        <!--=====================================
+        MODAL HEADER
+        ======================================-->
+        
+        <div class="modal-header" style="background:#dd4b39; color:white">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Delete Installment Plan - <span id="deleteCustomerName"></span></h4>
+        </div>
+        
+        <!--=====================================
+        MODAL BODY
+        ======================================-->
+        
+        <div class="modal-body">
+          <div class="box-body">
+            
+            <div class="alert alert-warning">
+              <h4><i class="icon fa fa-warning"></i> Warning!</h4>
+              You are about to permanently delete this installment plan. This action will:
+              <ul>
+                <li>Delete the installment plan</li>
+                <li>Delete all associated payment records</li>
+                <li>Reset the sale's payment method to regular payment</li>
+              </ul>
+              <strong>This action cannot be undone!</strong>
+            </div>
+            
+            <div id="deletePlanInfo">
+              <p class="text-center">Loading plan information...</p>
+            </div>
+            
+            <input type="hidden" name="deletePlanId" id="deletePlanId">
+            <input type="hidden" name="deleteSaleId" id="deleteSaleId">
+            
+          </div>
+        </div>
+        
+        <!--=====================================
+        MODAL FOOTER
+        ======================================-->
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+          <button type="submit" name="deleteInstallmentPlan" class="btn btn-danger">
+            <i class="fa fa-trash"></i> Delete Plan
+          </button>
+        </div>
+        
+      </form>
+      
+      <?php
+      
+      // Handle delete installment plan
+      if(isset($_POST["deleteInstallmentPlan"])){
+        
+        $planId = $_POST["deletePlanId"];
+        $saleId = $_POST["deleteSaleId"];
+        
+        try {
+          
+          $pdo = Connection::connect();
+          $pdo->beginTransaction();
+          
+          // First, delete all installment payments
+          $stmt = $pdo->prepare("DELETE FROM installment_payments WHERE installment_plan_id = :plan_id");
+          $stmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
+          $paymentsDeleted = $stmt->execute();
+          
+          // Then, delete the installment plan
+          $stmt = $pdo->prepare("DELETE FROM installment_plans WHERE id = :id");
+          $stmt->bindParam(":id", $planId, PDO::PARAM_INT);
+          $planDeleted = $stmt->execute();
+          
+          // Finally, update the sale's payment method to remove installment
+          $stmt = $pdo->prepare("UPDATE sales SET paymentMethod = 'cash' WHERE id = :sale_id");
+          $stmt->bindParam(":sale_id", $saleId, PDO::PARAM_INT);
+          $saleUpdated = $stmt->execute();
+          
+          if($paymentsDeleted && $planDeleted && $saleUpdated) {
+            $pdo->commit();
+            
+            echo '<script>
+              swal({
+                type: "success",
+                title: "Installment plan deleted successfully!",
+                text: "The plan and all related payments have been removed.",
+                showConfirmButton: true,
+                confirmButtonText: "Close"
+              }).then(function(result){
+                window.location = "index.php?route=installments";
+              });
+            </script>';
+            
+          } else {
+            $pdo->rollback();
+            
+            echo '<script>
+              swal({
+                type: "error",
+                title: "Error deleting installment plan",
+                text: "Please try again",
+                showConfirmButton: true,
+                confirmButtonText: "Close"
+              });
+            </script>';
+          }
+          
+        } catch(Exception $e) {
+          $pdo->rollback();
+          
+          echo '<script>
+            swal({
+              type: "error",
+              title: "Database error",
+              text: "Please try again later",
+              showConfirmButton: true,
+              confirmButtonText: "Close"
+            });
+          </script>';
+        }
+      }
+      
+      ?>
+      
+    </div>
+  </div>
+</div>
+
 <script>
 $(document).ready(function() {
   
@@ -349,6 +489,44 @@ $(document).ready(function() {
       },
       error: function() {
         $('#nextPaymentContent').html('<p class="text-danger">Error loading payment information</p>');
+      }
+    });
+  });
+  
+  // Delete plan button
+  $('.btnDeletePlan').click(function() {
+    var planId = $(this).attr('planId');
+    var customerName = $(this).attr('customerName');
+    var saleId = $(this).attr('saleId');
+    
+    $('#deleteCustomerName').text(customerName);
+    $('#deletePlanId').val(planId);
+    $('#deleteSaleId').val(saleId);
+    
+    // Load plan information for the delete confirmation
+    $.ajax({
+      url: 'ajax/get-plan-info.php',
+      method: 'POST',
+      data: { planId: planId },
+      dataType: 'json',
+      success: function(response) {
+        if(response.success) {
+          $('#deletePlanInfo').html(
+            '<div class="alert alert-info">' +
+            '<strong>Plan Details:</strong><br>' +
+            'Total Amount: ₱' + parseFloat(response.plan.total_amount).toFixed(2) + '<br>' +
+            'Monthly Payment: ₱' + parseFloat(response.plan.payment_amount).toFixed(2) + '<br>' +
+            'Number of Payments: ' + response.plan.number_of_payments + '<br>' +
+            'Payments Made: ' + response.paid_count + '/' + response.plan.number_of_payments + '<br>' +
+            'Status: ' + response.plan.status +
+            '</div>'
+          );
+        } else {
+          $('#deletePlanInfo').html('<p class="text-warning">Could not load plan details</p>');
+        }
+      },
+      error: function() {
+        $('#deletePlanInfo').html('<p class="text-warning">Could not load plan details</p>');
       }
     });
   });

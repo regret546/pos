@@ -1,3 +1,33 @@
+<style>
+  /* Custom responsive styles */
+  @media (max-width: 1200px) {
+    .desktop {
+      display: none !important;
+    }
+  }
+  
+  @media (min-width: 1201px) {
+    .table-responsive {
+      overflow-x: visible;
+    }
+    .desktop {
+      display: table-cell !important;
+    }
+  }
+
+  /* Ensure table cells don't wrap content awkwardly */
+  .salesTable td, .salesTable th {
+    white-space: nowrap;
+    min-width: 100px;
+  }
+  
+  /* Make sure image column doesn't get too wide */
+  .salesTable td:nth-child(2) {
+    width: 60px;
+    min-width: 60px;
+  }
+</style>
+<!-- Log on to codeastro.com for more projects! -->
 <div class="content-wrapper">
 
   <section class="content-header">
@@ -54,6 +84,23 @@
 
                     $customers = ControllerCustomers::ctrShowCustomers($itemCustomers, $valueCustomers);
 
+                    // Get installment plan data if payment method is installment
+                    $installmentPlan = null;
+                    
+                    if(strpos($sale["paymentMethod"], "installment") !== false) {
+                        // Try to get installment plan data directly from database
+                        try {
+                            $stmt = Connection::connect()->prepare("SELECT * FROM installment_plans WHERE sale_id = :sale_id");
+                            $stmt->bindParam(":sale_id", $sale["id"], PDO::PARAM_INT);
+                            $stmt->execute();
+                            $installmentPlan = $stmt->fetch();
+                            
+
+                        } catch (Exception $e) {
+                            // If installment data can't be retrieved, continue without it
+                            $installmentPlan = null;
+                        }
+                    }
 
                 ?>
 
@@ -202,33 +249,14 @@
                     <button type="button" class="btn btn-default hidden-lg btnAddProduct">Add Product</button>
 
                     <hr>
-					<!-- Log on to codeastro.com for more projects! -->
+
                     <div class="row">
-
-                      <!--=====================================
-                        TOTAL INPUT
-                      ======================================-->
-
-                      <div class="col-xs-6 pull-right">
-
-                        <div class="form-group">
-                          <label>Total</label>
-                          <div class="input-group">
-                            
-                            <span class="input-group-addon">₱</span>
-                            
-                            <input type="number" class="form-control" name="newSaleTotal" id="newSaleTotal" placeholder="00000" totalSale="<?php echo $sale["totalPrice"]; ?>" value="<?php echo $sale["totalPrice"]; ?>" readonly required>
-
-                            <input type="hidden" name="saleTotal" id="saleTotal" value="<?php echo $sale["totalPrice"]; ?>" required>
-                            <input type="hidden" name="newTaxPrice" id="newTaxPrice" value="<?php echo $sale["tax"]; ?>" required>
-
-                          </div>
-                        </div>
-                        
-                      </div>
-
-                      <hr>
-                      
+                        <!-- Hidden field for total calculation -->
+                        <input type="hidden" name="saleTotal" id="saleTotal" value="<?php echo $sale["totalPrice"]; ?>">
+                        <!-- Hidden field for tax calculation -->
+                        <input type="hidden" name="newTaxPrice" id="newTaxPrice" value="<?php echo $sale["tax"]; ?>">
+                        <!-- Hidden field for tax percentage -->
+                        <input type="hidden" name="newTaxSale" id="newTaxSale" value="0">
                     </div>
 
                     <hr>
@@ -298,26 +326,27 @@
             <div class="box-header with-border"></div>
 
             <div class="box-body">
-              
-              <table class="table table-bordered table-hover table-striped dt-responsive salesTable">
-                  
-                <thead>
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped dt-responsive salesTable">
+                    
+                  <thead>
 
-                   <tr>
-                     
-                     <th style="width:10px">#</th>
-                     <th>Image</th>
-                     <th style="width:30px">Code</th>
-                     <th>Description</th>
-                     <th>Stock</th>
-                     <th>Actions</th>
-					<!-- Log on to codeastro.com for more projects! -->
-                   </tr> 
+                     <tr>
+                       
+                       <th style="width:10px">#</th>
+                       <th>Image</th>
+                       <th style="width:30px">Code</th>
+                       <th>Description</th>
+                       <th>Stock</th>
+                       <th class="desktop">Price</th>
+                       <th class="desktop">Actions</th>
 
-                </thead>
+                     </tr> 
 
-              </table>
+                  </thead>
 
+                </table>
+              </div>
             </div>
 
           </div>
@@ -427,138 +456,235 @@ $(document).ready(function() {
     var currentPaymentMethod = '<?php echo $sale["paymentMethod"]; ?>';
     $('#listPaymentMethod').val(currentPaymentMethod);
     
-    // If it's an installment, trigger the installment display on page load
-    if (currentPaymentMethod.indexOf('installment') !== -1) {
-        $('#newPaymentMethod').trigger('change');
+    // Parse installment data if it exists
+    var isInstallment = currentPaymentMethod.indexOf('installment') !== -1;
+    var installmentMonths = null;
+    var installmentInterest = null;
+    
+    if (isInstallment) {
+        console.log('Installment detected, payment method:', currentPaymentMethod);
+        
+        // Set the payment method dropdown to installment
+        $('#newPaymentMethod').val('installment');
+        
+        // Get installment data from PHP
+        <?php if($installmentPlan && isset($installmentPlan["number_of_payments"])): ?>
+            installmentMonths = '<?php echo $installmentPlan["number_of_payments"]; ?>';
+            installmentInterest = '<?php echo isset($installmentPlan["interest_rate"]) ? $installmentPlan["interest_rate"] : 0; ?>';
+            console.log('Got installment data from PHP - Months:', installmentMonths, 'Interest:', installmentInterest);
+        <?php else: ?>
+            // Fallback: Extract months from the payment method (e.g., "installment_6" -> "6")
+            var parts = currentPaymentMethod.split('_');
+            if (parts.length > 1) {
+                installmentMonths = parts[1];
+            }
+            installmentInterest = 0; // Default to 0 if not available
+            console.log('Using fallback installment data - Months:', installmentMonths, 'Interest:', installmentInterest);
+        <?php endif; ?>
+        
+        // Manually trigger the installment display immediately
+        console.log('Manually showing installment options on page load');
+        
+        // Directly show installment options without waiting for trigger
+        setTimeout(function() {
+            console.log('Calling showInstallmentOptions from page load');
+            showInstallmentOptions();
+        }, 100);
+        
+        // Wait a moment for the DOM to be ready, then set values
+        setTimeout(function() {
+            console.log('Setting installment values after DOM ready');
+            if (installmentMonths) {
+                console.log('Setting months dropdown to:', installmentMonths);
+                $('#installmentMonths').val(installmentMonths);
+                $('#installmentMonths').trigger('change');
+                
+                // Also manually set the listPaymentMethod to ensure it's correct
+                $('#listPaymentMethod').val('installment_' + installmentMonths);
+                console.log('Set listPaymentMethod to:', 'installment_' + installmentMonths);
+            }
+            if (installmentInterest !== null) {
+                console.log('Setting interest rate to:', installmentInterest);
+                $('#installmentInterest').val(installmentInterest);
+                $('#installmentInterest').trigger('input');
+            }
+        }, 300);
+        
+        // Also trigger the change event as backup
+        setTimeout(function() {
+            $('#newPaymentMethod').trigger('change.editSale');
+        }, 100);
     }
     
-    $('#newPaymentMethod').change(function() {
+    // Function to update installment summary
+    function updateInstallmentSummary() {
+        var interest = parseFloat($('#installmentInterest').val()) || 0;
+        var months = parseInt($('#installmentMonths').val()) || 0;
+        var total = parseFloat($('#saleTotal').val()) || 0;
+        
+        // Show summary even if total is 0 for demonstration purposes
+        if (interest >= 0 && months > 0) {
+            var monthlyInterest = interest / 100;
+            
+            if (total > 0) {
+                // Calculate with actual total
+                var totalWithInterest = total * (1 + (monthlyInterest * months));
+                var monthlyPayment = totalWithInterest / months;
+                var totalInterestAmount = totalWithInterest - total;
+                
+                var summaryHTML = '<p><strong>Original Amount:</strong> ₱' + total.toFixed(2) + '</p>' +
+                                '<p><strong>Interest Rate:</strong> ' + interest + '% (' + months + ' months)</p>' +
+                                '<p><strong>Interest Amount:</strong> ₱' + totalInterestAmount.toFixed(2) + '</p>' +
+                                '<p style="font-size: 16px; color: #00a65a;"><strong>Total Amount:</strong> ₱' + totalWithInterest.toFixed(2) + '</p>' +
+                                '<p style="font-size: 16px; color: #3c8dbc;"><strong>Monthly Payment:</strong> ₱' + monthlyPayment.toFixed(2) + '</p>';
+            } else {
+                // Show example with 1000 pesos when no products added yet
+                var exampleTotal = 1000;
+                var totalWithInterest = exampleTotal * (1 + (monthlyInterest * months));
+                var monthlyPayment = totalWithInterest / months;
+                var totalInterestAmount = totalWithInterest - exampleTotal;
+                
+                var summaryHTML = '<div class="alert alert-warning" style="margin-bottom: 10px;"><small><strong>Preview:</strong> Add products to see actual calculation</small></div>' +
+                                '<p><strong>Example (₱1,000):</strong></p>' +
+                                '<p><strong>Interest Rate:</strong> ' + interest + '% (' + months + ' months)</p>' +
+                                '<p><strong>Interest Amount:</strong> ₱' + totalInterestAmount.toFixed(2) + '</p>' +
+                                '<p style="font-size: 16px; color: #00a65a;"><strong>Total Amount:</strong> ₱' + totalWithInterest.toFixed(2) + '</p>' +
+                                '<p style="font-size: 16px; color: #3c8dbc;"><strong>Monthly Payment:</strong> ₱' + monthlyPayment.toFixed(2) + '</p>';
+            }
+            
+            // Wait a moment for DOM to be ready, then update
+            setTimeout(function() {
+                var summaryDiv = $('#installmentSummaryDiv');
+                var summaryContent = $('#installmentSummary');
+                
+                if (summaryDiv.length > 0 && summaryContent.length > 0) {
+                    summaryContent.html(summaryHTML);
+                    summaryDiv.show();
+                    summaryDiv.css({
+                        'display': 'block !important',
+                        'visibility': 'visible',
+                        'opacity': '1'
+                    });
+                } else {
+                    // Create the summary div manually and append it
+                    var manualSummaryHtml = '<div class="col-xs-12" id="installmentSummaryDiv" style="display: block !important; margin-top: 10px;">' +
+                                          '<div class="alert alert-info" style="margin-bottom: 0; background-color: #f9f9f9; border: 1px solid #ddd; color: #333;">' +
+                                          '<strong>Payment Summary:</strong>' +
+                                          '<div id="installmentSummary">' + summaryHTML + '</div>' +
+                                          '</div>' +
+                                          '</div>';
+                    $('.paymentMethodBoxes').append(manualSummaryHtml);
+                }
+            }, 200);
+        } else {
+            $('#installmentSummaryDiv').hide();
+        }
+    }
+    
+    // Function to show installment options
+    function showInstallmentOptions() {
+        console.log('showInstallmentOptions called - creating HTML');
+        
+        // Clear any existing content first
+        $('.paymentMethodBoxes').empty();
+        
+        var html = '<div class="col-xs-6">' +
+                   '<label for="installmentMonths">Payment Plan:</label>' +
+                   '<div class="input-group">' +
+                   '<select class="form-control" name="installmentMonths" id="installmentMonths" required>' +
+                   '<option value="">Select Payment Plan</option>' +
+                   '<option value="3">3 Months</option>' +
+                   '<option value="6">6 Months</option>' +
+                   '<option value="9">9 Months</option>' +
+                   '<option value="12">12 Months</option>' +
+                   '</select>' +
+                   '</div>' +
+                   '</div>' +
+                   '<div class="col-xs-12" id="installmentInterestDiv" style="display: none; margin-top: 10px;">' +
+                   '<label for="installmentInterest">Interest Rate (%):</label>' +
+                   '<div class="input-group">' +
+                   '<span class="input-group-addon"><i class="fa fa-percent"></i></span>' +
+                   '<input type="number" class="form-control" name="installmentInterest" id="installmentInterest" ' +
+                   'min="0" max="100" step="0.01" placeholder="Enter interest rate" required>' +
+                   '</div>' +
+                   '</div>' +
+                   '<div class="col-xs-12" id="installmentSummaryDiv" style="display: none; margin-top: 10px;">' +
+                   '<div class="alert alert-info" style="margin-bottom: 0; background-color: #f9f9f9; border: 1px solid #ddd; color: #333;">' +
+                   '<strong>Payment Summary:</strong>' +
+                   '<div id="installmentSummary">' +
+                   '<p>Calculating...</p>' +
+                   '</div>' +
+                   '</div>' +
+                   '</div>';
+        
+        console.log('Adding installment HTML to paymentMethodBoxes, HTML length:', html.length);
+        $('.paymentMethodBoxes').html(html);
+        $('#listPaymentMethod').val('');
+        
+        // Check if the HTML was actually added
+        var addedContent = $('.paymentMethodBoxes').html();
+        console.log('Installment options added, content length:', addedContent.length);
+        console.log('Months dropdown exists:', $('#installmentMonths').length > 0);
+        
+        // Re-attach event handlers after adding HTML
+        attachInstallmentHandlers();
+    }
+    
+    // Function to attach installment event handlers
+    function attachInstallmentHandlers() {
+        // Remove existing handlers first
+        $(document).off('change', '#installmentMonths');
+        $(document).off('input', '#installmentInterest');
+        
+        // Add new handlers
+        $(document).on('change', '#installmentMonths', function() {
+            var months = $(this).val();
+            console.log('Months changed to:', months);
+            if (months) {
+                $('#installmentInterestDiv').show();
+                $('#listPaymentMethod').val('installment_' + months);
+                console.log('Set listPaymentMethod to:', 'installment_' + months);
+            } else {
+                $('#installmentInterestDiv').hide();
+                $('#listPaymentMethod').val('');
+                console.log('Cleared listPaymentMethod');
+            }
+        });
+        
+        $(document).on('input', '#installmentInterest', function() {
+            updateInstallmentSummary();
+        });
+    }
+    
+    // Remove any existing handlers to prevent conflicts
+    $('#newPaymentMethod').off('change.editSale');
+    
+    $('#newPaymentMethod').on('change.editSale', function() {
         var method = $(this).val();
+        
+        console.log('Edit-sale payment method changed to:', method);
         
         // Clear payment method boxes
         $('.paymentMethodBoxes').empty();
         
         if (method === 'installment') {
-            
-            // Add installment options to payment method boxes
-            var html = '<div class="col-xs-6">' +
-                       '<label for="installmentMonths">Payment Plan:</label>' +
-                       '<div class="input-group">' +
-                       '<select class="form-control" name="installmentMonths" id="installmentMonths" required>' +
-                       '<option value="">Select Payment Plan</option>' +
-                       '<option value="3">3 Months</option>' +
-                       '<option value="6">6 Months</option>' +
-                       '<option value="9">9 Months</option>' +
-                       '<option value="12">12 Months</option>' +
-                       '</select>' +
-                       '</div>' +
-                       '</div>' +
-                       '<div class="col-xs-12" id="installmentInterestDiv" style="display: none; margin-top: 10px;">' +
-                       '<label for="installmentInterest">Interest Rate (%):</label>' +
-                       '<div class="input-group">' +
-                       '<span class="input-group-addon"><i class="fa fa-percent"></i></span>' +
-                       '<input type="number" class="form-control" name="installmentInterest" id="installmentInterest" ' +
-                       'min="0" max="100" step="0.01" placeholder="Enter interest rate" required>' +
-                       '</div>' +
-                       '</div>' +
-                       '<div class="col-xs-12" id="installmentSummaryDiv" style="display: none; margin-top: 10px;">' +
-                       '<div class="alert alert-info" style="margin-bottom: 0; background-color: #f9f9f9; border: 1px solid #ddd; color: #333;">' +
-                       '<strong>Payment Summary:</strong>' +
-                       '<div id="installmentSummary">' +
-                       '<p>Calculating...</p>' +
-                       '</div>' +
-                       '</div>' +
-                       '</div>';
-            
-            $('.paymentMethodBoxes').html(html);
-            $('#listPaymentMethod').val('');
-            
-            // Add event handlers for the new elements
-            $(document).on('change', '#installmentMonths', function() {
-                var months = $(this).val();
-                if (months) {
-                    $('#installmentInterestDiv').show();
-                    $('#listPaymentMethod').val('installment_' + months);
-                } else {
-                    $('#installmentInterestDiv').hide();
-                    $('#listPaymentMethod').val('');
-                }
-            });
-            
-            $(document).on('input', '#installmentInterest', function() {
-                updateInstallmentSummary();
-            });
-            
-            // Function to update installment summary
-            function updateInstallmentSummary() {
-                var interest = parseFloat($('#installmentInterest').val()) || 0;
-                var months = parseInt($('#installmentMonths').val()) || 0;
-                var total = parseFloat($('#saleTotal').val()) || 0;
-                
-                // Show summary even if total is 0 for demonstration purposes
-                if (interest >= 0 && months > 0) {
-                    var monthlyInterest = interest / 100;
-                    
-                    if (total > 0) {
-                        // Calculate with actual total
-                        var totalWithInterest = total * (1 + (monthlyInterest * months));
-                        var monthlyPayment = totalWithInterest / months;
-                        var totalInterestAmount = totalWithInterest - total;
-                        
-                        var summaryHTML = '<p><strong>Original Amount:</strong> ₱' + total.toFixed(2) + '</p>' +
-                                        '<p><strong>Interest Rate:</strong> ' + interest + '% (' + months + ' months)</p>' +
-                                        '<p><strong>Interest Amount:</strong> ₱' + totalInterestAmount.toFixed(2) + '</p>' +
-                                        '<p style="font-size: 16px; color: #00a65a;"><strong>Total Amount:</strong> ₱' + totalWithInterest.toFixed(2) + '</p>' +
-                                        '<p style="font-size: 16px; color: #3c8dbc;"><strong>Monthly Payment:</strong> ₱' + monthlyPayment.toFixed(2) + '</p>';
-                    } else {
-                        // Show example with 1000 pesos when no products added yet
-                        var exampleTotal = 1000;
-                        var totalWithInterest = exampleTotal * (1 + (monthlyInterest * months));
-                        var monthlyPayment = totalWithInterest / months;
-                        var totalInterestAmount = totalWithInterest - exampleTotal;
-                        
-                        var summaryHTML = '<div class="alert alert-warning" style="margin-bottom: 10px;"><small><strong>Preview:</strong> Add products to see actual calculation</small></div>' +
-                                        '<p><strong>Example Amount:</strong> ₱' + exampleTotal.toFixed(2) + '</p>' +
-                                        '<p><strong>Interest Rate:</strong> ' + interest + '% (' + months + ' months)</p>' +
-                                        '<p><strong>Interest Amount:</strong> ₱' + totalInterestAmount.toFixed(2) + '</p>' +
-                                        '<p style="font-size: 16px; color: #00a65a;"><strong>Total Amount:</strong> ₱' + totalWithInterest.toFixed(2) + '</p>' +
-                                        '<p style="font-size: 16px; color: #3c8dbc;"><strong>Monthly Payment:</strong> ₱' + monthlyPayment.toFixed(2) + '</p>';
-                    }
-                    
-                    // Wait a moment for DOM to be ready, then update
-                    setTimeout(function() {
-                        var summaryDiv = $('#installmentSummaryDiv');
-                        var summaryContent = $('#installmentSummary');
-                        
-                        if (summaryDiv.length > 0 && summaryContent.length > 0) {
-                            summaryContent.html(summaryHTML);
-                            summaryDiv.show();
-                        } else {
-                            // Create the summary div manually and append it
-                            var manualSummaryHtml = '<div class="col-xs-12" id="installmentSummaryDiv" style="display: block !important; margin-top: 10px;">' +
-                                                  '<div class="alert alert-info" style="margin-bottom: 0; background-color: #f9f9f9; border: 1px solid #ddd; color: #333;">' +
-                                                  '<strong>Payment Summary:</strong>' +
-                                                  '<div id="installmentSummary">' + summaryHTML + '</div>' +
-                                                  '</div>' +
-                                                  '</div>';
-                            $('.paymentMethodBoxes').append(manualSummaryHtml);
-                        }
-                    }, 200);
-                } else {
-                    $('#installmentSummaryDiv').hide();
-                }
-            }
-            
-            // Also monitor direct changes to saleTotal input
-            $(document).on('change', '#saleTotal', function() {
-                if ($('#newPaymentMethod').val() === 'installment' && $('#installmentSummaryDiv').is(':visible')) {
-                    updateInstallmentSummary();
-                }
-            });
+            console.log('Payment method changed to installment - showing installment options');
+            showInstallmentOptions();
         } else {
             // For non-installment payments
             $('#listPaymentMethod').val(method);
         }
+    });
+    
+    // Add form submission debugging
+    $('.saleForm').on('submit', function(e) {
+        console.log('Form being submitted');
+        console.log('installmentMonths value:', $('#installmentMonths').val());
+        console.log('installmentInterest value:', $('#installmentInterest').val());
+        console.log('listPaymentMethod value:', $('#listPaymentMethod').val());
+        console.log('newPaymentMethod value:', $('#newPaymentMethod').val());
+        
+        // Don't prevent submission, just log
     });
 });
 </script>
