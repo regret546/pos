@@ -494,6 +494,18 @@ function addingTotalPrices() {
   $("#newSaleTotal").val(addingTotalPrice);
   $("#saleTotal").val(addingTotalPrice);
   $("#newSaleTotal").attr("totalSale", addingTotalPrice);
+
+  // Update installment summary if function exists and installment payment is selected
+  if (typeof updateInstallmentSummary === "function") {
+    var paymentMethod =
+      $("#newPaymentMethod").val() || $("#listPaymentMethod").val();
+    if (
+      paymentMethod === "installment" ||
+      (paymentMethod && paymentMethod.indexOf("installment") === 0)
+    ) {
+      updateInstallmentSummary();
+    }
+  }
 }
 
 /*=============================================
@@ -511,6 +523,18 @@ function addTax() {
   $("#newTaxPrice").attr("taxValue", totalTax);
   $("#newSaleTotal").val(totalPrice);
   $("#saleTotal").val(totalPrice);
+
+  // Update installment summary if function exists and installment payment is selected
+  if (typeof updateInstallmentSummary === "function") {
+    var paymentMethod =
+      $("#newPaymentMethod").val() || $("#listPaymentMethod").val();
+    if (
+      paymentMethod === "installment" ||
+      (paymentMethod && paymentMethod.indexOf("installment") === 0)
+    ) {
+      updateInstallmentSummary();
+    }
+  }
 
   // If cash payment is active, update change
   if (
@@ -539,18 +563,43 @@ $("#newSaleTotal").number(true, 2);
 SELECT PAYMENT METHOD
 =============================================*/
 
-// Only bind this handler if not on edit-sale page
+// Global payment method handler for pages other than edit-sale and create-sale
 $(document).ready(function () {
   var currentPath = window.location.href;
-  if (currentPath.indexOf("edit-sale") !== -1) {
+  var isEditSale = currentPath.indexOf("edit-sale") !== -1;
+  var isCreateSale = currentPath.indexOf("create-sale") !== -1;
+
+  console.log("Current path:", currentPath);
+  console.log("isEditSale:", isEditSale);
+  console.log("isCreateSale:", isCreateSale);
+
+  if (isEditSale) {
     console.log(
-      "Edit-sale page detected, skipping secondary payment method handler"
+      "Edit-sale page detected, skipping global payment method handler"
     );
     return;
   }
 
   $("#newPaymentMethod").change(function () {
+    // Skip create-sale for non-cash methods only
+    if (
+      isCreateSale &&
+      $(this).val() !== "cash" &&
+      $(this).val() !== "installment"
+    ) {
+      console.log(
+        "Create-sale page detected, skipping non-cash method:",
+        $(this).val()
+      );
+      return;
+    }
     var method = $(this).val();
+    console.log(
+      "Global handler triggered for method:",
+      method,
+      "on page:",
+      currentPath
+    );
 
     if (method == "cash") {
       $(this).parent().parent().removeClass("col-xs-6");
@@ -594,6 +643,7 @@ $(document).ready(function () {
       // The installment handler at the top of this file will handle the content
       // Don't add transaction code for installments
     } else {
+      // For QRPH/Card payments on other pages (not create-sale or edit-sale)
       $(this).parent().parent().removeClass("col-xs-4");
       $(this).parent().parent().addClass("col-xs-6");
 

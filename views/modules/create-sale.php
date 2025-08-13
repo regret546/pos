@@ -225,8 +225,8 @@ if($_SESSION["profile"] == "Special"){
                             
                               <option value="">-Select Payment Method-</option>
                               <option value="cash">Cash</option>
-                              <option value="CC">Credit Card</option>
-                              <option value="DC">Debit Card</option>
+                              <option value="QRPH">QRPH</option>
+                              <option value="Card">Debit/Credit Card</option>
                               <option value="installment">Installment</option>
 
                           </select>
@@ -398,15 +398,53 @@ if($_SESSION["profile"] == "Special"){
 <!--====  End of module add Customer  ====-->
 
 <script>
+// Function to show transaction field for electronic payments - define globally
+window.showTransactionField = function(paymentMethod) {
+    console.log('showTransactionField called for:', paymentMethod);
+    
+    // Clear any existing content first
+    $('.paymentMethodBoxes').empty();
+    
+    var fieldLabel = paymentMethod === 'QRPH' ? 'QRPH Transaction Code' : 'Card Transaction Code';
+    var placeholder = paymentMethod === 'QRPH' ? 'Enter QRPH transaction reference' : 'Enter card transaction reference';
+    
+    var html = '<div class="col-xs-12">' +
+               '<label for="transactionCode">' + fieldLabel + ':</label>' +
+               '<div class="input-group">' +
+               '<span class="input-group-addon"><i class="fa fa-credit-card"></i></span>' +
+               '<input type="text" class="form-control" name="transactionCode" id="transactionCode" ' +
+               'placeholder="' + placeholder + '" required>' +
+               '</div>' +
+               '</div>';
+    
+    console.log('Adding transaction field HTML to paymentMethodBoxes');
+    $('.paymentMethodBoxes').html(html);
+    
+    // Check if the HTML was actually added
+    var addedContent = $('.paymentMethodBoxes').html();
+    console.log('Transaction field added, content length:', addedContent.length);
+    console.log('Transaction field exists:', $('#transactionCode').length > 0);
+    console.log('PaymentMethodBoxes content:', $('.paymentMethodBoxes').html());
+    console.log('PaymentMethodBoxes visible:', $('.paymentMethodBoxes').is(':visible'));
+    console.log('PaymentMethodBoxes display style:', $('.paymentMethodBoxes').css('display'));
+    console.log('TransactionCode field visible:', $('#transactionCode').is(':visible'));
+    console.log('TransactionCode field display style:', $('#transactionCode').css('display'));
+};
+
 $(document).ready(function() {
     
     $('#newPaymentMethod').change(function() {
         var method = $(this).val();
         
+        console.log('Create-sale payment method changed to:', method);
+        
         // Clear payment method boxes
         $('.paymentMethodBoxes').empty();
         
         if (method === 'installment') {
+            // Reset container classes for installment layout
+            $('#newPaymentMethod').parent().parent().removeClass('col-xs-4');
+            $('#newPaymentMethod').parent().parent().addClass('col-xs-6');
             
             // Add installment options to payment method boxes
             var html = '<div class="col-xs-6">' +
@@ -457,8 +495,8 @@ $(document).ready(function() {
                 updateInstallmentSummary();
             });
             
-            // Function to update installment summary
-            function updateInstallmentSummary() {
+            // Function to update installment summary - make it globally accessible
+            window.updateInstallmentSummary = function() {
                 var interest = parseFloat($('#installmentInterest').val()) || 0;
                 var months = parseInt($('#installmentMonths').val()) || 0;
                 var total = parseFloat($('#saleTotal').val()) || 0;
@@ -540,9 +578,38 @@ $(document).ready(function() {
                     updateInstallmentSummary();
                 }
             });
-        } else {
-            // For non-installment payments
+        } else if (method === 'QRPH' || method === 'Card') {
+            // For QRPH and Card payments, show transaction field
             $('#listPaymentMethod').val(method);
+            
+            // Reset container classes for non-cash layout
+            $('#newPaymentMethod').parent().parent().removeClass('col-xs-4');
+            $('#newPaymentMethod').parent().parent().addClass('col-xs-6');
+            
+            console.log('Electronic payment selected:', method, '- showing transaction field');
+            console.log('About to call showTransactionField for:', method);
+            
+            // Add a small delay to ensure DOM is ready
+            setTimeout(function() {
+                showTransactionField(method);
+                console.log('showTransactionField call completed');
+            }, 50);
+        } else if (method === 'cash') {
+            // Let global handler manage cash payments, don't interfere
+            console.log('Cash payment detected - letting global handler manage it');
+            return;
+        } else {
+            // For other payments, clear all additional options
+            $('#listPaymentMethod').val(method);
+            
+            // Reset container classes for normal layout
+            $('#newPaymentMethod').parent().parent().removeClass('col-xs-4');
+            $('#newPaymentMethod').parent().parent().addClass('col-xs-6');
+            
+            // Clear payment method boxes
+            $('.paymentMethodBoxes').empty();
+            
+            console.log('Other payment selected:', method, '- no additional options needed');
         }
     });
 });

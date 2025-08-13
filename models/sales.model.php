@@ -46,7 +46,9 @@ class ModelSales{
 		DateHelper::init();
 		$saledate = DateHelper::getDateTime();
 
-		$stmt = Connection::connect()->prepare("INSERT INTO $table(code, idSeller, idCustomer, products, tax, netPrice, totalPrice, paymentMethod, saledate) VALUES (:code, :idSeller, :idCustomer, :products, :tax, :netPrice, :totalPrice, :paymentMethod, :saledate)");
+		// Use the same connection object for both insert and lastInsertId
+		$pdo = Connection::connect();
+		$stmt = $pdo->prepare("INSERT INTO $table(code, idSeller, idCustomer, products, tax, netPrice, totalPrice, paymentMethod, saledate) VALUES (:code, :idSeller, :idCustomer, :products, :tax, :netPrice, :totalPrice, :paymentMethod, :saledate)");
 
 		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
 		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
@@ -60,11 +62,18 @@ class ModelSales{
 
 		if($stmt->execute()){
 
-			return "ok";
+			// Get the inserted ID from the same connection object
+			$insertId = $pdo->lastInsertId();
+			
+			// Log for debugging
+			error_log("Sale inserted with ID: " . $insertId);
+			
+			return array("status" => "ok", "id" => intval($insertId));
 
 		}else{
 
-			return "error";
+			error_log("Sale insertion failed");
+			return array("status" => "error");
 		
 		}
 

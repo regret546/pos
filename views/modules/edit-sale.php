@@ -275,9 +275,11 @@
                             
                               <option value="">-Select Payment Method-</option>
                               <option value="cash" <?php if($sale["paymentMethod"] == "cash") echo "selected"; ?>>Cash</option>
-                              <option value="CC" <?php if($sale["paymentMethod"] == "CC") echo "selected"; ?>>Credit Card</option>
-                              <option value="DC" <?php if($sale["paymentMethod"] == "DC") echo "selected"; ?>>Debit Card</option>
-                              <option value="installment" <?php if(strpos($sale["paymentMethod"], "installment") !== false) echo "selected"; ?>>Installment</option>
+                              <option value="QRPH" <?php if($sale["paymentMethod"] == "QRPH" || $sale["paymentMethod"] == "CC") echo "selected"; ?>>QRPH</option>
+                              <option value="Card" <?php if($sale["paymentMethod"] == "Card" || $sale["paymentMethod"] == "DC") echo "selected"; ?>>Debit/Credit Card</option>
+                              <?php if(strpos($sale["paymentMethod"], "installment") !== false): ?>
+                              <option value="installment" selected>Installment</option>
+                              <?php endif; ?>
 
                           </select>
 
@@ -450,6 +452,34 @@
 <!--====  End of module add Customer  ====-->
 
 <script>
+// Function to show transaction field for electronic payments - define globally
+window.showTransactionField = function(paymentMethod) {
+    console.log('showTransactionField called for:', paymentMethod);
+    
+    // Clear any existing content first
+    $('.paymentMethodBoxes').empty();
+    
+    var fieldLabel = paymentMethod === 'QRPH' ? 'QRPH Transaction Code' : 'Card Transaction Code';
+    var placeholder = paymentMethod === 'QRPH' ? 'Enter QRPH transaction reference' : 'Enter card transaction reference';
+    
+    var html = '<div class="col-xs-12">' +
+               '<label for="transactionCode">' + fieldLabel + ':</label>' +
+               '<div class="input-group">' +
+               '<span class="input-group-addon"><i class="fa fa-credit-card"></i></span>' +
+               '<input type="text" class="form-control" name="transactionCode" id="transactionCode" ' +
+               'placeholder="' + placeholder + '" required>' +
+               '</div>' +
+               '</div>';
+    
+    console.log('Adding transaction field HTML to paymentMethodBoxes');
+    $('.paymentMethodBoxes').html(html);
+    
+    // Check if the HTML was actually added
+    var addedContent = $('.paymentMethodBoxes').html();
+    console.log('Transaction field added, content length:', addedContent.length);
+    console.log('Transaction field exists:', $('#transactionCode').length > 0);
+};
+
 $(document).ready(function() {
     
     // Set initial payment method value
@@ -514,10 +544,32 @@ $(document).ready(function() {
         setTimeout(function() {
             $('#newPaymentMethod').trigger('change.editSale');
         }, 100);
-    }
+     } else {
+         // For non-installment sales, set the correct payment method and handle transaction fields
+         console.log('Non-installment sale detected, payment method:', currentPaymentMethod);
+         console.log('Installment option has been removed from dropdown for non-installment sales');
+         $('#newPaymentMethod').val(currentPaymentMethod);
+         
+         // Clear any potential installment elements (shouldn't exist but just in case)
+         $('.paymentMethodBoxes').empty();
+         
+         // Check if this is QRPH or Card payment that needs transaction field
+         if (currentPaymentMethod === 'QRPH' || currentPaymentMethod === 'Card') {
+             console.log('Electronic payment detected, will show transaction field');
+         }
+         
+         // Explicitly ensure dropdown shows the correct value
+         console.log('Setting dropdown to non-installment value:', currentPaymentMethod);
+         $('#newPaymentMethod').trigger('change');
+         
+         // Also trigger the specific change event
+         setTimeout(function() {
+             $('#newPaymentMethod').trigger('change.editSale');
+         }, 100);
+     }
     
-    // Function to update installment summary
-    function updateInstallmentSummary() {
+    // Function to update installment summary - make it globally accessible
+    window.updateInstallmentSummary = function() {
         var interest = parseFloat($('#installmentInterest').val()) || 0;
         var months = parseInt($('#installmentMonths').val()) || 0;
         var total = parseFloat($('#saleTotal').val()) || 0;
@@ -581,8 +633,10 @@ $(document).ready(function() {
         }
     }
     
-    // Function to show installment options
-    function showInstallmentOptions() {
+
+     
+     // Function to show installment options
+     function showInstallmentOptions() {
         console.log('showInstallmentOptions called - creating HTML');
         
         // Clear any existing content first
@@ -644,6 +698,7 @@ $(document).ready(function() {
                 $('#installmentInterestDiv').show();
                 $('#listPaymentMethod').val('installment_' + months);
                 console.log('Set listPaymentMethod to:', 'installment_' + months);
+                updateInstallmentSummary();
             } else {
                 $('#installmentInterestDiv').hide();
                 $('#listPaymentMethod').val('');
@@ -663,17 +718,94 @@ $(document).ready(function() {
         var method = $(this).val();
         
         console.log('Edit-sale payment method changed to:', method);
+        console.log('Payment method boxes before clear:', $('.paymentMethodBoxes').html());
         
         // Clear payment method boxes
         $('.paymentMethodBoxes').empty();
+        console.log('Payment method boxes after clear:', $('.paymentMethodBoxes').html());
         
-        if (method === 'installment') {
-            console.log('Payment method changed to installment - showing installment options');
-            showInstallmentOptions();
-        } else {
-            // For non-installment payments
-            $('#listPaymentMethod').val(method);
-        }
+         if (method === 'installment') {
+             // Reset container classes for installment layout
+             $('#newPaymentMethod').parent().parent().removeClass('col-xs-4');
+             $('#newPaymentMethod').parent().parent().addClass('col-xs-6');
+             
+             console.log('Payment method changed to installment - showing installment options');
+             showInstallmentOptions();
+         } else if (method === 'QRPH' || method === 'Card') {
+             // For QRPH and Card payments, show transaction field
+             $('#listPaymentMethod').val(method);
+             
+             // Reset container classes for non-cash layout
+             $('#newPaymentMethod').parent().parent().removeClass('col-xs-4');
+             $('#newPaymentMethod').parent().parent().addClass('col-xs-6');
+             
+             console.log('Electronic payment selected:', method, '- showing transaction field');
+             showTransactionField(method);
+         } else if (method === 'cash') {
+             // For cash payments, show cash value and change fields
+             $('#listPaymentMethod').val(method);
+             
+             // Adjust container classes for cash layout
+             $('#newPaymentMethod').parent().parent().removeClass('col-xs-6');
+             $('#newPaymentMethod').parent().parent().addClass('col-xs-4');
+             
+             // Create cash payment fields
+             var cashHtml = '<div class="col-xs-4">' +
+                           '<div class="form-group">' +
+                           '<label>Customer Cash</label>' +
+                           '<div class="input-group">' +
+                           '<span class="input-group-addon"><i class="fa fa-money"></i></span>' +
+                           '<input type="text" class="form-control" id="newCashValue" placeholder="0.00" required>' +
+                           '</div>' +
+                           '</div>' +
+                           '</div>' +
+                           '<div class="col-xs-4" id="getCashChange" style="padding-left:0px">' +
+                           '<div class="form-group">' +
+                           '<label>Change</label>' +
+                           '<div class="input-group">' +
+                           '<span class="input-group-addon"><i class="fa fa-money"></i></span>' +
+                           '<input type="text" class="form-control" id="newCashChange" name="newCashChange" placeholder="0.00" readonly required>' +
+                           '</div>' +
+                           '</div>' +
+                           '</div>';
+             
+             $('.paymentMethodBoxes').html(cashHtml);
+             
+             // Initialize number formatting and change calculation
+             $("#newCashValue, #newCashChange").number(true, 2);
+             
+             // Listen for cash value changes
+             $("#newCashValue").change(function () {
+                 var cashValue = parseFloat($(this).val()) || 0;
+                 var totalPrice = parseFloat($('#saleTotal').val()) || 0;
+                 var change = cashValue - totalPrice;
+                 
+                 if (change >= 0) {
+                     $('#newCashChange').val(change.toFixed(2));
+                 } else {
+                     $('#newCashChange').val('0.00');
+                 }
+             });
+             
+             // Focus on cash input
+             setTimeout(function() {
+                 $("#newCashValue").focus();
+             }, 100);
+             
+             console.log('Cash payment selected:', method, '- showing cash fields');
+         } else {
+             // For other payments, clear all additional options
+             $('#listPaymentMethod').val(method);
+             
+             // Reset container classes for normal layout
+             $('#newPaymentMethod').parent().parent().removeClass('col-xs-4');
+             $('#newPaymentMethod').parent().parent().addClass('col-xs-6');
+             
+             // Clear payment method boxes
+             $('.paymentMethodBoxes').empty();
+             
+             console.log('Other payment selected:', method, '- no additional options needed');
+         }
     });
     
     // Add form submission debugging

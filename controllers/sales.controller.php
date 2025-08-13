@@ -103,16 +103,35 @@ class ControllerSales{
 
 			$answer = ModelSales::mdlAddSale($table, $data);
 
-			if($answer == "ok"){
+			if((is_array($answer) && $answer["status"] == "ok") || $answer == "ok"){
+				// Debug: Log the payment method
+				error_log("Sale created successfully. Payment method: " . $_POST["listPaymentMethod"]);
+				
 				// Check if this is an installment payment
 				if(strpos($_POST["listPaymentMethod"], "installment") === 0) {
+					error_log("Installment payment detected. Starting installment plan creation...");
 					
 					// Get number of payments from form data
 					$numberOfPayments = isset($_POST["installmentMonths"]) ? intval($_POST["installmentMonths"]) : 3;
 					$interestRate = isset($_POST["installmentInterest"]) ? floatval($_POST["installmentInterest"]) : 0;
 					
-					// Get the last inserted sale ID
-					$lastSaleId = ModelSales::mdlGetLastInsertId();
+					// Get the sale ID - handle both new array format and old string format
+					if(is_array($answer) && isset($answer["id"])) {
+						$saleId = $answer["id"];
+						error_log("Using sale ID from array: " . $saleId);
+					} else {
+						// Fallback to old method for backward compatibility
+						$saleId = ModelSales::mdlGetLastInsertId();
+						error_log("Using sale ID from lastInsertId: " . $saleId);
+					}
+					
+					error_log("Sale ID: " . $saleId . ", Months: " . $numberOfPayments . ", Interest: " . $interestRate);
+					
+					// Ensure we have a valid sale ID
+					if(!$saleId || $saleId <= 0) {
+						error_log("Warning: Invalid sale ID returned: " . $saleId);
+					} else {
+						error_log("Valid sale ID found, creating installment plan...");
 					
 					// Calculate total amount with interest
 					$baseAmount = floatval($_POST["saleTotal"]);
@@ -122,10 +141,20 @@ class ControllerSales{
 					$startDate = date('Y-m-d');
 					
 					try {
+						// Check if installment_plans table exists
+						$checkTable = Connection::connect()->prepare("SHOW TABLES LIKE 'installment_plans'");
+						$checkTable->execute();
+						$tableExists = $checkTable->fetch();
+						
+						if(!$tableExists) {
+							error_log("ERROR: installment_plans table does not exist!");
+							throw new Exception("Installment plans table not found");
+						}
+						
 						// Create installment plan directly
 						$stmt = Connection::connect()->prepare("INSERT INTO installment_plans(sale_id, customer_id, total_amount, base_amount, number_of_payments, payment_amount, interest_rate, start_date, status) VALUES (:sale_id, :customer_id, :total_amount, :base_amount, :number_of_payments, :payment_amount, :interest_rate, :start_date, :status)");
 						
-						$stmt->bindParam(":sale_id", $lastSaleId, PDO::PARAM_INT);
+						$stmt->bindParam(":sale_id", $saleId, PDO::PARAM_INT);
 						$stmt->bindParam(":customer_id", $_POST["selectCustomer"], PDO::PARAM_INT);
 						$stmt->bindParam(":total_amount", $totalAmount, PDO::PARAM_STR);
 						$stmt->bindParam(":base_amount", $baseAmount, PDO::PARAM_STR);
@@ -138,6 +167,7 @@ class ControllerSales{
 						
 						if($stmt->execute()) {
 							$planId = Connection::connect()->lastInsertId();
+							error_log("Installment plan created successfully with ID: " . $planId);
 							
 							// Create individual payment records
 							for($i = 1; $i <= $numberOfPayments; $i++) {
@@ -153,13 +183,18 @@ class ControllerSales{
 								$paymentStmt->bindParam(":status", $pendingStatus, PDO::PARAM_STR);
 								
 								$paymentStmt->execute();
+								error_log("Created payment " . $i . "/" . $numberOfPayments . " for plan ID: " . $planId);
 							}
+						} else {
+							error_log("Failed to create installment plan for sale ID: " . $saleId);
 						}
 						
 					} catch(Exception $e) {
 						// Installment plan creation failed, but sale was successful
 						// Could log error or show warning
+						error_log("Installment plan creation failed: " . $e->getMessage());
 					}
+					} // End of valid sale ID check
 				}
 
 				echo'<script>
@@ -234,20 +269,20 @@ class ControllerSales{
 					$tableProducts = "products";
 
 					$item = "id";
-					$value = $value["id"];
+					$valueProductId = $value["id"];
 					$order = "id";
 
-					$getProduct = ProductsModel::mdlShowProducts($tableProducts, $item, $value, $order);
+					$getProduct = ProductsModel::mdlShowProducts($tableProducts, $item, $valueProductId, $order);
 
 					$item1a = "sales";
 					$value1a = $getProduct["sales"] - $value["quantity"];
 
-					$newSales = ProductsModel::mdlUpdateProduct($tableProducts, $item1a, $value1a, $value);
+					$newSales = ProductsModel::mdlUpdateProduct($tableProducts, $item1a, $value1a, $valueProductId);
 
 					$item1b = "stock";
 					$value1b = $value["quantity"] + $getProduct["stock"];
 
-					$stockNew = ProductsModel::mdlUpdateProduct($tableProducts, $item1b, $value1b, $value);
+					$stockNew = ProductsModel::mdlUpdateProduct($tableProducts, $item1b, $value1b, $valueProductId);
 
 				}
 
@@ -492,7 +527,7 @@ class ControllerSales{
 			}else{
 
 				$item = "lastPurchase";
-				$value = "0000-00-00 00:00:00";
+				$value = "1970-01-01 00:00:00";
 				$valueIdCustomer = $getSale["idCustomer"];
 
 				$customerPurchases = ModelCustomers::mdlUpdateCustomer($tableCustomers, $item, $value, $valueIdCustomer);
@@ -542,6 +577,32 @@ class ControllerSales{
 			$value1a = $getCustomer["purchases"] - array_sum($totalPurchasedProducts);
 
 			$customerPurchases = ModelCustomers::mdlUpdateCustomer($tableCustomers, $item1a, $value1a, $valueCustomer);
+
+			/*=============================================
+			Delete Installment Plan if Payment Method is Installment
+			=============================================*/
+
+			// Check if this sale has an installment payment method
+			if(strpos($getSale["paymentMethod"], "installment") === 0) {
+				
+				try {
+					// First, delete all payment records associated with this installment plan
+					$deletePaymentsStmt = Connection::connect()->prepare("DELETE installment_payments FROM installment_payments 
+						INNER JOIN installment_plans ON installment_payments.installment_plan_id = installment_plans.id 
+						WHERE installment_plans.sale_id = :sale_id");
+					$deletePaymentsStmt->bindParam(":sale_id", $_GET["idSale"], PDO::PARAM_INT);
+					$deletePaymentsStmt->execute();
+					
+					// Then, delete the installment plan itself
+					$deletePlanStmt = Connection::connect()->prepare("DELETE FROM installment_plans WHERE sale_id = :sale_id");
+					$deletePlanStmt->bindParam(":sale_id", $_GET["idSale"], PDO::PARAM_INT);
+					$deletePlanStmt->execute();
+					
+				} catch(Exception $e) {
+					// Log error but don't stop the sale deletion process
+					error_log("Error deleting installment plan for sale ID " . $_GET["idSale"] . ": " . $e->getMessage());
+				}
+			}
 
 			/*=============================================
 			Delete Sale

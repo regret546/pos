@@ -7,7 +7,7 @@ DirectoryIndex index.php
 <IfModule mod_env.c>
     SetEnv DB_HOST "localhost"
     SetEnv DB_NAME "u735263260_pos"
-    SetEnv DB_USER "u735263260_jkduran199"
+    SetEnv DB_USER "u735263260_jkduran1998"
     SetEnv DB_PASS "Hyperv4thewin!"
     SetEnv APP_ENV "production"
 </IfModule>
