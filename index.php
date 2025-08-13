@@ -34,13 +34,10 @@ if (isset($_GET['route'])) {
     $route = trim($request_uri, '/');
 }
 
-// Set default route if empty
-if (empty($route)) {
-    $route = 'index';
+// Only set route if not empty
+if (!empty($route)) {
+    $_GET['route'] = $route;
 }
-
-// Store the clean route
-$_GET['route'] = $route;
 
 $template = new ControllerTemplate();
 $template -> ctrTemplate();
