@@ -50,85 +50,14 @@ if($_SESSION["profile"] == "Special"){
               $tableExists = $stmt->fetch();
               
               if($tableExists) {
-                // First check how many installment plans exist without join
-                $countStmt = Connection::connect()->prepare("SELECT COUNT(*) as total FROM installment_plans");
-                $countStmt->execute();
-                $totalCount = $countStmt->fetch();
-                
-                // Clean up orphaned installment plans (where sales no longer exist)
-                if(isset($_GET['cleanup']) && $_GET['cleanup'] == 'orphaned') {
-                  try {
-                    // First delete orphaned payment records
-                    $deletePaymentsStmt = Connection::connect()->prepare("DELETE installment_payments FROM installment_payments 
-                      INNER JOIN installment_plans ON installment_payments.installment_plan_id = installment_plans.id 
-                      LEFT JOIN sales ON installment_plans.sale_id = sales.id 
-                      WHERE sales.id IS NULL");
-                    $deletePaymentsStmt->execute();
-                    
-                    // Then delete orphaned installment plans
-                    $deletePlansStmt = Connection::connect()->prepare("DELETE installment_plans FROM installment_plans 
-                      LEFT JOIN sales ON installment_plans.sale_id = sales.id 
-                      WHERE sales.id IS NULL");
-                    $deletePlansStmt->execute();
-                    $deletedCount = $deletePlansStmt->rowCount();
-                    
-                    echo '<script>
-                      swal({
-                        type: "success",
-                        title: "Cleanup completed",
-                        text: "Removed ' . $deletedCount . ' orphaned installment plans",
-                        showConfirmButton: true,
-                        confirmButtonText: "Close"
-                      }).then((result) => {
-                        window.location = "index.php?route=installments";
-                      });
-                    </script>';
-                  } catch(Exception $e) {
-                    echo '<script>
-                      swal({
-                        type: "error",
-                        title: "Cleanup failed",
-                        text: "Error: ' . $e->getMessage() . '",
-                        showConfirmButton: true,
-                        confirmButtonText: "Close"
-                      });
-                    </script>';
-                  }
-                }
-                
-                // Then get installment plans where the associated sale still exists
+                // Get installment plans where the associated sale still exists
                 $stmt = Connection::connect()->prepare("SELECT ip.* FROM installment_plans ip 
                                                       INNER JOIN sales s ON ip.sale_id = s.id 
                                                       ORDER BY ip.id DESC");
                 $stmt->execute();
                 $installmentPlans = $stmt->fetchAll();
                 
-                // Debug information with cleanup option
-                $validCount = count($installmentPlans);
-                $orphanedCount = $totalCount['total'] - $validCount;
-                
-                // Get detailed debug info about orphaned plans
-                if($orphanedCount > 0) {
-                  $debugStmt = Connection::connect()->prepare("SELECT ip.id, ip.sale_id, s.id as existing_sale_id 
-                    FROM installment_plans ip 
-                    LEFT JOIN sales s ON ip.sale_id = s.id 
-                    WHERE s.id IS NULL");
-                  $debugStmt->execute();
-                  $orphanedPlans = $debugStmt->fetchAll();
-                  
-                  echo '<tr><td colspan="8" class="text-center">';
-                  echo '<small>Debug: Total installment plans: ' . $totalCount['total'] . ', Valid (with existing sales): ' . $validCount;
-                  echo ', Orphaned: ' . $orphanedCount . '<br>';
-                  echo 'Orphaned plan details: ';
-                  foreach($orphanedPlans as $op) {
-                    echo 'Plan ID: ' . $op['id'] . ' (sale_id: ' . $op['sale_id'] . ') ';
-                  }
-                  echo '<br><a href="index.php?route=installments&cleanup=orphaned" class="btn btn-warning btn-xs" onclick="return confirm(\'Remove ' . $orphanedCount . ' orphaned installment plans?\')">Clean Up Orphaned Plans</a>';
-                  echo '</small></td></tr>';
-                } else {
-                  echo '<tr><td colspan="8" class="text-center">';
-                  echo '<small>Debug: Total installment plans: ' . $totalCount['total'] . ', Valid (with existing sales): ' . $validCount . '</small></td></tr>';
-                }
+
                 
                 if($installmentPlans && count($installmentPlans) > 0) {
                   
