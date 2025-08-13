@@ -2,6 +2,7 @@ DirectoryIndex index.php
 
 # Enable URL rewriting
 <IfModule mod_rewrite.c>
+
     RewriteEngine On
     RewriteBase /POS-PHP/
     
