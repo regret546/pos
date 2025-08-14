@@ -18,6 +18,10 @@ function autoFixMissingPaymentRecords($planId) {
     try {
         error_log("Auto-fixing missing payment records for plan ID: " . $planId);
         
+        // Start transaction for better performance and data integrity
+        $pdo = Connection::connect();
+        $pdo->beginTransaction();
+        
         // Get the installment plan details
         $planStmt = Connection::connect()->prepare("SELECT * FROM installment_plans WHERE id = :plan_id");
         $planStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
@@ -94,10 +98,16 @@ function autoFixMissingPaymentRecords($planId) {
             }
         }
         
+        // Commit transaction
+        $pdo->commit();
         error_log("AUTO-FIX: Completed creating {$paymentCount} payment records for plan {$planId}");
         return true;
         
     } catch(Exception $e) {
+        // Rollback transaction on error
+        if (isset($pdo)) {
+            $pdo->rollback();
+        }
         error_log("AUTO-FIX: Error creating missing payment records: " . $e->getMessage());
         return false;
     }
@@ -129,8 +139,12 @@ if(isset($_POST["planId"])) {
             ]);
         } else {
             // Try to auto-fix missing payment records
+            error_log("No payment records found for plan $planId, attempting auto-fix...");
+            
             if(autoFixMissingPaymentRecords($planId)) {
                 // Retry getting payments after auto-fix
+                $stmt = Connection::connect()->prepare("SELECT * FROM installment_payments WHERE installment_plan_id = :plan_id ORDER BY payment_number ASC");
+                $stmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
                 $stmt->execute();
                 $payments = $stmt->fetchAll();
                 
@@ -143,20 +157,24 @@ if(isset($_POST["planId"])) {
                         }
                     }
                     
+                    error_log("Auto-fix successful for plan $planId, found " . count($payments) . " payment records");
                     echo json_encode([
                         'success' => true,
-                        'payments' => $payments
+                        'payments' => $payments,
+                        'auto_fixed' => true
                     ]);
                 } else {
+                    error_log("Auto-fix completed but still no payment records for plan $planId");
                     echo json_encode([
                         'success' => false,
-                        'message' => 'No payment records found for this installment plan and auto-fix failed.'
+                        'message' => 'Payment records were created but could not be retrieved. Please refresh and try again.'
                     ]);
                 }
             } else {
+                error_log("Auto-fix failed for plan $planId");
                 echo json_encode([
                     'success' => false,
-                    'message' => 'No payment records found for this installment plan.'
+                    'message' => 'No payment records found for this installment plan. Auto-fix failed.'
                 ]);
             }
         }

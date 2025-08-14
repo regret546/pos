@@ -23,6 +23,11 @@ if($_SESSION["profile"] == "Special"){
     <div class="box">
       <div class="box-header with-border">
         <h3 class="box-title">Active Installment Plans</h3>
+        <div class="box-tools pull-right">
+          <button type="button" class="btn btn-primary btn-sm" id="btnFixAllPayments" title="Fix all installment plans missing payment records">
+            <i class="fa fa-wrench"></i> Fix Missing Payment Records
+          </button>
+        </div>
       </div>
       <div class="box-body">
         

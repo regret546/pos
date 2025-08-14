@@ -18,6 +18,10 @@ function autoFixMissingPaymentRecords($planId) {
     try {
         error_log("Auto-fixing missing payment records for plan ID: " . $planId);
         
+        // Start transaction for better performance and data integrity
+        $pdo = Connection::connect();
+        $pdo->beginTransaction();
+        
         // Get the installment plan details
         $planStmt = Connection::connect()->prepare("SELECT * FROM installment_plans WHERE id = :plan_id");
         $planStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
@@ -94,10 +98,16 @@ function autoFixMissingPaymentRecords($planId) {
             }
         }
         
+        // Commit transaction
+        $pdo->commit();
         error_log("AUTO-FIX: Completed creating {$paymentCount} payment records for plan {$planId}");
         return true;
         
     } catch(Exception $e) {
+        // Rollback transaction on error
+        if (isset($pdo)) {
+            $pdo->rollback();
+        }
         error_log("AUTO-FIX: Error creating missing payment records: " . $e->getMessage());
         return false;
     }
@@ -133,12 +143,17 @@ if(isset($_POST["planId"])) {
             
             if($result['total'] == 0) {
                 // Try to auto-fix missing payment records
+                error_log("No payment records found for plan $planId, attempting auto-fix...");
+                
                 if(autoFixMissingPaymentRecords($planId)) {
                     // Retry getting the next payment after auto-fix
+                    $stmt = Connection::connect()->prepare("SELECT * FROM installment_payments WHERE installment_plan_id = :plan_id AND status = 'pending' ORDER BY payment_number ASC LIMIT 1");
+                    $stmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
                     $stmt->execute();
                     $nextPayment = $stmt->fetch();
                     
                     if($nextPayment) {
+                        error_log("Auto-fix successful for plan $planId, found next payment ID: " . $nextPayment['id']);
                         echo json_encode([
                             'success' => true,
                             'payment' => [
@@ -146,18 +161,21 @@ if(isset($_POST["planId"])) {
                                 'payment_number' => $nextPayment['payment_number'],
                                 'amount' => $nextPayment['amount'],
                                 'due_date' => date('M j, Y', strtotime($nextPayment['due_date']))
-                            ]
+                            ],
+                            'auto_fixed' => true
                         ]);
                     } else {
+                        error_log("Auto-fix completed but no pending payments for plan $planId");
                         echo json_encode([
                             'success' => false,
-                            'message' => 'Payment records were created but no pending payments found.'
+                            'message' => 'Payment records were created but no pending payments found. All payments may be completed.'
                         ]);
                     }
                 } else {
+                    error_log("Auto-fix failed for plan $planId");
                     echo json_encode([
                         'success' => false,
-                        'message' => 'No payment records found for this installment plan. Please contact administrator to fix this issue.'
+                        'message' => 'No payment records found for this installment plan. Auto-fix failed - please contact administrator.'
                     ]);
                 }
             } elseif($result['total'] == $result['paid']) {
