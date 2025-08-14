@@ -33,6 +33,18 @@ function autoFixMissingPaymentRecords($planId) {
             return false;
         }
         
+        // Double-check if payment records already exist (avoid duplicates)
+        $existingStmt = $pdo->prepare("SELECT COUNT(*) as count FROM installment_payments WHERE installment_plan_id = :plan_id");
+        $existingStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
+        $existingStmt->execute();
+        $existingCount = $existingStmt->fetch()['count'];
+        
+        if($existingCount > 0) {
+            error_log("Payment records already exist for plan $planId (count: $existingCount), skipping auto-fix");
+            $pdo->commit();
+            return true;
+        }
+        
         $paymentFrequency = $plan['payment_frequency'];
         $actualNumberOfPayments = intval($plan['number_of_payments']);
         $totalAmount = floatval($plan['total_amount']);
@@ -142,11 +154,16 @@ if(isset($_POST["planId"])) {
             error_log("No payment records found for plan $planId, attempting auto-fix...");
             
             if(autoFixMissingPaymentRecords($planId)) {
-                // Retry getting payments after auto-fix
+                // Add a small delay to ensure database changes are committed
+                usleep(500000); // 0.5 second delay
+                
+                // Retry getting payments after auto-fix with fresh connection
                 $stmt = Connection::connect()->prepare("SELECT * FROM installment_payments WHERE installment_plan_id = :plan_id ORDER BY payment_number ASC");
                 $stmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
                 $stmt->execute();
                 $payments = $stmt->fetchAll();
+                
+                error_log("Auto-fix attempt for plan $planId - found " . count($payments) . " payment records after fix");
                 
                 if($payments && count($payments) > 0) {
                     // Check for overdue payments
@@ -157,7 +174,7 @@ if(isset($_POST["planId"])) {
                         }
                     }
                     
-                    error_log("Auto-fix successful for plan $planId, found " . count($payments) . " payment records");
+                    error_log("Auto-fix successful for plan $planId, returning " . count($payments) . " payment records");
                     echo json_encode([
                         'success' => true,
                         'payments' => $payments,
