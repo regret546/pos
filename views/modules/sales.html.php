@@ -24,7 +24,7 @@
 
       <div class="box-header with-border">
 
-        <a href="create-sales">
+        <a href="create-sale">
           <button class="btn btn-success" >
         
           <i class="fa fa-plus"></i> Add Sale
