@@ -103,86 +103,43 @@ function autoFixMissingPaymentRecords($planId) {
     }
 }
 
-if(isset($_POST["planId"])) {
+try {
+    // Get all installment plans
+    $stmt = Connection::connect()->prepare("SELECT id FROM installment_plans ORDER BY id");
+    $stmt->execute();
+    $plans = $stmt->fetchAll();
     
-    $planId = $_POST["planId"];
+    $fixedCount = 0;
+    $totalPlans = count($plans);
     
-    try {
-        // Get the next pending payment
-        $stmt = Connection::connect()->prepare("SELECT * FROM installment_payments WHERE installment_plan_id = :plan_id AND status = 'pending' ORDER BY payment_number ASC LIMIT 1");
-        $stmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
-        $stmt->execute();
-        $nextPayment = $stmt->fetch();
+    foreach($plans as $plan) {
+        $planId = $plan['id'];
         
-        if($nextPayment) {
-            echo json_encode([
-                'success' => true,
-                'payment' => [
-                    'id' => $nextPayment['id'],
-                    'payment_number' => $nextPayment['payment_number'],
-                    'amount' => $nextPayment['amount'],
-                    'due_date' => date('M j, Y', strtotime($nextPayment['due_date']))
-                ]
-            ]);
-        } else {
-            // Check if all payments are completed
-            $checkStmt = Connection::connect()->prepare("SELECT COUNT(*) as total, SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid FROM installment_payments WHERE installment_plan_id = :plan_id");
-            $checkStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
-            $checkStmt->execute();
-            $result = $checkStmt->fetch();
-            
-            if($result['total'] == 0) {
-                // Try to auto-fix missing payment records
-                if(autoFixMissingPaymentRecords($planId)) {
-                    // Retry getting the next payment after auto-fix
-                    $stmt->execute();
-                    $nextPayment = $stmt->fetch();
-                    
-                    if($nextPayment) {
-                        echo json_encode([
-                            'success' => true,
-                            'payment' => [
-                                'id' => $nextPayment['id'],
-                                'payment_number' => $nextPayment['payment_number'],
-                                'amount' => $nextPayment['amount'],
-                                'due_date' => date('M j, Y', strtotime($nextPayment['due_date']))
-                            ]
-                        ]);
-                    } else {
-                        echo json_encode([
-                            'success' => false,
-                            'message' => 'Payment records were created but no pending payments found.'
-                        ]);
-                    }
-                } else {
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'No payment records found for this installment plan. Please contact administrator to fix this issue.'
-                    ]);
-                }
-            } elseif($result['total'] == $result['paid']) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'All payments have been completed for this installment plan!'
-                ]);
-            } else {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'No pending payments found for this installment plan.'
-                ]);
+        // Check if payment records exist
+        $paymentStmt = Connection::connect()->prepare("SELECT COUNT(*) as payment_count FROM installment_payments WHERE installment_plan_id = :plan_id");
+        $paymentStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
+        $paymentStmt->execute();
+        $paymentResult = $paymentStmt->fetch();
+        
+        if($paymentResult['payment_count'] == 0) {
+            if(autoFixMissingPaymentRecords($planId)) {
+                $fixedCount++;
             }
         }
-        
-    } catch(Exception $e) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Error: ' . $e->getMessage()
-        ]);
     }
     
-} else {
+    echo json_encode([
+        'success' => true,
+        'message' => "Fixed {$fixedCount} out of {$totalPlans} installment plans.",
+        'total_plans' => $totalPlans,
+        'fixed_plans' => $fixedCount
+    ]);
+    
+} catch(Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Invalid request.'
+        'message' => 'Error: ' . $e->getMessage()
     ]);
-} 
+}
+
+?>
