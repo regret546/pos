@@ -32,9 +32,10 @@ $answerSale = ControllerSales::ctrShowSales($itemSale, $valueSale);
 
 $saledate = substr($answerSale["saledate"],0,-8);
 $products = json_decode($answerSale["products"], true);
+$paymentMethod = $answerSale["paymentMethod"];
 
 $tax = number_format($answerSale["tax"],2);
-$totalPrice = number_format($answerSale["totalPrice"],2);
+$saleTotalPrice = number_format($answerSale["totalPrice"],2);
 
 //TRAEMOS LA INFORMACIÓN DEL Customer
 
@@ -62,45 +63,72 @@ $peso = 'PHP';  // Using PHP as text instead of the symbol for better compatibil
 
 $block1 = <<<EOF
 
-	<table>
-		
+	<table style="width:100%; border-collapse: collapse;">
 		<tr>
-			
-			<td style="width:150px"><img src="images/logo-negro-bloque.png"></td>
-
-			<td style="background-color:white; width:140px">
-				
-				<div style="font-size:8.5px; text-align:right; line-height:15px;">
-					
-					<br>
-					Your Company Name Here
-
-					<br>
-					Address: Your Address Here
-
-				</div>
-
+			<td style="width:15%; vertical-align:top;">
+				<!-- Logo placeholder - you can add your logo here -->
+				<img src="images/company-logo.png" style="width:80px; height:80px;">
 			</td>
-
-			<td style="background-color:white; width:140px">
-
-				<div style="font-size:8.5px; text-align:right; line-height:15px;">
-					
-					<br>
-					Contact: Your Contact Number
-					
-					<br>
-					Email: your.email@example.com
-
+			<td style="width:35%; vertical-align:top; padding-left:10px;">
+				<div style="font-size:16px; font-weight:bold; margin-bottom:10px;">
+					DELIVERY RECEIPT
 				</div>
-				
+				<br>
+				<div style="font-size:12px; font-weight:bold;">
+					Siargao Computer Trading
+				</div>
+				<div style="font-size:10px;">
+					Pob. 12, Dapa, Siargao Island
+				</div>
+				<div style="font-size:10px;">
+					9286127206
+				</div>
 			</td>
-
-			<td style="background-color:white; width:110px; text-align:center; color:red"><br><br>BILL N.<br>$valueSale</td>
-
+			<td style="width:25%; vertical-align:top; text-align:center;">
+				<table style="border-collapse: collapse; width:100%; margin-bottom:10px;">
+					<tr>
+						<td style="border:1px solid #000; padding:5px; font-size:10px; background-color:#E0E0E0; text-align:center;">DATE</td>
+					</tr>
+					<tr>
+						<td style="border:1px solid #000; padding:5px; font-size:10px; text-align:center;">$saledate</td>
+					</tr>
+					<tr>
+						<td style="border:1px solid #000; padding:5px; font-size:10px; background-color:#E0E0E0; text-align:center;">RECEIPT NO.</td>
+					</tr>
+					<tr>
+						<td style="border:1px solid #000; padding:5px; font-size:10px; text-align:center;">$valueSale</td>
+					</tr>
+				</table>
+			</td>
+			<td style="width:25%; vertical-align:top;">
+				<table style="border-collapse: collapse; width:100%;">
+					<tr>
+						<td style="border:1px solid #000; padding:5px; font-size:10px; background-color:#E0E0E0; text-align:center;">RECIPIENT INFORMATION</td>
+					</tr>
+					<tr>
+						<td style="border:1px solid #000; padding:5px; font-size:10px;">Name</td>
+					</tr>
+					<tr>
+						<td style="border:1px solid #000; padding:5px; font-size:10px;">$answerCustomer[name]</td>
+					</tr>
+					<tr>
+						<td style="border:1px solid #000; padding:5px; font-size:10px;">Address</td>
+					</tr>
+					<tr>
+						<td style="border:1px solid #000; padding:5px; font-size:10px;">$answerCustomer[address]</td>
+					</tr>
+					<tr>
+						<td style="border:1px solid #000; padding:5px; font-size:10px;">Contact No.</td>
+					</tr>
+					<tr>
+						<td style="border:1px solid #000; padding:5px; font-size:10px;">$answerCustomer[phone]</td>
+					</tr>
+				</table>
+			</td>
 		</tr>
-
 	</table>
+
+	<br><br>
 
 EOF;
 
@@ -110,72 +138,20 @@ $pdf->writeHTML($block1, false, false, false, false, '');
 
 $block2 = <<<EOF
 
-	<table>
-		
+	<table style="width:100%; border-collapse: collapse;">
 		<tr>
-			
-			<td style="width:540px"><img src="images/back.jpg"></td>
-		
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:12%;">CODE</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:28%;">DESCRIPTION</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:8%;">QTY</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:12%;">AMOUNT</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:15%;">PAYMENT</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:25%;">TOTAL</td>
 		</tr>
-
-	</table>
-
-	<table style="font-size:10px; padding:5px 10px;">
-	
-		<tr>
-		
-			<td style="border: 1px solid #666; background-color:white; width:390px">
-
-				Customer: $answerCustomer[name]
-
-			</td>
-
-			<td style="border: 1px solid #666; background-color:white; width:150px; text-align:right">
-			
-				Date: $saledate
-
-			</td>
-
-		</tr>
-
-		<tr>
-		
-			<td style="border: 1px solid #666; background-color:white; width:540px">Seller: $answerSeller[name]</td>
-
-		</tr>
-
-		<tr>
-		
-		<td style="border-bottom: 1px solid #666; background-color:white; width:540px"></td>
-
-		</tr>
-
 	</table>
 
 EOF;
 
 $pdf->writeHTML($block2, false, false, false, false, '');
-
-// ---------------------------------------------------------
-
-$block3 = <<<EOF
-
-	<table style="font-size:10px; padding:5px 10px;">
-
-		<tr>
-		
-		<td style="border: 1px solid #666; background-color:white; width:260px; text-align:center">Product</td>
-		<td style="border: 1px solid #666; background-color:white; width:80px; text-align:center">quantity</td>
-		<td style="border: 1px solid #666; background-color:white; width:100px; text-align:center">value Unit.</td>
-		<td style="border: 1px solid #666; background-color:white; width:100px; text-align:center">value Total</td>
-
-		</tr>
-
-	</table>
-
-EOF;
-
-$pdf->writeHTML($block3, false, false, false, false, '');
 
 // ---------------------------------------------------------
 
@@ -188,107 +164,91 @@ $orden = null;
 $answerProduct = ControllerProducts::ctrShowProducts($itemProduct, $valueProduct, $orden);
 
 $valueUnit = number_format($answerProduct["sellingPrice"], 2);
+$itemTotalPrice = number_format($item["totalPrice"], 2);
 
-$totalPrice = number_format($item["totalPrice"], 2);
+// Get product code if available
+$productCode = isset($answerProduct["code"]) ? $answerProduct["code"] : 'N/A';
 
-$block4 = <<<EOF
+$block3 = <<<EOF
 
-	<table style="font-size:10px; padding:5px 10px;">
-
+	<table style="width:100%; border-collapse: collapse;">
 		<tr>
-			
-			<td style="border: 1px solid #666; color:#333; background-color:white; width:260px; text-align:center">
-				$item[description]
-			</td>
-
-			<td style="border: 1px solid #666; color:#333; background-color:white; width:80px; text-align:center">
-				$item[quantity]
-			</td>
-
-			<td style="border: 1px solid #666; color:#333; background-color:white; width:100px; text-align:center">$peso 
-				$valueUnit
-			</td>
-
-			<td style="border: 1px solid #666; color:#333; background-color:white; width:100px; text-align:center">$peso 
-				$totalPrice
-			</td>
-
-
+			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:12%;">$productCode</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:left; width:28%;">$item[description]</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:8%;">$item[quantity]</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:12%;">$peso $valueUnit</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:15%;">$paymentMethod</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:right; width:25%;">$peso $itemTotalPrice</td>
 		</tr>
-
 	</table>
-
 
 EOF;
 
-$pdf->writeHTML($block4, false, false, false, false, '');
+$pdf->writeHTML($block3, false, false, false, false, '');
 
 }
 
 // ---------------------------------------------------------
 
-$block5 = <<<EOF
+// Add empty rows to match the design
+$emptyRows = '';
+for($i = 0; $i < 5; $i++) {
+    $emptyRows .= '
+        <table style="width:100%; border-collapse: collapse;">
+            <tr>
+                <td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:12%; height:25px;"></td>
+                <td style="border:1px solid #000; padding:8px; font-size:10px; text-align:left; width:28%;"></td>
+                <td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:8%;"></td>
+                <td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:12%;"></td>
+                <td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:15%;"></td>
+                <td style="border:1px solid #000; padding:8px; font-size:10px; text-align:right; width:25%;">0</td>
+            </tr>
+        </table>';
+}
 
-	<table style="font-size:10px; padding:5px 10px;">
+$block4 = <<<EOF
 
-		<tr>
+$emptyRows
 
-			<td style="color:#333; background-color:white; width:340px; text-align:center"></td>
+<table style="width:100%; border-collapse: collapse;">
+	<tr>
+		<td style="width:55%; padding:10px; vertical-align:top;">
+			<div style="font-size:10px;">
+				<strong>Thank you for your purchase!</strong><br>
+				This document is only used for after-sales certificate. Official Receipt will be issued separately.
+			</div>
+		</td>
+		<td style="width:15%;"></td>
+		<td style="width:12%; vertical-align:top;">
+			<div style="font-size:11px; font-weight:bold; text-align:center; border:1px solid #000; padding:5px; background-color:#E0E0E0;">
+				TOTAL
+			</div>
+		</td>
+		<td style="width:18%; vertical-align:top;">
+			<div style="font-size:11px; text-align:right; border:1px solid #000; padding:8px;">
+				$peso $saleTotalPrice
+			</div>
+		</td>
+	</tr>
+</table>
 
-			<td style="border-bottom: 1px solid #666; background-color:white; width:100px; text-align:center"></td>
+<br><br>
 
-			<td style="border-bottom: 1px solid #666; color:#333; background-color:white; width:100px; text-align:center"></td>
-
-		</tr>
-		
-		<tr>
-		
-			<td style="border-right: 1px solid #666; color:#333; background-color:white; width:340px; text-align:center"></td>
-
-			<td style="border: 1px solid #666;  background-color:white; width:100px; text-align:center">
-				Net:
-			</td>
-
-			<td style="border: 1px solid #666; color:#333; background-color:white; width:100px; text-align:center">
-				$peso $totalPrice
-			</td>
-
-		</tr>
-
-		<tr>
-
-			<td style="border-right: 1px solid #666; color:#333; background-color:white; width:340px; text-align:center"></td>
-
-			<td style="border: 1px solid #666; background-color:white; width:100px; text-align:center">
-				Tax:
-			</td>
-		
-			<td style="border: 1px solid #666; color:#333; background-color:white; width:100px; text-align:center">
-				$peso $tax
-			</td>
-
-		</tr>
-
-		<tr>
-		
-			<td style="border-right: 1px solid #666; color:#333; background-color:white; width:340px; text-align:center"></td>
-
-			<td style="border: 1px solid #666; background-color:white; width:100px; text-align:center">
-				Total:
-			</td>
-			
-			<td style="border: 1px solid #666; color:#333; background-color:white; width:100px; text-align:center">
-				$peso $totalPrice
-			</td>
-
-		</tr>
-
-
-	</table>
+<table style="width:100%;">
+	<tr>
+		<td style="width:100%; text-align:left;">
+			<div style="font-size:10px;">
+				<strong>Recipient Signature:</strong>
+				<br><br><br>
+				_________________________________________________
+			</div>
+		</td>
+	</tr>
+</table>
 
 EOF;
 
-$pdf->writeHTML($block5, false, false, false, false, '');
+$pdf->writeHTML($block4, false, false, false, false, '');
 
 
 

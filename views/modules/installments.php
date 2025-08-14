@@ -30,10 +30,12 @@ if($_SESSION["profile"] == "Special"){
           <thead>
             <tr>
               <th style="width:10px">#</th>
+              <th>Bill Number</th>
               <th>Customer</th>
               <th>Total Amount</th>
-              <th>Monthly Payment</th>
+              <th>Payment Amount</th>
               <th>Interest Rate</th>
+              <th>Payment Frequency</th>
               <th>Payments Made</th>
               <th>Status</th>
               <th>Actions</th>
@@ -77,12 +79,31 @@ if($_SESSION["profile"] == "Special"){
                     $paidResult = $paidStmt->fetch();
                     $paidCount = $paidResult ? $paidResult["paid_count"] : 0;
                     
+                    // Get payment frequency
+                    $paymentFrequency = isset($plan["payment_frequency"]) ? $plan["payment_frequency"] : "30th";
+                    $frequencyDisplay = "";
+                    switch($paymentFrequency) {
+                        case "15th":
+                            $frequencyDisplay = "Every 15th";
+                            break;
+                        case "30th":
+                            $frequencyDisplay = "Every 30th";
+                            break;
+                        case "both":
+                            $frequencyDisplay = "15th & 30th";
+                            break;
+                        default:
+                            $frequencyDisplay = "Every 30th";
+                    }
+
                     echo '<tr>
                             <td>'.($key+1).'</td>
+                            <td><strong>'.($plan["bill_number"] ?: 'N/A').'</strong></td>
                             <td>'.$customerName.'</td>
                             <td>₱'.number_format($plan["total_amount"], 2).'</td>
                             <td>₱'.number_format($plan["payment_amount"], 2).'</td>
                             <td>'.$plan["interest_rate"].'%</td>
+                            <td><span class="label label-info">'.$frequencyDisplay.'</span></td>
                             <td>'.$paidCount.'/'.$plan["number_of_payments"].'</td>
                             <td><span class="label label-success">'.$plan["status"].'</span></td>
                             <td>
@@ -103,7 +124,7 @@ if($_SESSION["profile"] == "Special"){
                   
                 } else {
                   echo '<tr>
-                          <td colspan="8" class="text-center">
+                          <td colspan="10" class="text-center">
                             <h4>No installment plans found</h4>
                             <p>Create a sale with installment payment to see plans here.</p>
                           </td>

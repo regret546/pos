@@ -48,13 +48,14 @@ class ModelSales{
 
 		// Use the same connection object for both insert and lastInsertId
 		$pdo = Connection::connect();
-		$stmt = $pdo->prepare("INSERT INTO $table(code, idSeller, idCustomer, products, tax, netPrice, totalPrice, paymentMethod, saledate) VALUES (:code, :idSeller, :idCustomer, :products, :tax, :netPrice, :totalPrice, :paymentMethod, :saledate)");
+		$stmt = $pdo->prepare("INSERT INTO $table(code, idSeller, idCustomer, products, tax, discount, netPrice, totalPrice, paymentMethod, saledate) VALUES (:code, :idSeller, :idCustomer, :products, :tax, :discount, :netPrice, :totalPrice, :paymentMethod, :saledate)");
 
 		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
 		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
 		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
 		$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
 		$stmt->bindParam(":tax", $data["tax"], PDO::PARAM_STR);
+		$stmt->bindParam(":discount", $data["discount"], PDO::PARAM_STR);
 		$stmt->bindParam(":netPrice", $data["totalPrice"], PDO::PARAM_STR); // Use totalPrice before tax
 		$stmt->bindParam(":totalPrice", $data["totalPrice"], PDO::PARAM_STR);
 		$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
@@ -91,13 +92,14 @@ class ModelSales{
 		DateHelper::init();
 		$saledate = DateHelper::getDateTime();
 		
-		$stmt = Connection::connect()->prepare("UPDATE $table SET idCustomer = :idCustomer, idSeller = :idSeller, products = :products, tax = :tax, netPrice = :netPrice, totalPrice = :totalPrice, paymentMethod = :paymentMethod, saledate = :saledate WHERE code = :code");
+		$stmt = Connection::connect()->prepare("UPDATE $table SET idCustomer = :idCustomer, idSeller = :idSeller, products = :products, tax = :tax, discount = :discount, netPrice = :netPrice, totalPrice = :totalPrice, paymentMethod = :paymentMethod, saledate = :saledate WHERE code = :code");
 
 		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
 		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
 		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
 		$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
 		$stmt->bindParam(":tax", $data["tax"], PDO::PARAM_STR);
+		$stmt->bindParam(":discount", $data["discount"], PDO::PARAM_STR);
 		$stmt->bindParam(":netPrice", $data["totalPrice"], PDO::PARAM_STR); // Use totalPrice before tax
 		$stmt->bindParam(":totalPrice", $data["totalPrice"], PDO::PARAM_STR);
 		$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
@@ -229,13 +231,14 @@ class ModelSales{
 		DateHelper::init();
 		$saledate = DateHelper::getDateTime();
 
-		$stmt = Connection::connect()->prepare("INSERT INTO $table(code, idSeller, idCustomer, products, tax, totalPrice, paymentMethod, saledate) VALUES (:code, :idSeller, :idCustomer, :products, :tax, :totalPrice, :paymentMethod, :saledate)");
+		$stmt = Connection::connect()->prepare("INSERT INTO $table(code, idSeller, idCustomer, products, tax, discount, totalPrice, paymentMethod, saledate) VALUES (:code, :idSeller, :idCustomer, :products, :tax, :discount, :totalPrice, :paymentMethod, :saledate)");
 
 		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
 		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
 		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
 		$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
 		$stmt->bindParam(":tax", $data["tax"], PDO::PARAM_STR);
+		$stmt->bindParam(":discount", $data["discount"], PDO::PARAM_STR);
 		$stmt->bindParam(":totalPrice", $data["totalPrice"], PDO::PARAM_STR);
 		$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
 		$stmt->bindParam(":saledate", $saledate, PDO::PARAM_STR);
@@ -264,13 +267,14 @@ class ModelSales{
 		DateHelper::init();
 		$saledate = DateHelper::getDateTime();
 		
-		$stmt = Connection::connect()->prepare("UPDATE $table SET  idCustomer = :idCustomer, idSeller = :idSeller, products = :products, tax = :tax, totalPrice= :totalPrice, paymentMethod = :paymentMethod, saledate = :saledate WHERE code = :code");
+		$stmt = Connection::connect()->prepare("UPDATE $table SET  idCustomer = :idCustomer, idSeller = :idSeller, products = :products, tax = :tax, discount = :discount, totalPrice= :totalPrice, paymentMethod = :paymentMethod, saledate = :saledate WHERE code = :code");
 
 		$stmt->bindParam(":code", $data["code"], PDO::PARAM_INT);
 		$stmt->bindParam(":idSeller", $data["idSeller"], PDO::PARAM_INT);
 		$stmt->bindParam(":idCustomer", $data["idCustomer"], PDO::PARAM_INT);
 		$stmt->bindParam(":products", $data["products"], PDO::PARAM_STR);
 		$stmt->bindParam(":tax", $data["tax"], PDO::PARAM_STR);
+		$stmt->bindParam(":discount", $data["discount"], PDO::PARAM_STR);
 		$stmt->bindParam(":totalPrice", $data["totalPrice"], PDO::PARAM_STR);
 		$stmt->bindParam(":paymentMethod", $data["paymentMethod"], PDO::PARAM_STR);
 		$stmt->bindParam(":saledate", $saledate, PDO::PARAM_STR);
@@ -286,6 +290,79 @@ class ModelSales{
 		}
 
 		$stmt->close();
+		$stmt = null;
+
+	}
+
+	/*=============================================
+	SALES BY PAYMENT METHOD
+	=============================================*/
+
+	static public function mdlSalesByPaymentMethod($table, $paymentMethod){
+
+		$stmt = Connection::connect()->prepare("SELECT SUM(totalPrice) as total FROM $table WHERE paymentMethod = :paymentMethod");
+
+		$stmt -> bindParam(":paymentMethod", $paymentMethod, PDO::PARAM_STR);
+
+		$stmt -> execute();
+
+		return $stmt -> fetch();
+
+		$stmt -> close();
+
+		$stmt = null;
+
+	}
+
+	/*=============================================
+	INSTALLMENT STATISTICS
+	=============================================*/
+
+	static public function mdlInstallmentStats(){
+
+		// Get total installment amounts (paid and pending)
+		$stmt = Connection::connect()->prepare("
+			SELECT 
+				SUM(CASE WHEN ip.status = 'paid' THEN ip.amount ELSE 0 END) as paid_total,
+				SUM(CASE WHEN ip.status = 'pending' THEN ip.amount ELSE 0 END) as pending_total,
+				COUNT(CASE WHEN ip.status = 'paid' THEN 1 END) as paid_count,
+				COUNT(CASE WHEN ip.status = 'pending' THEN 1 END) as pending_count
+			FROM installment_payments ip
+			INNER JOIN installment_plans ipl ON ip.installment_plan_id = ipl.id
+		");
+
+		$stmt -> execute();
+
+		return $stmt -> fetch();
+
+		$stmt -> close();
+
+		$stmt = null;
+
+	}
+
+	/*=============================================
+	COMPLETED SALES TOTAL (Cash + QRPH + Card + Paid Installments)
+	=============================================*/
+
+	static public function mdlCompletedSalesTotal(){
+
+		$stmt = Connection::connect()->prepare("
+			SELECT 
+				(
+					COALESCE((SELECT SUM(totalPrice) FROM sales WHERE paymentMethod = 'cash'), 0) +
+					COALESCE((SELECT SUM(totalPrice) FROM sales WHERE paymentMethod = 'QRPH'), 0) +
+					COALESCE((SELECT SUM(totalPrice) FROM sales WHERE paymentMethod = 'Card'), 0) +
+					COALESCE((SELECT SUM(ip.amount) FROM installment_payments ip INNER JOIN installment_plans ipl ON ip.installment_plan_id = ipl.id WHERE ip.status = 'paid'), 0)
+				) as total
+		");
+
+		$stmt -> execute();
+
+		return $stmt -> fetch();
+
+		$stmt -> close();
+
 		$stmt = null;
 
 	}

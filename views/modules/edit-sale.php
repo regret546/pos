@@ -86,6 +86,8 @@
 
                     // Get installment plan data if payment method is installment
                     $installmentPlan = null;
+                    $hasPaidPayments = false;
+                    $paymentHistory = array();
                     
                     if(strpos($sale["paymentMethod"], "installment") !== false) {
                         // Try to get installment plan data directly from database
@@ -95,14 +97,52 @@
                             $stmt->execute();
                             $installmentPlan = $stmt->fetch();
                             
+                            if($installmentPlan) {
+                                // Check for payment history
+                                $paymentStmt = Connection::connect()->prepare("SELECT COUNT(*) as total_payments, SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid_payments FROM installment_payments WHERE installment_plan_id = :plan_id");
+                                $paymentStmt->bindParam(":plan_id", $installmentPlan["id"], PDO::PARAM_INT);
+                                $paymentStmt->execute();
+                                $paymentHistory = $paymentStmt->fetch();
+                                
+                                $hasPaidPayments = $paymentHistory && $paymentHistory["paid_payments"] > 0;
+                            }
 
                         } catch (Exception $e) {
                             // If installment data can't be retrieved, continue without it
                             $installmentPlan = null;
+                            $hasPaidPayments = false;
                         }
                     }
 
                 ?>
+
+                    <?php if($hasPaidPayments): ?>
+                    <!--=====================================
+                    =            INSTALLMENT WARNING     =
+                    ======================================-->
+                    <div class="alert alert-warning">
+                        <h4><i class="fa fa-warning"></i> Warning: Cannot Edit Installment Sale</h4>
+                        <p>This installment sale cannot be edited because the customer has already made 
+                        <strong><?php echo $paymentHistory["paid_payments"]; ?>/<?php echo $paymentHistory["total_payments"]; ?></strong> 
+                        payments. Editing installment sales with payment history is not allowed to maintain financial integrity.</p>
+                        <p><strong>Options:</strong></p>
+                        <ul>
+                            <li>View payment history in the <a href="installments" target="_blank">Installments Management</a> page</li>
+                            <li>Create a new sale if needed</li>
+                            <li>Contact administrator for any adjustments</li>
+                        </ul>
+                    </div>
+                    <script>
+                        // Disable all form inputs
+                        $(document).ready(function() {
+                            $('input, select, textarea, button[type="submit"]').prop('disabled', true);
+                            $('input, select, textarea').css({
+                                'background-color': '#f9f9f9',
+                                'color': '#999'
+                            });
+                        });
+                    </script>
+                    <?php endif; ?>
 
                     <!--=====================================
                     =            SELLER INPUT           =
@@ -251,11 +291,35 @@
                     <hr>
 
                     <div class="row">
-                        <!-- Hidden field for total calculation -->
+                        <!--=====================================
+                        DISCOUNT INPUT
+                        ======================================-->
+                        <div class="col-xs-6" style="padding-right: 0">
+                            <div class="form-group">
+                                <label>Discount Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon">₱</span>
+                                    <input type="number" class="form-control" name="saleDiscount" id="saleDiscount" placeholder="0.00" min="0" step="0.01" value="<?php echo isset($sale["discount"]) ? $sale["discount"] : 0; ?>">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!--=====================================
+                        TOTAL DISPLAY
+                        ======================================-->
+                        <div class="col-xs-6" style="padding-left: 0">
+                            <div class="form-group">
+                                <label>Total Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon">₱</span>
+                                    <input type="text" class="form-control" id="totalDisplay" placeholder="0.00" value="<?php echo $sale["totalPrice"]; ?>" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden fields for calculations -->
                         <input type="hidden" name="saleTotal" id="saleTotal" value="<?php echo $sale["totalPrice"]; ?>">
-                        <!-- Hidden field for tax calculation -->
                         <input type="hidden" name="newTaxPrice" id="newTaxPrice" value="<?php echo $sale["tax"]; ?>">
-                        <!-- Hidden field for tax percentage -->
                         <input type="hidden" name="newTaxSale" id="newTaxSale" value="0">
                     </div>
 
@@ -482,14 +546,21 @@ window.showTransactionField = function(paymentMethod) {
 
 $(document).ready(function() {
     
-    // Set initial payment method value
-    var currentPaymentMethod = '<?php echo $sale["paymentMethod"]; ?>';
-    $('#listPaymentMethod').val(currentPaymentMethod);
+    // Initialize total display and calculations
+    setTimeout(function() {
+        addingTotalPrices();
+        addTax();
+    }, 100);
     
-    // Parse installment data if it exists
-    var isInstallment = currentPaymentMethod.indexOf('installment') !== -1;
-    var installmentMonths = null;
-    var installmentInterest = null;
+            // Set initial payment method value
+        var currentPaymentMethod = '<?php echo $sale["paymentMethod"]; ?>';
+        $('#listPaymentMethod').val(currentPaymentMethod);
+        
+        // Parse installment data if it exists
+        var isInstallment = currentPaymentMethod.indexOf('installment') !== -1;
+        var installmentMonths = null;
+        var installmentInterest = null;
+        var installmentFrequency = null;
     
     if (isInstallment) {
         console.log('Installment detected, payment method:', currentPaymentMethod);
@@ -501,7 +572,8 @@ $(document).ready(function() {
         <?php if($installmentPlan && isset($installmentPlan["number_of_payments"])): ?>
             installmentMonths = '<?php echo $installmentPlan["number_of_payments"]; ?>';
             installmentInterest = '<?php echo isset($installmentPlan["interest_rate"]) ? $installmentPlan["interest_rate"] : 0; ?>';
-            console.log('Got installment data from PHP - Months:', installmentMonths, 'Interest:', installmentInterest);
+            installmentFrequency = '<?php echo isset($installmentPlan["payment_frequency"]) ? $installmentPlan["payment_frequency"] : "30th"; ?>';
+            console.log('Got installment data from PHP - Months:', installmentMonths, 'Interest:', installmentInterest, 'Frequency:', installmentFrequency);
         <?php else: ?>
             // Fallback: Extract months from the payment method (e.g., "installment_6" -> "6")
             var parts = currentPaymentMethod.split('_');
@@ -509,7 +581,8 @@ $(document).ready(function() {
                 installmentMonths = parts[1];
             }
             installmentInterest = 0; // Default to 0 if not available
-            console.log('Using fallback installment data - Months:', installmentMonths, 'Interest:', installmentInterest);
+            installmentFrequency = "30th"; // Default frequency
+            console.log('Using fallback installment data - Months:', installmentMonths, 'Interest:', installmentInterest, 'Frequency:', installmentFrequency);
         <?php endif; ?>
         
         // Manually trigger the installment display immediately
@@ -537,6 +610,10 @@ $(document).ready(function() {
                 console.log('Setting interest rate to:', installmentInterest);
                 $('#installmentInterest').val(installmentInterest);
                 $('#installmentInterest').trigger('input');
+            }
+            if (installmentFrequency) {
+                console.log('Setting payment frequency to:', installmentFrequency);
+                $('#installmentFrequency').val(installmentFrequency);
             }
         }, 300);
         
@@ -654,12 +731,22 @@ $(document).ready(function() {
                    '</select>' +
                    '</div>' +
                    '</div>' +
-                   '<div class="col-xs-12" id="installmentInterestDiv" style="display: none; margin-top: 10px;">' +
+                   '<div class="col-xs-6" id="installmentInterestDiv" style="display: none; margin-top: 10px;">' +
                    '<label for="installmentInterest">Interest Rate (%):</label>' +
                    '<div class="input-group">' +
                    '<span class="input-group-addon"><i class="fa fa-percent"></i></span>' +
                    '<input type="number" class="form-control" name="installmentInterest" id="installmentInterest" ' +
                    'min="0" max="100" step="0.01" placeholder="Enter interest rate" required>' +
+                   '</div>' +
+                   '</div>' +
+                   '<div class="col-xs-6" id="installmentFrequencyDiv" style="display: none; margin-top: 10px;">' +
+                   '<label for="installmentFrequency">Payment Frequency:</label>' +
+                   '<div class="input-group">' +
+                   '<select class="form-control" name="installmentFrequency" id="installmentFrequency" required>' +
+                   '<option value="15th">Every 15th of the month</option>' +
+                   '<option value="30th" selected>Every 30th of the month</option>' +
+                   '<option value="both">Both 15th and 30th</option>' +
+                   '</select>' +
                    '</div>' +
                    '</div>' +
                    '<div class="col-xs-12" id="installmentSummaryDiv" style="display: none; margin-top: 10px;">' +
@@ -696,11 +783,13 @@ $(document).ready(function() {
             console.log('Months changed to:', months);
             if (months) {
                 $('#installmentInterestDiv').show();
+                $('#installmentFrequencyDiv').show();
                 $('#listPaymentMethod').val('installment_' + months);
                 console.log('Set listPaymentMethod to:', 'installment_' + months);
                 updateInstallmentSummary();
             } else {
                 $('#installmentInterestDiv').hide();
+                $('#installmentFrequencyDiv').hide();
                 $('#listPaymentMethod').val('');
                 console.log('Cleared listPaymentMethod');
             }

@@ -403,4 +403,18 @@ class controllerProducts{
 
 	}
 
+	/*=============================================
+	SHOW TOTAL INVENTORY ITEMS
+	=============================================*/
+
+	static public function ctrShowTotalInventoryItems(){
+
+		$table = "products";
+
+		$answer = ProductsModel::mdlShowTotalInventoryItems($table);
+
+		return $answer;
+
+	}
+
 }

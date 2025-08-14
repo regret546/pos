@@ -97,6 +97,7 @@ class ControllerSales{
 				"idCustomer"=>$_POST["selectCustomer"],
 				"products"=>$_POST["productsList"],
 				"tax"=>$_POST["newTaxPrice"],
+				"discount"=>isset($_POST["saleDiscount"]) ? $_POST["saleDiscount"] : 0,
 				"totalPrice"=>$_POST["saleTotal"],
 				"paymentMethod"=>$_POST["listPaymentMethod"]
 			);
@@ -107,13 +108,29 @@ class ControllerSales{
 				// Debug: Log the payment method
 				error_log("Sale created successfully. Payment method: " . $_POST["listPaymentMethod"]);
 				
+				// Get the sale ID first
+				if(is_array($answer) && isset($answer["id"])) {
+					$saleId = $answer["id"];
+					error_log("Using sale ID from array: " . $saleId);
+				} else {
+					// Fallback to old method for backward compatibility
+					$saleId = ModelSales::mdlGetLastInsertId();
+					error_log("Using sale ID from lastInsertId: " . $saleId);
+				}
+				
 				// Check if this is an installment payment
 				if(strpos($_POST["listPaymentMethod"], "installment") === 0) {
 					error_log("Installment payment detected. Starting installment plan creation...");
+					error_log("POST data available: installmentMonths=" . (isset($_POST["installmentMonths"]) ? $_POST["installmentMonths"] : "NOT SET"));
+					error_log("POST data available: installmentInterest=" . (isset($_POST["installmentInterest"]) ? $_POST["installmentInterest"] : "NOT SET"));
+					error_log("POST data available: installmentFrequency=" . (isset($_POST["installmentFrequency"]) ? $_POST["installmentFrequency"] : "NOT SET"));
 					
 					// Get number of payments from form data
 					$numberOfPayments = isset($_POST["installmentMonths"]) ? intval($_POST["installmentMonths"]) : 3;
 					$interestRate = isset($_POST["installmentInterest"]) ? floatval($_POST["installmentInterest"]) : 0;
+					$paymentFrequency = isset($_POST["installmentFrequency"]) ? $_POST["installmentFrequency"] : "30th";
+					
+					error_log("Parsed values: numberOfPayments=$numberOfPayments, interestRate=$interestRate, paymentFrequency=$paymentFrequency");
 					
 					// Get the sale ID - handle both new array format and old string format
 					if(is_array($answer) && isset($answer["id"])) {
@@ -137,8 +154,13 @@ class ControllerSales{
 					$baseAmount = floatval($_POST["saleTotal"]);
 					$monthlyInterest = $interestRate / 100;
 					$totalAmount = $baseAmount * (1 + ($monthlyInterest * $numberOfPayments));
-					$paymentAmount = $totalAmount / $numberOfPayments;
+					
+					// Calculate actual number of payments based on frequency
+					$actualNumberOfPayments = $paymentFrequency === "both" ? $numberOfPayments * 2 : $numberOfPayments;
+					$paymentAmount = round($totalAmount / $actualNumberOfPayments, 2);
 					$startDate = date('Y-m-d');
+					
+					error_log("Payment calculation: baseAmount=$baseAmount, totalAmount=$totalAmount, actualNumberOfPayments=$actualNumberOfPayments, paymentAmount=$paymentAmount");
 					
 					try {
 						// Check if installment_plans table exists
@@ -151,16 +173,20 @@ class ControllerSales{
 							throw new Exception("Installment plans table not found");
 						}
 						
+						// Note: actualNumberOfPayments already calculated above
+						
 						// Create installment plan directly
-						$stmt = Connection::connect()->prepare("INSERT INTO installment_plans(sale_id, customer_id, total_amount, base_amount, number_of_payments, payment_amount, interest_rate, start_date, status) VALUES (:sale_id, :customer_id, :total_amount, :base_amount, :number_of_payments, :payment_amount, :interest_rate, :start_date, :status)");
+						$stmt = Connection::connect()->prepare("INSERT INTO installment_plans(sale_id, bill_number, customer_id, total_amount, base_amount, number_of_payments, payment_amount, interest_rate, payment_frequency, start_date, status) VALUES (:sale_id, :bill_number, :customer_id, :total_amount, :base_amount, :number_of_payments, :payment_amount, :interest_rate, :payment_frequency, :start_date, :status)");
 						
 						$stmt->bindParam(":sale_id", $saleId, PDO::PARAM_INT);
+						$stmt->bindParam(":bill_number", $_POST["newSale"], PDO::PARAM_STR);
 						$stmt->bindParam(":customer_id", $_POST["selectCustomer"], PDO::PARAM_INT);
 						$stmt->bindParam(":total_amount", $totalAmount, PDO::PARAM_STR);
 						$stmt->bindParam(":base_amount", $baseAmount, PDO::PARAM_STR);
-						$stmt->bindParam(":number_of_payments", $numberOfPayments, PDO::PARAM_INT);
+						$stmt->bindParam(":number_of_payments", $actualNumberOfPayments, PDO::PARAM_INT);
 						$stmt->bindParam(":payment_amount", $paymentAmount, PDO::PARAM_STR);
 						$stmt->bindParam(":interest_rate", $interestRate, PDO::PARAM_STR);
+						$stmt->bindParam(":payment_frequency", $paymentFrequency, PDO::PARAM_STR);
 						$stmt->bindParam(":start_date", $startDate, PDO::PARAM_STR);
 						$status = "active";
 						$stmt->bindParam(":status", $status, PDO::PARAM_STR);
@@ -169,22 +195,84 @@ class ControllerSales{
 							$planId = Connection::connect()->lastInsertId();
 							error_log("Installment plan created successfully with ID: " . $planId);
 							
-							// Create individual payment records
+							// Create individual payment records based on frequency
+							$paymentCount = 0;
+							$individualPaymentAmount = $paymentAmount; // Already calculated correctly above
+							
 							for($i = 1; $i <= $numberOfPayments; $i++) {
-								$dueDate = date('Y-m-d', strtotime($startDate . " + " . $i . " months"));
+								if($paymentFrequency === "15th" || $paymentFrequency === "both") {
+									// Payment on 15th
+									$paymentCount++;
+									$currentMonth = date('m');
+									$currentYear = date('Y');
+									$targetMonth = $currentMonth + $i;
+									$targetYear = $currentYear;
+									if($targetMonth > 12) {
+										$targetYear += floor(($targetMonth - 1) / 12);
+										$targetMonth = (($targetMonth - 1) % 12) + 1;
+									}
+									$dueDate = date('Y-m-d', mktime(0, 0, 0, $targetMonth, 15, $targetYear));
+									
+									$paymentStmt = Connection::connect()->prepare("INSERT INTO installment_payments(installment_plan_id, payment_number, amount, due_date, status) VALUES (:installment_plan_id, :payment_number, :amount, :due_date, :status)");
+									
+									$paymentStmt->bindParam(":installment_plan_id", $planId, PDO::PARAM_INT);
+									$paymentStmt->bindParam(":payment_number", $paymentCount, PDO::PARAM_INT);
+									$paymentStmt->bindParam(":amount", $individualPaymentAmount, PDO::PARAM_STR);
+									$paymentStmt->bindParam(":due_date", $dueDate, PDO::PARAM_STR);
+									$pendingStatus = "pending";
+									$paymentStmt->bindParam(":status", $pendingStatus, PDO::PARAM_STR);
+									
+									if($paymentStmt->execute()) {
+										error_log("Created payment " . $paymentCount . " (15th) for plan ID: " . $planId . " - Due: " . $dueDate . " - Amount: " . $individualPaymentAmount);
+									} else {
+										error_log("Failed to create payment " . $paymentCount . " (15th) for plan ID: " . $planId . " - Error: " . print_r($paymentStmt->errorInfo(), true));
+									}
+								}
 								
-								$paymentStmt = Connection::connect()->prepare("INSERT INTO installment_payments(installment_plan_id, payment_number, amount, due_date, status) VALUES (:installment_plan_id, :payment_number, :amount, :due_date, :status)");
-								
-								$paymentStmt->bindParam(":installment_plan_id", $planId, PDO::PARAM_INT);
-								$paymentStmt->bindParam(":payment_number", $i, PDO::PARAM_INT);
-								$paymentStmt->bindParam(":amount", $paymentAmount, PDO::PARAM_STR);
-								$paymentStmt->bindParam(":due_date", $dueDate, PDO::PARAM_STR);
-								$pendingStatus = "pending";
-								$paymentStmt->bindParam(":status", $pendingStatus, PDO::PARAM_STR);
-								
-								$paymentStmt->execute();
-								error_log("Created payment " . $i . "/" . $numberOfPayments . " for plan ID: " . $planId);
+								if($paymentFrequency === "30th" || $paymentFrequency === "both") {
+									// Payment on 30th (or last day of month)
+									$paymentCount++;
+									$currentMonth = date('m');
+									$currentYear = date('Y');
+									$targetMonth = $currentMonth + $i;
+									$targetYear = $currentYear;
+									if($targetMonth > 12) {
+										$targetYear += floor(($targetMonth - 1) / 12);
+										$targetMonth = (($targetMonth - 1) % 12) + 1;
+									}
+									$lastDayOfMonth = date('t', mktime(0, 0, 0, $targetMonth, 1, $targetYear));
+									$dueDate = date('Y-m-d', mktime(0, 0, 0, $targetMonth, min(30, $lastDayOfMonth), $targetYear));
+									
+									$paymentStmt = Connection::connect()->prepare("INSERT INTO installment_payments(installment_plan_id, payment_number, amount, due_date, status) VALUES (:installment_plan_id, :payment_number, :amount, :due_date, :status)");
+									
+									$paymentStmt->bindParam(":installment_plan_id", $planId, PDO::PARAM_INT);
+									$paymentStmt->bindParam(":payment_number", $paymentCount, PDO::PARAM_INT);
+									$paymentStmt->bindParam(":amount", $individualPaymentAmount, PDO::PARAM_STR);
+									$paymentStmt->bindParam(":due_date", $dueDate, PDO::PARAM_STR);
+									$pendingStatus = "pending";
+									$paymentStmt->bindParam(":status", $pendingStatus, PDO::PARAM_STR);
+									
+									if($paymentStmt->execute()) {
+										error_log("Created payment " . $paymentCount . " (30th) for plan ID: " . $planId . " - Due: " . $dueDate . " - Amount: " . $individualPaymentAmount);
+									} else {
+										error_log("Failed to create payment " . $paymentCount . " (30th) for plan ID: " . $planId . " - Error: " . print_r($paymentStmt->errorInfo(), true));
+									}
+								}
 							}
+							
+							// Verify payment creation
+							$verifyStmt = Connection::connect()->prepare("SELECT COUNT(*) as payment_count FROM installment_payments WHERE installment_plan_id = :plan_id");
+							$verifyStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
+							$verifyStmt->execute();
+							$verifyResult = $verifyStmt->fetch();
+							error_log("Verification: Created " . $verifyResult['payment_count'] . " payment records for plan ID: " . $planId);
+							
+							// Fallback: If no payment records were created, try again with a simpler approach
+							if($verifyResult['payment_count'] == 0) {
+								error_log("FALLBACK: No payment records created, attempting fallback creation...");
+								self::createMissingPaymentRecords($planId);
+							}
+							
 						} else {
 							error_log("Failed to create installment plan for sale ID: " . $saleId);
 						}
@@ -196,6 +284,9 @@ class ControllerSales{
 					}
 					} // End of valid sale ID check
 				}
+
+				// FINAL CHECK: Auto-fix any installment plans without payment records
+				self::autoFixMissingPaymentRecords($saleId);
 
 				echo'<script>
 
@@ -359,6 +450,7 @@ class ControllerSales{
 				"idSeller"=>$_POST["idSeller"],
 				"products"=>$productsList,
 				"tax"=>$_POST["newTaxPrice"],
+				"discount"=>isset($_POST["saleDiscount"]) ? $_POST["saleDiscount"] : 0,
 				"totalPrice"=>$_POST["saleTotal"],
 				"paymentMethod"=>$_POST["listPaymentMethod"]
 			);
@@ -761,6 +853,175 @@ class ControllerSales{
 
 		return $answer;
 
+	}
+
+	/*=============================================
+	SALES BY PAYMENT METHOD
+	=============================================*/
+
+	static public function ctrSalesByPaymentMethod($paymentMethod){
+
+		$table = "sales";
+
+		$answer = ModelSales::mdlSalesByPaymentMethod($table, $paymentMethod);
+
+		return $answer;
+
+	}
+
+	/*=============================================
+	INSTALLMENT STATISTICS
+	=============================================*/
+
+	static public function ctrInstallmentStats(){
+
+		$answer = ModelSales::mdlInstallmentStats();
+
+		return $answer;
+
+	}
+
+	/*=============================================
+	COMPLETED SALES TOTAL (Cash + QRPH + Card + Paid Installments)
+	=============================================*/
+
+	static public function ctrCompletedSalesTotal(){
+
+		$answer = ModelSales::mdlCompletedSalesTotal();
+
+		return $answer;
+
+	}
+
+	/*=============================================
+	AUTO-FIX MISSING PAYMENT RECORDS FOR A SALE
+	=============================================*/
+	
+	static private function autoFixMissingPaymentRecords($saleId) {
+		try {
+			error_log("Auto-fixing missing payment records for sale ID: " . $saleId);
+			
+			// Find any installment plan for this sale
+			$planStmt = Connection::connect()->prepare("SELECT * FROM installment_plans WHERE sale_id = :sale_id");
+			$planStmt->bindParam(":sale_id", $saleId, PDO::PARAM_INT);
+			$planStmt->execute();
+			$plan = $planStmt->fetch();
+			
+			if($plan) {
+				error_log("Found installment plan ID: " . $plan['id'] . " for sale ID: " . $saleId);
+				
+				// Check if payment records exist
+				$paymentStmt = Connection::connect()->prepare("SELECT COUNT(*) as payment_count FROM installment_payments WHERE installment_plan_id = :plan_id");
+				$paymentStmt->bindParam(":plan_id", $plan['id'], PDO::PARAM_INT);
+				$paymentStmt->execute();
+				$paymentResult = $paymentStmt->fetch();
+				
+				if($paymentResult['payment_count'] == 0) {
+					error_log("AUTO-FIX: No payment records found for plan " . $plan['id'] . ", creating them now...");
+					self::createMissingPaymentRecords($plan['id']);
+				} else {
+					error_log("AUTO-FIX: Payment records already exist (" . $paymentResult['payment_count'] . " records)");
+				}
+			} else {
+				error_log("AUTO-FIX: No installment plan found for sale ID: " . $saleId);
+			}
+			
+		} catch(Exception $e) {
+			error_log("AUTO-FIX: Error in autoFixMissingPaymentRecords: " . $e->getMessage());
+		}
+	}
+
+	/*=============================================
+	CREATE MISSING PAYMENT RECORDS FOR INSTALLMENT PLAN
+	=============================================*/
+	
+	static private function createMissingPaymentRecords($planId) {
+		try {
+			error_log("Creating missing payment records for plan ID: " . $planId);
+			
+			// Get the installment plan details
+			$planStmt = Connection::connect()->prepare("SELECT * FROM installment_plans WHERE id = :plan_id");
+			$planStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
+			$planStmt->execute();
+			$plan = $planStmt->fetch();
+			
+			if(!$plan) {
+				error_log("Plan not found for ID: " . $planId);
+				return false;
+			}
+			
+			$paymentFrequency = $plan['payment_frequency'];
+			$actualNumberOfPayments = intval($plan['number_of_payments']);
+			$totalAmount = floatval($plan['total_amount']);
+			$paymentAmount = round($totalAmount / $actualNumberOfPayments, 2);
+			$startDate = $plan['start_date'];
+			
+			// Calculate original months
+			$originalMonths = $paymentFrequency === 'both' ? $actualNumberOfPayments / 2 : $actualNumberOfPayments;
+			
+			error_log("Plan details - Frequency: $paymentFrequency, Payments: $actualNumberOfPayments, Amount: $paymentAmount, Months: $originalMonths");
+			
+			$paymentCount = 0;
+			for($i = 1; $i <= $originalMonths; $i++) {
+				if($paymentFrequency === "15th" || $paymentFrequency === "both") {
+					$paymentCount++;
+					$currentMonth = date('m', strtotime($startDate));
+					$currentYear = date('Y', strtotime($startDate));
+					$targetMonth = $currentMonth + $i;
+					$targetYear = $currentYear;
+					if($targetMonth > 12) {
+						$targetYear += floor(($targetMonth - 1) / 12);
+						$targetMonth = (($targetMonth - 1) % 12) + 1;
+					}
+					$dueDate = date('Y-m-d', mktime(0, 0, 0, $targetMonth, 15, $targetYear));
+					
+					$paymentStmt = Connection::connect()->prepare("INSERT INTO installment_payments(installment_plan_id, payment_number, amount, due_date, status) VALUES (:plan_id, :payment_number, :amount, :due_date, 'pending')");
+					$paymentStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
+					$paymentStmt->bindParam(":payment_number", $paymentCount, PDO::PARAM_INT);
+					$paymentStmt->bindParam(":amount", $paymentAmount, PDO::PARAM_STR);
+					$paymentStmt->bindParam(":due_date", $dueDate, PDO::PARAM_STR);
+					
+					if($paymentStmt->execute()) {
+						error_log("FALLBACK: Created payment {$paymentCount} (15th): {$dueDate} - Amount: {$paymentAmount}");
+					} else {
+						error_log("FALLBACK: Failed to create payment {$paymentCount} (15th)");
+					}
+				}
+				
+				if($paymentFrequency === "30th" || $paymentFrequency === "both") {
+					$paymentCount++;
+					$currentMonth = date('m', strtotime($startDate));
+					$currentYear = date('Y', strtotime($startDate));
+					$targetMonth = $currentMonth + $i;
+					$targetYear = $currentYear;
+					if($targetMonth > 12) {
+						$targetYear += floor(($targetMonth - 1) / 12);
+						$targetMonth = (($targetMonth - 1) % 12) + 1;
+					}
+					$lastDayOfMonth = date('t', mktime(0, 0, 0, $targetMonth, 1, $targetYear));
+					$dueDate = date('Y-m-d', mktime(0, 0, 0, $targetMonth, min(30, $lastDayOfMonth), $targetYear));
+					
+					$paymentStmt = Connection::connect()->prepare("INSERT INTO installment_payments(installment_plan_id, payment_number, amount, due_date, status) VALUES (:plan_id, :payment_number, :amount, :due_date, 'pending')");
+					$paymentStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
+					$paymentStmt->bindParam(":payment_number", $paymentCount, PDO::PARAM_INT);
+					$paymentStmt->bindParam(":amount", $paymentAmount, PDO::PARAM_STR);
+					$paymentStmt->bindParam(":due_date", $dueDate, PDO::PARAM_STR);
+					
+					if($paymentStmt->execute()) {
+						error_log("FALLBACK: Created payment {$paymentCount} (30th): {$dueDate} - Amount: {$paymentAmount}");
+					} else {
+						error_log("FALLBACK: Failed to create payment {$paymentCount} (30th)");
+					}
+				}
+			}
+			
+			error_log("FALLBACK: Completed creating {$paymentCount} payment records for plan {$planId}");
+			return true;
+			
+		} catch(Exception $e) {
+			error_log("FALLBACK: Error creating missing payment records: " . $e->getMessage());
+			return false;
+		}
 	}
 
 }

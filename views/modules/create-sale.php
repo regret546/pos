@@ -201,11 +201,35 @@ if($_SESSION["profile"] == "Special"){
                     <hr>
 
                     <div class="row">
-                        <!-- Hidden field for total calculation -->
+                        <!--=====================================
+                        DISCOUNT INPUT
+                        ======================================-->
+                        <div class="col-xs-6" style="padding-right: 0">
+                            <div class="form-group">
+                                <label>Discount Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon">₱</span>
+                                    <input type="number" class="form-control" name="saleDiscount" id="saleDiscount" placeholder="0.00" min="0" step="0.01" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!--=====================================
+                        TOTAL DISPLAY
+                        ======================================-->
+                        <div class="col-xs-6" style="padding-left: 0">
+                            <div class="form-group">
+                                <label>Total Amount</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon">₱</span>
+                                    <input type="text" class="form-control" id="totalDisplay" placeholder="0.00" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden fields for calculations -->
                         <input type="hidden" name="saleTotal" id="saleTotal" value="0">
-                        <!-- Hidden field for tax calculation -->
                         <input type="hidden" name="newTaxPrice" id="newTaxPrice" value="0">
-                        <!-- Hidden field for tax percentage -->
                         <input type="hidden" name="newTaxSale" id="newTaxSale" value="0">
                     </div>
 
@@ -433,6 +457,12 @@ window.showTransactionField = function(paymentMethod) {
 
 $(document).ready(function() {
     
+    // Initialize total display and calculations
+    setTimeout(function() {
+        addingTotalPrices();
+        addTax();
+    }, 100);
+    
     $('#newPaymentMethod').change(function() {
         var method = $(this).val();
         
@@ -459,12 +489,22 @@ $(document).ready(function() {
                        '</select>' +
                        '</div>' +
                        '</div>' +
-                       '<div class="col-xs-12" id="installmentInterestDiv" style="display: none; margin-top: 10px;">' +
+                       '<div class="col-xs-6" id="installmentInterestDiv" style="display: none; margin-top: 10px;">' +
                        '<label for="installmentInterest">Interest Rate (%):</label>' +
                        '<div class="input-group">' +
                        '<span class="input-group-addon"><i class="fa fa-percent"></i></span>' +
                        '<input type="number" class="form-control" name="installmentInterest" id="installmentInterest" ' +
                        'min="0" max="100" step="0.01" placeholder="Enter interest rate" required>' +
+                       '</div>' +
+                       '</div>' +
+                       '<div class="col-xs-6" id="installmentFrequencyDiv" style="display: none; margin-top: 10px;">' +
+                       '<label for="installmentFrequency">Payment Frequency:</label>' +
+                       '<div class="input-group">' +
+                       '<select class="form-control" name="installmentFrequency" id="installmentFrequency" required>' +
+                       '<option value="15th">Every 15th of the month</option>' +
+                       '<option value="30th" selected>Every 30th of the month</option>' +
+                       '<option value="both">Both 15th and 30th</option>' +
+                       '</select>' +
                        '</div>' +
                        '</div>' +
                        '<div class="col-xs-12" id="installmentSummaryDiv" style="display: none; margin-top: 10px;">' +
@@ -484,9 +524,11 @@ $(document).ready(function() {
                 var months = $(this).val();
                 if (months) {
                     $('#installmentInterestDiv').show();
+                    $('#installmentFrequencyDiv').show();
                     $('#listPaymentMethod').val('installment_' + months);
                 } else {
                     $('#installmentInterestDiv').hide();
+                    $('#installmentFrequencyDiv').hide();
                     $('#listPaymentMethod').val('');
                 }
             });
@@ -595,9 +637,45 @@ $(document).ready(function() {
                 console.log('showTransactionField call completed');
             }, 50);
         } else if (method === 'cash') {
-            // Let global handler manage cash payments, don't interfere
-            console.log('Cash payment detected - letting global handler manage it');
-            return;
+            console.log('Cash payment detected - adding cash fields');
+            $('#listPaymentMethod').val(method);
+            
+            // Reset container classes for cash layout
+            $('#newPaymentMethod').parent().parent().removeClass('col-xs-4');
+            $('#newPaymentMethod').parent().parent().addClass('col-xs-6');
+            
+            // Add cash payment fields
+            var html = '<div class="col-xs-6">' +
+                       '<label for="newCashValue">Customer Cash:</label>' +
+                       '<div class="input-group">' +
+                       '<span class="input-group-addon">₱</span>' +
+                       '<input type="number" class="form-control" name="newCashValue" id="newCashValue" ' +
+                       'placeholder="0.00" min="0" step="0.01" required>' +
+                       '</div>' +
+                       '</div>' +
+                       '<div class="col-xs-6">' +
+                       '<label for="newCashChange">Change:</label>' +
+                       '<div class="input-group">' +
+                       '<span class="input-group-addon">₱</span>' +
+                       '<input type="text" class="form-control" name="newCashChange" id="newCashChange" ' +
+                       'placeholder="0.00" readonly>' +
+                       '</div>' +
+                       '</div>';
+            
+            $('.paymentMethodBoxes').html(html);
+            
+            // Add event handler for cash change calculation
+            $(document).on('input change', '#newCashValue', function() {
+                var cashValue = parseFloat($(this).val()) || 0;
+                var totalPrice = parseFloat($('#saleTotal').val()) || 0;
+                var change = cashValue - totalPrice;
+                
+                if (change >= 0) {
+                    $('#newCashChange').val(change.toFixed(2));
+                } else {
+                    $('#newCashChange').val('0.00');
+                }
+            });
         } else {
             // For other payments, clear all additional options
             $('#listPaymentMethod').val(method);

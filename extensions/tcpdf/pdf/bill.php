@@ -32,9 +32,10 @@ $answerSale = ControllerSales::ctrShowSales($itemSale, $valueSale);
 
 $saledate = substr($answerSale["saledate"],0,-8);
 $products = json_decode($answerSale["products"], true);
+$paymentMethod = $answerSale["paymentMethod"];
 
 $tax = number_format($answerSale["tax"],2);
-$totalPrice = number_format($answerSale["totalPrice"],2);
+$saleTotalPrice = number_format($answerSale["totalPrice"],2);
 
 //TRAEMOS LA INFORMACIÓN DEL Customer
 
@@ -63,7 +64,7 @@ $peso = 'PHP';  // Using PHP as text instead of the symbol for better compatibil
 
 $block1 = <<<EOF
 
-<table style="font-size:7px; text-align:center">
+<table style="font-size:8px; text-align:center">
 
 	<tr>
 		
@@ -71,19 +72,21 @@ $block1 = <<<EOF
 	
 			<div>
 			
-				Date: $saledate
+				<strong>DELIVERY RECEIPT</strong>
 
 				<br><br>
-				Your Company Name Here
+				Siargao Computer Trading
 
 				<br>
-				Address: Your Address Here
+				Pob. 12, Dapa, Siargao Island
 
 				<br>
-				Contact: Your Contact Number
+				9286127206
 
+				<br><br>
+				Date: $saledate
 				<br>
-				Invoice: $valueSale
+				Receipt No: $valueSale
 
 				<br><br>					
 				Customer: $answerCustomer[name]
@@ -92,6 +95,9 @@ $block1 = <<<EOF
 				Seller: $answerSeller[name]
 
 				<br>
+				Payment: $paymentMethod
+
+				<br><br>
 
 			</div>
 
@@ -113,7 +119,7 @@ foreach ($products as $key => $item) {
 
 $unitValue = number_format($item["price"], 2);
 
-$totalPrice = number_format($item["totalPrice"], 2);
+$itemTotalPrice = number_format($item["totalPrice"], 2);
 
 $block2 = <<<EOF
 
@@ -130,7 +136,7 @@ $block2 = <<<EOF
 	<tr>
 	
 		<td style="width:160px; text-align:right">
-		$peso $unitValue Units * $item[quantity]  = $peso $totalPrice
+		$peso $unitValue Units * $item[quantity]  = $peso $itemTotalPrice
 		<br>
 		</td>
 
@@ -157,7 +163,7 @@ $block3 = <<<EOF
 		</td>
 
 		<td style="width:80px;">
-			$peso $totalPrice
+			$peso $saleTotalPrice
 		</td>
 
 	</tr>
@@ -189,7 +195,7 @@ $block3 = <<<EOF
 		</td>
 
 		<td style="width:80px;">
-			$peso $totalPrice
+			$peso $saleTotalPrice
 		</td>
 
 	</tr>

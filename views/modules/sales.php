@@ -129,7 +129,7 @@ if($_SESSION["profile"] == "Special"){
                         
                       <div class="btn-group">
                         
-                      <button class="btn btn-warning btnPrintBill" saleCode="'.$value["code"].'">
+                      <button class="btn btn-warning btnPrintBill" saleCode="'.$value["code"].'" title="Print A4 Receipt">
 
                         <i class="fa fa-print"></i>
 

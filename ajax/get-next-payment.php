@@ -2,7 +2,12 @@
 
 session_start();
 
-require_once "../models/connection.php";
+// Try both possible paths for connection
+if (file_exists("../models/connection.php")) {
+    require_once "../models/connection.php";
+} else {
+    require_once "models/connection.php";
+}
 
 header('Content-Type: application/json');
 
@@ -34,7 +39,12 @@ if(isset($_POST["planId"])) {
             $checkStmt->execute();
             $result = $checkStmt->fetch();
             
-            if($result['total'] == $result['paid']) {
+            if($result['total'] == 0) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'No payment records found for this installment plan. Please contact administrator to fix this issue.'
+                ]);
+            } elseif($result['total'] == $result['paid']) {
                 echo json_encode([
                     'success' => false,
                     'message' => 'All payments have been completed for this installment plan!'

@@ -5,10 +5,15 @@ PAYMENT METHOD HANDLING
 $(document).ready(function () {
   console.log("Payment method handler loaded");
 
-  // Check if we're on edit-sale page, if so, don't initialize this handler
+  // Check if we're on edit-sale or create-sale page, if so, don't initialize this handler
   var currentPath = window.location.href;
-  if (currentPath.indexOf("edit-sale") !== -1) {
-    console.log("Edit-sale page detected, skipping global installment handler");
+  if (
+    currentPath.indexOf("edit-sale") !== -1 ||
+    currentPath.indexOf("create-sale") !== -1
+  ) {
+    console.log(
+      "Edit-sale or Create-sale page detected, skipping global payment handler"
+    );
     return;
   }
 
@@ -261,11 +266,11 @@ $(".saleForm").on("click", "button.removeProduct", function () {
     "btn-primary addProductSale"
   );
 
-  if ($(".newProducto").children().length == 0) {
+  if ($(".newProduct").children().length == 0) {
     $("#newTaxSale").val(0);
-    $("#newTotalSale").val(0);
-    $("#totalSale").val(0);
-    $("#newTotalSale").attr("totalSale", 0);
+    $("#saleTotal").val(0);
+    $("#totalDisplay").val("0.00");
+    $("#saleDiscount").val(0);
   } else {
     // ADDING TOTAL PRICES
 
@@ -410,6 +415,14 @@ $(".saleForm").on("change", "select.newProductDescription", function () {
       $(newProductPrice).val(answer["sellingPrice"]);
       $(newProductPrice).attr("realPrice", answer["sellingPrice"]);
 
+      // ADDING TOTAL PRICES
+
+      addingTotalPrices();
+
+      // ADD TAX
+
+      addTax();
+
       // GROUP PRODUCTS IN JSON FORMAT
 
       listProducts();
@@ -489,11 +502,26 @@ function addingTotalPrices() {
     return total + number;
   }
 
-  var addingTotalPrice = arrayAdditionPrice.reduce(additionArray);
+  // Handle case when no products are added
+  var subtotal =
+    arrayAdditionPrice.length > 0
+      ? arrayAdditionPrice.reduce(additionArray)
+      : 0;
 
-  $("#newSaleTotal").val(addingTotalPrice);
-  $("#saleTotal").val(addingTotalPrice);
-  $("#newSaleTotal").attr("totalSale", addingTotalPrice);
+  // Apply discount
+  var discount = Number($("#saleDiscount").val()) || 0;
+  var finalTotal = subtotal - discount;
+
+  // Ensure total is not negative
+  if (finalTotal < 0) {
+    finalTotal = 0;
+    $("#saleDiscount").val(subtotal); // Adjust discount to maximum possible
+  }
+
+  $("#saleTotal").val(finalTotal);
+
+  // Update the total display field
+  $("#totalDisplay").val(finalTotal.toFixed(2));
 
   // Update installment summary if function exists and installment payment is selected
   if (typeof updateInstallmentSummary === "function") {
@@ -514,15 +542,17 @@ ADD TAX
 
 function addTax() {
   var tax = Number($("#newTaxSale").val());
-  var totalPrice = Number($("#saleTotal").val());
 
-  var totalTax = (totalPrice * tax) / 100;
-  totalPrice = totalPrice + totalTax;
+  // Get the base total (after discount) but before tax
+  var baseTotal = Number($("#saleTotal").val());
+
+  var totalTax = (baseTotal * tax) / 100;
+  var finalTotal = baseTotal + totalTax;
 
   $("#newTaxPrice").val(totalTax);
   $("#newTaxPrice").attr("taxValue", totalTax);
-  $("#newSaleTotal").val(totalPrice);
-  $("#saleTotal").val(totalPrice);
+  $("#saleTotal").val(finalTotal);
+  $("#totalDisplay").val(finalTotal.toFixed(2));
 
   // Update installment summary if function exists and installment payment is selected
   if (typeof updateInstallmentSummary === "function") {
@@ -557,7 +587,7 @@ $("#newTaxSale").change(function () {
 FINAL PRICE FORMAT
 =============================================*/
 
-$("#newSaleTotal").number(true, 2);
+$("#totalDisplay").number(true, 2);
 
 /*=============================================
 SELECT PAYMENT METHOD
@@ -573,9 +603,9 @@ $(document).ready(function () {
   console.log("isEditSale:", isEditSale);
   console.log("isCreateSale:", isCreateSale);
 
-  if (isEditSale) {
+  if (isEditSale || isCreateSale) {
     console.log(
-      "Edit-sale page detected, skipping global payment method handler"
+      "Edit-sale or Create-sale page detected, skipping global payment method handler"
     );
     return;
   }
@@ -756,13 +786,13 @@ $(".tables").on("click", ".btnDeleteSale", function () {
 });
 
 /*=============================================
-PRINT BILL
+PRINT BILL (A4 FORMAT)
 =============================================*/
 
 $(".tables").on("click", ".btnPrintBill", function () {
   var saleCode = $(this).attr("saleCode");
 
-  window.open("extensions/tcpdf/pdf/bill.php?code=" + saleCode, "_blank");
+  window.open("extensions/tcpdf/pdf/bill-a4.php?code=" + saleCode, "_blank");
 });
 
 /*=============================================
@@ -819,6 +849,33 @@ $(".daterangepicker.opensleft .range_inputs .cancelBtn").on(
     window.location = "index.php?route=sales";
   }
 );
+
+/*=============================================
+DISCOUNT INPUT CHANGE
+=============================================*/
+$(document).on("input change", "#saleDiscount", function () {
+  // Recalculate totals when discount changes
+  addingTotalPrices();
+
+  // Recalculate tax if needed
+  addTax();
+
+  // Update cash change calculation if cash payment is selected
+  if (
+    $("#newPaymentMethod").val() === "cash" &&
+    $("#newCashValue").length > 0
+  ) {
+    var cashValue = parseFloat($("#newCashValue").val()) || 0;
+    var totalPrice = parseFloat($("#saleTotal").val()) || 0;
+    var change = cashValue - totalPrice;
+
+    if (change >= 0) {
+      $("#newCashChange").val(change.toFixed(2));
+    } else {
+      $("#newCashChange").val("0.00");
+    }
+  }
+});
 
 /*=============================================
 CAPTURE TODAY'S BUTTON
