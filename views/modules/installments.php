@@ -165,8 +165,8 @@ if($_SESSION["profile"] == "Special"){
                                   <i class="fa fa-check"></i>
                                 </button>';
                                 
-                                // Add acknowledgment receipt button if there's a downpayment
-                                if($downpaymentAmount > 0 && $plan["bill_number"]) {
+                                // Add acknowledgment receipt button for all installment plans
+                                if($plan["bill_number"]) {
                                   echo '<button class="btn btn-warning btn-xs btnPrintAcknowledgment" saleCode="'.$plan["bill_number"].'" title="Print Acknowledgment Receipt">
                                           <i class="fa fa-file-text"></i>
                                         </button>';

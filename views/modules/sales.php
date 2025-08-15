@@ -145,7 +145,7 @@ require_once "models/connection.php";
                           $stmt->execute();
                           $installmentPlan = $stmt->fetch();
                           
-                          if($installmentPlan && isset($installmentPlan["downpayment_amount"]) && floatval($installmentPlan["downpayment_amount"]) > 0) {
+                          if($installmentPlan) {
                             echo '<button class="btn btn-info btnPrintAcknowledgment" saleCode="'.$value["code"].'" title="Print Acknowledgment Receipt">
                                     <i class="fa fa-file-text"></i>
                                   </button>';

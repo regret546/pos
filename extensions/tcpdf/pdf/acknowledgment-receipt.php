@@ -87,13 +87,6 @@ try {
 
 $downpaymentAmount = isset($installmentPlan["downpayment_amount"]) ? floatval($installmentPlan["downpayment_amount"]) : 0;
 
-// Only show acknowledgment receipt if there's a downpayment
-if($downpaymentAmount <= 0) {
-    ob_end_clean();
-    echo '<script>alert("This receipt is only for installment payments with downpayments."); window.close();</script>';
-    return;
-}
-
 // Clean output buffer before PDF generation
 ob_end_clean();
 
@@ -240,14 +233,19 @@ $pdf->writeHTML($block2, false, false, false, false, '');
 
 $downpaymentFormatted = number_format($downpaymentAmount, 2);
 
+// Generate the appropriate agreement text based on whether there's a downpayment
+if($downpaymentAmount > 0) {
+    $agreementText = "The amount of <span style=\"background-color:#D3D3D3; padding:2px 8px; font-weight:bold;\">$downpaymentFormatted</span> is received from <span style=\"background-color:#D3D3D3; padding:2px 8px; font-weight:bold;\">$answerCustomer[name]</span><br>as a <strong>downpayment</strong> for the indicated item above. As per agreement between both parties, the remaining balance will be settled on the following payment schedule:";
+} else {
+    $agreementText = "This acknowledges the installment payment agreement between <span style=\"background-color:#D3D3D3; padding:2px 8px; font-weight:bold;\">$answerCustomer[name]</span> and <strong>Siargao Computer Trading</strong><br>for the indicated item(s) above. As per agreement between both parties, the total amount will be settled according to the following payment schedule:";
+}
+
 $block3 = <<<EOF
 
 	<table style="width:100%; border-collapse: collapse;">
 		<tr>
 			<td style="font-size:11px; padding:5px;">
-				The amount of <span style="background-color:#D3D3D3; padding:2px 8px; font-weight:bold;">$downpaymentFormatted</span> is received from <span style="background-color:#D3D3D3; padding:2px 8px; font-weight:bold;">$answerCustomer[name]</span><br>
-				as a <strong>downpayment</strong> for the indicated item above. As per agreement by both parties, the remaining balance will be settled<br>
-				on the following dates:
+				$agreementText
 			</td>
 		</tr>
 	</table>
