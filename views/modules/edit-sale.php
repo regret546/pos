@@ -573,7 +573,12 @@ $(document).ready(function() {
             installmentMonths = '<?php echo $installmentPlan["number_of_payments"]; ?>';
             installmentInterest = '<?php echo isset($installmentPlan["interest_rate"]) ? $installmentPlan["interest_rate"] : 0; ?>';
             installmentFrequency = '<?php echo isset($installmentPlan["payment_frequency"]) ? $installmentPlan["payment_frequency"] : "30th"; ?>';
-            console.log('Got installment data from PHP - Months:', installmentMonths, 'Interest:', installmentInterest, 'Frequency:', installmentFrequency);
+            
+            // Get downpayment data
+            var existingDownpayment = <?php echo isset($installmentPlan["downpayment_amount"]) ? floatval($installmentPlan["downpayment_amount"]) : 0; ?>;
+            var hasExistingDownpayment = existingDownpayment > 0;
+            
+            console.log('Got installment data from PHP - Months:', installmentMonths, 'Interest:', installmentInterest, 'Frequency:', installmentFrequency, 'Downpayment:', existingDownpayment);
         <?php else: ?>
             // Fallback: Extract months from the payment method (e.g., "installment_6" -> "6")
             var parts = currentPaymentMethod.split('_');
@@ -582,7 +587,12 @@ $(document).ready(function() {
             }
             installmentInterest = 0; // Default to 0 if not available
             installmentFrequency = "30th"; // Default frequency
-            console.log('Using fallback installment data - Months:', installmentMonths, 'Interest:', installmentInterest, 'Frequency:', installmentFrequency);
+            
+            // Default downpayment values
+            var existingDownpayment = 0;
+            var hasExistingDownpayment = false;
+            
+            console.log('Using fallback installment data - Months:', installmentMonths, 'Interest:', installmentInterest, 'Frequency:', installmentFrequency, 'Downpayment:', existingDownpayment);
         <?php endif; ?>
         
         // Manually trigger the installment display immediately
@@ -614,6 +624,17 @@ $(document).ready(function() {
             if (installmentFrequency) {
                 console.log('Setting payment frequency to:', installmentFrequency);
                 $('#installmentFrequency').val(installmentFrequency);
+            }
+            
+            // Set downpayment values if they exist
+            if (hasExistingDownpayment) {
+                console.log('Setting existing downpayment:', existingDownpayment);
+                $('#hasDownpayment').prop('checked', true);
+                $('#downpaymentAmount').prop('disabled', false).val(existingDownpayment);
+            } else {
+                console.log('No existing downpayment found');
+                $('#hasDownpayment').prop('checked', false);
+                $('#downpaymentAmount').prop('disabled', true).val('');
             }
         }, 300);
         
@@ -650,35 +671,54 @@ $(document).ready(function() {
         var interest = parseFloat($('#installmentInterest').val()) || 0;
         var months = parseInt($('#installmentMonths').val()) || 0;
         var total = parseFloat($('#saleTotal').val()) || 0;
+        var hasDownpayment = $('#hasDownpayment').is(':checked');
+        var downpayment = hasDownpayment ? (parseFloat($('#downpaymentAmount').val()) || 0) : 0;
         
         // Show summary even if total is 0 for demonstration purposes
         if (interest >= 0 && months > 0) {
             var monthlyInterest = interest / 100;
             
             if (total > 0) {
-                // Calculate with actual total
-                var totalWithInterest = total * (1 + (monthlyInterest * months));
+                // Calculate with actual total and downpayment
+                var remainingAmount = total - downpayment;
+                var totalWithInterest = remainingAmount * (1 + (monthlyInterest * months));
                 var monthlyPayment = totalWithInterest / months;
-                var totalInterestAmount = totalWithInterest - total;
+                var totalInterestAmount = totalWithInterest - remainingAmount;
+                var finalTotalToPay = downpayment + totalWithInterest;
                 
-                var summaryHTML = '<p><strong>Original Amount:</strong> ₱' + total.toFixed(2) + '</p>' +
-                                '<p><strong>Interest Rate:</strong> ' + interest + '% (' + months + ' months)</p>' +
-                                '<p><strong>Interest Amount:</strong> ₱' + totalInterestAmount.toFixed(2) + '</p>' +
-                                '<p style="font-size: 16px; color: #00a65a;"><strong>Total Amount:</strong> ₱' + totalWithInterest.toFixed(2) + '</p>' +
-                                '<p style="font-size: 16px; color: #3c8dbc;"><strong>Monthly Payment:</strong> ₱' + monthlyPayment.toFixed(2) + '</p>';
+                var summaryHTML = '<p><strong>Original Amount:</strong> ₱' + total.toFixed(2) + '</p>';
+                
+                if (hasDownpayment && downpayment > 0) {
+                    summaryHTML += '<p><strong>Downpayment:</strong> ₱' + downpayment.toFixed(2) + '</p>' +
+                                 '<p><strong>Remaining for Installment:</strong> ₱' + remainingAmount.toFixed(2) + '</p>';
+                }
+                
+                summaryHTML += '<p><strong>Interest Rate:</strong> ' + interest + '% (' + months + ' months)</p>' +
+                             '<p><strong>Interest Amount:</strong> ₱' + totalInterestAmount.toFixed(2) + '</p>' +
+                             '<p style="font-size: 16px; color: #00a65a;"><strong>Total to Pay:</strong> ₱' + total.toFixed(2) + ' + ₱' + totalInterestAmount.toFixed(2) + ' interest = ₱' + (total + totalInterestAmount).toFixed(2) + '</p>' +
+                             '<p style="font-size: 16px; color: #3c8dbc;"><strong>Monthly Payment:</strong> ₱' + monthlyPayment.toFixed(2) + '</p>';
             } else {
                 // Show example with 1000 pesos when no products added yet
                 var exampleTotal = 1000;
-                var totalWithInterest = exampleTotal * (1 + (monthlyInterest * months));
+                var exampleDownpayment = hasDownpayment ? 200 : 0;
+                var remainingAmount = exampleTotal - exampleDownpayment;
+                var totalWithInterest = remainingAmount * (1 + (monthlyInterest * months));
                 var monthlyPayment = totalWithInterest / months;
-                var totalInterestAmount = totalWithInterest - exampleTotal;
+                var totalInterestAmount = totalWithInterest - remainingAmount;
+                var finalTotalToPay = exampleDownpayment + totalWithInterest;
                 
                 var summaryHTML = '<div class="alert alert-warning" style="margin-bottom: 10px;"><small><strong>Preview:</strong> Add products to see actual calculation</small></div>' +
-                                '<p><strong>Example (₱1,000):</strong></p>' +
-                                '<p><strong>Interest Rate:</strong> ' + interest + '% (' + months + ' months)</p>' +
-                                '<p><strong>Interest Amount:</strong> ₱' + totalInterestAmount.toFixed(2) + '</p>' +
-                                '<p style="font-size: 16px; color: #00a65a;"><strong>Total Amount:</strong> ₱' + totalWithInterest.toFixed(2) + '</p>' +
-                                '<p style="font-size: 16px; color: #3c8dbc;"><strong>Monthly Payment:</strong> ₱' + monthlyPayment.toFixed(2) + '</p>';
+                                '<p><strong>Example (₱1,000):</strong></p>';
+                
+                if (hasDownpayment) {
+                    summaryHTML += '<p><strong>Example Downpayment:</strong> ₱' + exampleDownpayment.toFixed(2) + '</p>' +
+                                 '<p><strong>Remaining for Installment:</strong> ₱' + remainingAmount.toFixed(2) + '</p>';
+                }
+                
+                summaryHTML += '<p><strong>Interest Rate:</strong> ' + interest + '% (' + months + ' months)</p>' +
+                             '<p><strong>Interest Amount:</strong> ₱' + totalInterestAmount.toFixed(2) + '</p>' +
+                             '<p style="font-size: 16px; color: #00a65a;"><strong>Total to Pay:</strong> ₱' + exampleTotal.toFixed(2) + ' + ₱' + totalInterestAmount.toFixed(2) + ' interest = ₱' + (exampleTotal + totalInterestAmount).toFixed(2) + '</p>' +
+                             '<p style="font-size: 16px; color: #3c8dbc;"><strong>Monthly Payment:</strong> ₱' + monthlyPayment.toFixed(2) + '</p>';
             }
             
             // Wait a moment for DOM to be ready, then update
@@ -731,6 +771,19 @@ $(document).ready(function() {
                    '</select>' +
                    '</div>' +
                    '</div>' +
+                   '<div class="col-xs-6" id="downpaymentDiv" style="display: none; margin-top: 10px;">' +
+                   '<label for="downpaymentAmount">Downpayment (Optional):</label>' +
+                   '<div class="input-group">' +
+                   '<span class="input-group-addon">₱</span>' +
+                   '<input type="number" class="form-control" name="downpaymentAmount" id="downpaymentAmount" ' +
+                   'min="0" step="0.01" placeholder="Enter downpayment amount" disabled>' +
+                   '</div>' +
+                   '<div class="checkbox" style="margin-top: 5px;">' +
+                   '<label>' +
+                   '<input type="checkbox" id="hasDownpayment" name="hasDownpayment"> Customer wants to make a downpayment' +
+                   '</label>' +
+                   '</div>' +
+                   '</div>' +
                    '<div class="col-xs-6" id="installmentInterestDiv" style="display: none; margin-top: 10px;">' +
                    '<label for="installmentInterest">Interest Rate (%):</label>' +
                    '<div class="input-group">' +
@@ -776,23 +829,49 @@ $(document).ready(function() {
         // Remove existing handlers first
         $(document).off('change', '#installmentMonths');
         $(document).off('input', '#installmentInterest');
+        $(document).off('change', '#hasDownpayment');
+        $(document).off('input', '#downpaymentAmount');
         
         // Add new handlers
         $(document).on('change', '#installmentMonths', function() {
             var months = $(this).val();
             console.log('Months changed to:', months);
             if (months) {
+                $('#downpaymentDiv').show();
                 $('#installmentInterestDiv').show();
                 $('#installmentFrequencyDiv').show();
                 $('#listPaymentMethod').val('installment_' + months);
                 console.log('Set listPaymentMethod to:', 'installment_' + months);
                 updateInstallmentSummary();
             } else {
+                $('#downpaymentDiv').hide();
                 $('#installmentInterestDiv').hide();
                 $('#installmentFrequencyDiv').hide();
                 $('#listPaymentMethod').val('');
                 console.log('Cleared listPaymentMethod');
             }
+        });
+        
+        // Handle downpayment checkbox
+        $(document).on('change', '#hasDownpayment', function() {
+            if ($(this).is(':checked')) {
+                $('#downpaymentAmount').prop('disabled', false).focus();
+            } else {
+                $('#downpaymentAmount').prop('disabled', true).val('');
+                updateInstallmentSummary();
+            }
+        });
+        
+        // Handle downpayment amount input
+        $(document).on('input', '#downpaymentAmount', function() {
+            var downpayment = parseFloat($(this).val()) || 0;
+            var total = parseFloat($('#saleTotal').val()) || 0;
+            
+            // Validate downpayment doesn't exceed total
+            if (downpayment > total && total > 0) {
+                $(this).val(total.toFixed(2));
+            }
+            updateInstallmentSummary();
         });
         
         $(document).on('input', '#installmentInterest', function() {

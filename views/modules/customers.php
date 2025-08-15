@@ -36,6 +36,75 @@ if($_SESSION["profile"] == "Special"){
 
   <section class="content">
 
+    <!-- Customer Dashboard Box -->
+    <div class="row">
+      <?php
+      $item = null;
+      $value = null;
+      $customers = controllerCustomers::ctrShowCustomers($item, $value);
+      $totalCustomers = count($customers);
+      ?>
+      
+      <div class="col-lg-4 col-xs-6">
+        <div class="small-box bg-navy">
+          <div class="inner">
+            <h3><?php echo number_format($totalCustomers); ?></h3>
+            <p>Total Customers</p>
+          </div>
+          <div class="icon">
+            <i class="ion ion-person-add"></i>
+          </div>
+          <div class="small-box-footer" style="background-color: rgba(0,0,0,0.1); color: #fff; padding: 8px; text-align: center;">
+            Manage customer database
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-xs-6">
+        <div class="small-box bg-green">
+          <div class="inner">
+            <?php
+            $totalPurchases = 0;
+            foreach($customers as $customer) {
+              $totalPurchases += $customer["purchases"];
+            }
+            ?>
+            <h3><?php echo number_format($totalPurchases); ?></h3>
+            <p>Total Customer Purchases</p>
+          </div>
+          <div class="icon">
+            <i class="fa fa-shopping-cart"></i>
+          </div>
+          <div class="small-box-footer" style="background-color: rgba(0,0,0,0.1); color: #fff; padding: 8px; text-align: center;">
+            Items purchased by customers
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-xs-6">
+        <div class="small-box bg-blue">
+          <div class="inner">
+            <?php
+            $activeCustomers = 0;
+            foreach($customers as $customer) {
+              if($customer["purchases"] > 0) {
+                $activeCustomers++;
+              }
+            }
+            ?>
+            <h3><?php echo number_format($activeCustomers); ?></h3>
+            <p>Active Customers</p>
+          </div>
+          <div class="icon">
+            <i class="fa fa-users"></i>
+          </div>
+          <div class="small-box-footer" style="background-color: rgba(0,0,0,0.1); color: #fff; padding: 8px; text-align: center;">
+            Customers with purchases
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="box">
 
       <div class="box-header with-border">

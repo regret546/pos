@@ -342,6 +342,70 @@ class ModelSales{
 	}
 
 	/*=============================================
+	COMPLETED SALES DATE RANGE (Cash + QRPH + Card + Paid Installments)
+	=============================================*/
+
+	static public function mdlCompletedSalesDateRange($table, $initialDate, $finalDate){
+
+		$whereClause = "";
+		$params = array();
+
+		// Build date filter
+		if($initialDate != null && $finalDate != null){
+			if($initialDate == $finalDate){
+				$whereClause = "WHERE DATE(s.saledate) = :saledate";
+				$params[':saledate'] = $finalDate;
+			} else {
+				$actualDate = new DateTime();
+				$actualDate->add(new DateInterval("P1D"));
+				$actualDatePlusOne = $actualDate->format("Y-m-d");
+
+				$finalDate2 = new DateTime($finalDate);
+				$finalDate2->add(new DateInterval("P1D"));
+				$finalDatePlusOne = $finalDate2->format("Y-m-d");
+
+				if($finalDatePlusOne == $actualDatePlusOne){
+					$whereClause = "WHERE s.saledate BETWEEN :initialDate AND :finalDatePlusOne";
+					$params[':initialDate'] = $initialDate;
+					$params[':finalDatePlusOne'] = $finalDatePlusOne;
+				} else {
+					$whereClause = "WHERE s.saledate BETWEEN :initialDate AND :finalDate";
+					$params[':initialDate'] = $initialDate;
+					$params[':finalDate'] = $finalDate;
+				}
+			}
+		}
+
+		$stmt = Connection::connect()->prepare("
+			SELECT 
+				s.saledate,
+				CASE 
+					WHEN s.paymentMethod IN ('cash', 'QRPH', 'Card') THEN s.totalPrice
+					WHEN s.paymentMethod LIKE 'installment%' THEN COALESCE(
+						(SELECT SUM(ip.amount) 
+						 FROM installment_plans ipl 
+						 INNER JOIN installment_payments ip ON ipl.id = ip.installment_plan_id 
+						 WHERE ipl.sale_id = s.id AND ip.status = 'paid'), 
+						0
+					)
+					ELSE s.totalPrice
+				END as completedAmount
+			FROM $table s
+			$whereClause
+			ORDER BY s.id ASC
+		");
+
+		foreach($params as $param => $value) {
+			$stmt->bindParam($param, $value, PDO::PARAM_STR);
+		}
+
+		$stmt->execute();
+
+		return $stmt->fetchAll();
+
+	}
+
+	/*=============================================
 	COMPLETED SALES TOTAL (Cash + QRPH + Card + Paid Installments)
 	=============================================*/
 
@@ -353,7 +417,13 @@ class ModelSales{
 					COALESCE((SELECT SUM(totalPrice) FROM sales WHERE paymentMethod = 'cash'), 0) +
 					COALESCE((SELECT SUM(totalPrice) FROM sales WHERE paymentMethod = 'QRPH'), 0) +
 					COALESCE((SELECT SUM(totalPrice) FROM sales WHERE paymentMethod = 'Card'), 0) +
-					COALESCE((SELECT SUM(ip.amount) FROM installment_payments ip INNER JOIN installment_plans ipl ON ip.installment_plan_id = ipl.id WHERE ip.status = 'paid'), 0)
+					COALESCE(
+						(SELECT SUM(ip.amount) 
+						 FROM installment_payments ip 
+						 INNER JOIN installment_plans ipl ON ip.installment_plan_id = ipl.id 
+						 WHERE ip.status = 'paid'), 
+						0
+					)
 				) as total
 		");
 

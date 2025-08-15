@@ -130,7 +130,11 @@ class ControllerSales{
 					$interestRate = isset($_POST["installmentInterest"]) ? floatval($_POST["installmentInterest"]) : 0;
 					$paymentFrequency = isset($_POST["installmentFrequency"]) ? $_POST["installmentFrequency"] : "30th";
 					
-					error_log("Parsed values: numberOfPayments=$numberOfPayments, interestRate=$interestRate, paymentFrequency=$paymentFrequency");
+					// Get downpayment data
+					$hasDownpayment = isset($_POST["hasDownpayment"]) && $_POST["hasDownpayment"] === "on";
+					$downpaymentAmount = $hasDownpayment && isset($_POST["downpaymentAmount"]) ? floatval($_POST["downpaymentAmount"]) : 0;
+					
+					error_log("Parsed values: numberOfPayments=$numberOfPayments, interestRate=$interestRate, paymentFrequency=$paymentFrequency, hasDownpayment=" . ($hasDownpayment ? "true" : "false") . ", downpaymentAmount=$downpaymentAmount");
 					
 					// Get the sale ID - handle both new array format and old string format
 					if(is_array($answer) && isset($answer["id"])) {
@@ -150,17 +154,19 @@ class ControllerSales{
 					} else {
 						error_log("Valid sale ID found, creating installment plan...");
 					
-					// Calculate total amount with interest
+					// Calculate total amount with interest, accounting for downpayment
 					$baseAmount = floatval($_POST["saleTotal"]);
+					$remainingAmount = $baseAmount - $downpaymentAmount;
 					$monthlyInterest = $interestRate / 100;
-					$totalAmount = $baseAmount * (1 + ($monthlyInterest * $numberOfPayments));
+					$totalAmountWithInterest = $remainingAmount * (1 + ($monthlyInterest * $numberOfPayments));
+					$finalTotalAmount = $downpaymentAmount + $totalAmountWithInterest; // Total including downpayment and installments
 					
 					// Calculate actual number of payments based on frequency
 					$actualNumberOfPayments = $paymentFrequency === "both" ? $numberOfPayments * 2 : $numberOfPayments;
-					$paymentAmount = round($totalAmount / $actualNumberOfPayments, 2);
+					$paymentAmount = round($totalAmountWithInterest / $actualNumberOfPayments, 2);
 					$startDate = date('Y-m-d');
 					
-					error_log("Payment calculation: baseAmount=$baseAmount, totalAmount=$totalAmount, actualNumberOfPayments=$actualNumberOfPayments, paymentAmount=$paymentAmount");
+					error_log("Payment calculation: baseAmount=$baseAmount, downpaymentAmount=$downpaymentAmount, remainingAmount=$remainingAmount, totalAmountWithInterest=$totalAmountWithInterest, finalTotalAmount=$finalTotalAmount, actualNumberOfPayments=$actualNumberOfPayments, paymentAmount=$paymentAmount");
 					
 					try {
 						// Check if installment_plans table exists
@@ -175,13 +181,35 @@ class ControllerSales{
 						
 						// Note: actualNumberOfPayments already calculated above
 						
-						// Create installment plan directly
-						$stmt = Connection::connect()->prepare("INSERT INTO installment_plans(sale_id, bill_number, customer_id, total_amount, base_amount, number_of_payments, payment_amount, interest_rate, payment_frequency, start_date, status) VALUES (:sale_id, :bill_number, :customer_id, :total_amount, :base_amount, :number_of_payments, :payment_amount, :interest_rate, :payment_frequency, :start_date, :status)");
+						// Check if downpayment_amount field exists
+						$checkColumn = Connection::connect()->prepare("SHOW COLUMNS FROM installment_plans LIKE 'downpayment_amount'");
+						$checkColumn->execute();
+						$columnExists = $checkColumn->fetch();
+						
+						// Create installment plan directly - with backward compatibility
+						if($columnExists) {
+							// New version with downpayment support
+							$stmt = Connection::connect()->prepare("INSERT INTO installment_plans(sale_id, bill_number, customer_id, total_amount, base_amount, number_of_payments, payment_amount, interest_rate, payment_frequency, downpayment_amount, start_date, status) VALUES (:sale_id, :bill_number, :customer_id, :total_amount, :base_amount, :number_of_payments, :payment_amount, :interest_rate, :payment_frequency, :downpayment_amount, :start_date, :status)");
+						} else {
+							// Old version without downpayment field - use base amount for total_amount for now
+							$stmt = Connection::connect()->prepare("INSERT INTO installment_plans(sale_id, bill_number, customer_id, total_amount, base_amount, number_of_payments, payment_amount, interest_rate, payment_frequency, start_date, status) VALUES (:sale_id, :bill_number, :customer_id, :total_amount, :base_amount, :number_of_payments, :payment_amount, :interest_rate, :payment_frequency, :start_date, :status)");
+							error_log("WARNING: Using legacy installment_plans table without downpayment support");
+						}
 						
 						$stmt->bindParam(":sale_id", $saleId, PDO::PARAM_INT);
 						$stmt->bindParam(":bill_number", $_POST["newSale"], PDO::PARAM_STR);
 						$stmt->bindParam(":customer_id", $_POST["selectCustomer"], PDO::PARAM_INT);
-						$stmt->bindParam(":total_amount", $totalAmount, PDO::PARAM_STR);
+						
+						// Conditional binding based on table structure
+						if($columnExists) {
+							// New version with downpayment support
+							$stmt->bindParam(":total_amount", $finalTotalAmount, PDO::PARAM_STR);
+							$stmt->bindParam(":downpayment_amount", $downpaymentAmount, PDO::PARAM_STR);
+						} else {
+							// Old version - use base amount as total amount
+							$stmt->bindParam(":total_amount", $baseAmount, PDO::PARAM_STR);
+						}
+						
 						$stmt->bindParam(":base_amount", $baseAmount, PDO::PARAM_STR);
 						$stmt->bindParam(":number_of_payments", $actualNumberOfPayments, PDO::PARAM_INT);
 						$stmt->bindParam(":payment_amount", $paymentAmount, PDO::PARAM_STR);
@@ -465,31 +493,66 @@ class ControllerSales{
 					// Get installment data from form
 					$numberOfPayments = isset($_POST["installmentMonths"]) ? intval($_POST["installmentMonths"]) : 3;
 					$interestRate = isset($_POST["installmentInterest"]) ? floatval($_POST["installmentInterest"]) : 0;
+					$paymentFrequency = isset($_POST["installmentFrequency"]) ? $_POST["installmentFrequency"] : "30th";
 					
-					// Calculate new totals
+					// Get downpayment data
+					$hasDownpayment = isset($_POST["hasDownpayment"]) && $_POST["hasDownpayment"] === "on";
+					$downpaymentAmount = $hasDownpayment && isset($_POST["downpaymentAmount"]) ? floatval($_POST["downpaymentAmount"]) : 0;
+					
+					// Calculate new totals with downpayment
 					$baseAmount = floatval($_POST["saleTotal"]);
+					$remainingAmount = $baseAmount - $downpaymentAmount;
 					$monthlyInterest = $interestRate / 100;
-					$totalAmount = $baseAmount * (1 + ($monthlyInterest * $numberOfPayments));
-					$paymentAmount = $totalAmount / $numberOfPayments;
+					$totalAmountWithInterest = $remainingAmount * (1 + ($monthlyInterest * $numberOfPayments));
+					$finalTotalAmount = $downpaymentAmount + $totalAmountWithInterest;
+					
+					// Calculate actual number of payments based on frequency
+					$actualNumberOfPayments = $paymentFrequency === "both" ? $numberOfPayments * 2 : $numberOfPayments;
+					$paymentAmount = round($totalAmountWithInterest / $actualNumberOfPayments, 2);
 					
 					try {
 						// Get the sale ID
 						$saleId = $getSale["id"];
 						
-						// Update existing installment plan
-						$stmt = Connection::connect()->prepare("UPDATE installment_plans SET 
-							total_amount = :total_amount, 
-							base_amount = :base_amount, 
-							number_of_payments = :number_of_payments, 
-							payment_amount = :payment_amount, 
-							interest_rate = :interest_rate 
-							WHERE sale_id = :sale_id");
+						// Check if downpayment_amount field exists for backward compatibility
+						$checkColumn = Connection::connect()->prepare("SHOW COLUMNS FROM installment_plans LIKE 'downpayment_amount'");
+						$checkColumn->execute();
+						$columnExists = $checkColumn->fetch();
 						
-						$stmt->bindParam(":total_amount", $totalAmount, PDO::PARAM_STR);
+						// Update existing installment plan
+						if($columnExists) {
+							// New version with downpayment support
+							$stmt = Connection::connect()->prepare("UPDATE installment_plans SET 
+								total_amount = :total_amount, 
+								base_amount = :base_amount, 
+								number_of_payments = :number_of_payments, 
+								payment_amount = :payment_amount, 
+								interest_rate = :interest_rate,
+								payment_frequency = :payment_frequency,
+								downpayment_amount = :downpayment_amount
+								WHERE sale_id = :sale_id");
+						} else {
+							// Old version without downpayment field
+							$stmt = Connection::connect()->prepare("UPDATE installment_plans SET 
+								total_amount = :total_amount, 
+								base_amount = :base_amount, 
+								number_of_payments = :number_of_payments, 
+								payment_amount = :payment_amount, 
+								interest_rate = :interest_rate
+								WHERE sale_id = :sale_id");
+						}
+						
+						$stmt->bindParam(":total_amount", $finalTotalAmount, PDO::PARAM_STR);
 						$stmt->bindParam(":base_amount", $baseAmount, PDO::PARAM_STR);
-						$stmt->bindParam(":number_of_payments", $numberOfPayments, PDO::PARAM_INT);
+						$stmt->bindParam(":number_of_payments", $actualNumberOfPayments, PDO::PARAM_INT);
 						$stmt->bindParam(":payment_amount", $paymentAmount, PDO::PARAM_STR);
 						$stmt->bindParam(":interest_rate", $interestRate, PDO::PARAM_STR);
+						
+						if($columnExists) {
+							$stmt->bindParam(":payment_frequency", $paymentFrequency, PDO::PARAM_STR);
+							$stmt->bindParam(":downpayment_amount", $downpaymentAmount, PDO::PARAM_STR);
+						}
+						
 						$stmt->bindParam(":sale_id", $saleId, PDO::PARAM_INT);
 						
 						if($stmt->execute()) {
@@ -507,21 +570,60 @@ class ControllerSales{
 								$deleteStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
 								$deleteStmt->execute();
 								
-								// Create new payment records with updated amounts
-								$startDate = date('Y-m-d');
+								// Create new payment records based on frequency
+								$paymentCount = 0;
+								$individualPaymentAmount = $paymentAmount; // Already calculated correctly above
+								
 								for($i = 1; $i <= $numberOfPayments; $i++) {
-									$dueDate = date('Y-m-d', strtotime($startDate . " + " . $i . " months"));
+									if($paymentFrequency === "15th" || $paymentFrequency === "both") {
+										// Payment on 15th
+										$paymentCount++;
+										$currentMonth = date('m');
+										$currentYear = date('Y');
+										$targetMonth = $currentMonth + $i;
+										$targetYear = $currentYear;
+										if($targetMonth > 12) {
+											$targetYear += floor(($targetMonth - 1) / 12);
+											$targetMonth = (($targetMonth - 1) % 12) + 1;
+										}
+										$dueDate = date('Y-m-d', mktime(0, 0, 0, $targetMonth, 15, $targetYear));
+										
+										$paymentStmt = Connection::connect()->prepare("INSERT INTO installment_payments(installment_plan_id, payment_number, amount, due_date, status) VALUES (:installment_plan_id, :payment_number, :amount, :due_date, :status)");
+										
+										$paymentStmt->bindParam(":installment_plan_id", $planId, PDO::PARAM_INT);
+										$paymentStmt->bindParam(":payment_number", $paymentCount, PDO::PARAM_INT);
+										$paymentStmt->bindParam(":amount", $individualPaymentAmount, PDO::PARAM_STR);
+										$paymentStmt->bindParam(":due_date", $dueDate, PDO::PARAM_STR);
+										$pendingStatus = "pending";
+										$paymentStmt->bindParam(":status", $pendingStatus, PDO::PARAM_STR);
+										
+										$paymentStmt->execute();
+									}
 									
-									$paymentStmt = Connection::connect()->prepare("INSERT INTO installment_payments(installment_plan_id, payment_number, amount, due_date, status) VALUES (:installment_plan_id, :payment_number, :amount, :due_date, :status)");
-									
-									$paymentStmt->bindParam(":installment_plan_id", $planId, PDO::PARAM_INT);
-									$paymentStmt->bindParam(":payment_number", $i, PDO::PARAM_INT);
-									$paymentStmt->bindParam(":amount", $paymentAmount, PDO::PARAM_STR);
-									$paymentStmt->bindParam(":due_date", $dueDate, PDO::PARAM_STR);
-									$pendingStatus = "pending";
-									$paymentStmt->bindParam(":status", $pendingStatus, PDO::PARAM_STR);
-									
-									$paymentStmt->execute();
+									if($paymentFrequency === "30th" || $paymentFrequency === "both") {
+										// Payment on 30th
+										$paymentCount++;
+										$currentMonth = date('m');
+										$currentYear = date('Y');
+										$targetMonth = $currentMonth + $i;
+										$targetYear = $currentYear;
+										if($targetMonth > 12) {
+											$targetYear += floor(($targetMonth - 1) / 12);
+											$targetMonth = (($targetMonth - 1) % 12) + 1;
+										}
+										$dueDate = date('Y-m-d', mktime(0, 0, 0, $targetMonth, 30, $targetYear));
+										
+										$paymentStmt = Connection::connect()->prepare("INSERT INTO installment_payments(installment_plan_id, payment_number, amount, due_date, status) VALUES (:installment_plan_id, :payment_number, :amount, :due_date, :status)");
+										
+										$paymentStmt->bindParam(":installment_plan_id", $planId, PDO::PARAM_INT);
+										$paymentStmt->bindParam(":payment_number", $paymentCount, PDO::PARAM_INT);
+										$paymentStmt->bindParam(":amount", $individualPaymentAmount, PDO::PARAM_STR);
+										$paymentStmt->bindParam(":due_date", $dueDate, PDO::PARAM_STR);
+										$pendingStatus = "pending";
+										$paymentStmt->bindParam(":status", $pendingStatus, PDO::PARAM_STR);
+										
+										$paymentStmt->execute();
+									}
 								}
 							}
 						}
@@ -735,6 +837,20 @@ class ControllerSales{
 		$table = "sales";
 
 		$answer = ModelSales::mdlSalesDatesRange($table, $initialDate, $finalDate);
+
+		return $answer;
+		
+	}
+
+	/*=============================================
+	COMPLETED SALES DATES RANGE (for accurate sales graph)
+	=============================================*/	
+
+	static public function ctrCompletedSalesDatesRange($initialDate, $finalDate){
+
+		$table = "sales";
+
+		$answer = ModelSales::mdlCompletedSalesDateRange($table, $initialDate, $finalDate);
 
 		return $answer;
 		

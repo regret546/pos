@@ -65,11 +65,10 @@ $block1 = <<<EOF
 
 	<table style="width:100%; border-collapse: collapse;">
 		<tr>
-			<td style="width:15%; vertical-align:top;">
-				<!-- Logo placeholder - you can add your logo here -->
+			<td style="width:15%; vertical-align:top; border:1px solid #000; padding:10px;">
 				<img src="images/company-logo.png" style="width:80px; height:80px;">
 			</td>
-			<td style="width:35%; vertical-align:top; padding-left:10px;">
+			<td style="width:35%; vertical-align:top; border:1px solid #000; padding:10px;">
 				<div style="font-size:16px; font-weight:bold; margin-bottom:10px;">
 					DELIVERY RECEIPT
 				</div>
@@ -84,44 +83,47 @@ $block1 = <<<EOF
 					9286127206
 				</div>
 			</td>
-			<td style="width:25%; vertical-align:top; text-align:center;">
-				<table style="border-collapse: collapse; width:100%; margin-bottom:10px;">
+			<td style="width:25%; vertical-align:top; border:1px solid #000; padding:5px;">
+				<table style="width:100%; border-collapse: collapse;">
 					<tr>
-						<td style="border:1px solid #000; padding:5px; font-size:10px; background-color:#E0E0E0; text-align:center;">DATE</td>
+						<td style="border:1px solid #000; padding:5px; font-size:10px; background-color:#B3D9FF; text-align:center; font-weight:bold;">DATE</td>
 					</tr>
 					<tr>
 						<td style="border:1px solid #000; padding:5px; font-size:10px; text-align:center;">$saledate</td>
 					</tr>
+				</table>
+				<br>
+				<table style="width:100%; border-collapse: collapse;">
 					<tr>
-						<td style="border:1px solid #000; padding:5px; font-size:10px; background-color:#E0E0E0; text-align:center;">RECEIPT NO.</td>
+						<td style="border:1px solid #000; padding:5px; font-size:10px; background-color:#B3D9FF; text-align:center; font-weight:bold;">RECEIPT NO.</td>
 					</tr>
 					<tr>
 						<td style="border:1px solid #000; padding:5px; font-size:10px; text-align:center;">$valueSale</td>
 					</tr>
 				</table>
 			</td>
-			<td style="width:25%; vertical-align:top;">
-				<table style="border-collapse: collapse; width:100%;">
+			<td style="width:25%; vertical-align:top; border:1px solid #000; padding:5px;">
+				<table style="width:100%; border-collapse: collapse;">
 					<tr>
-						<td style="border:1px solid #000; padding:5px; font-size:10px; background-color:#E0E0E0; text-align:center;">RECIPIENT INFORMATION</td>
+						<td style="border:1px solid #000; padding:5px; font-size:10px; background-color:#B3D9FF; text-align:center; font-weight:bold;">RECIPIENT INFORMATION</td>
 					</tr>
 					<tr>
-						<td style="border:1px solid #000; padding:5px; font-size:10px;">Name</td>
+						<td style="border:1px solid #000; padding:3px; font-size:9px; font-weight:bold;">Name</td>
 					</tr>
 					<tr>
-						<td style="border:1px solid #000; padding:5px; font-size:10px;">$answerCustomer[name]</td>
+						<td style="border:1px solid #000; padding:3px; font-size:9px;">$answerCustomer[name]</td>
 					</tr>
 					<tr>
-						<td style="border:1px solid #000; padding:5px; font-size:10px;">Address</td>
+						<td style="border:1px solid #000; padding:3px; font-size:9px; font-weight:bold;">Address</td>
 					</tr>
 					<tr>
-						<td style="border:1px solid #000; padding:5px; font-size:10px;">$answerCustomer[address]</td>
+						<td style="border:1px solid #000; padding:3px; font-size:9px;">$answerCustomer[address]</td>
 					</tr>
 					<tr>
-						<td style="border:1px solid #000; padding:5px; font-size:10px;">Contact No.</td>
+						<td style="border:1px solid #000; padding:3px; font-size:9px; font-weight:bold;">Contact No.</td>
 					</tr>
 					<tr>
-						<td style="border:1px solid #000; padding:5px; font-size:10px;">$answerCustomer[phone]</td>
+						<td style="border:1px solid #000; padding:3px; font-size:9px;">$answerCustomer[phone]</td>
 					</tr>
 				</table>
 			</td>
@@ -140,12 +142,12 @@ $block2 = <<<EOF
 
 	<table style="width:100%; border-collapse: collapse;">
 		<tr>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:12%;">CODE</td>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:28%;">DESCRIPTION</td>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:8%;">QTY</td>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:12%;">AMOUNT</td>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:15%;">PAYMENT</td>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:25%;">TOTAL</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:12%; background-color:#B3D9FF;">CODE</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:28%; background-color:#B3D9FF;">DESCRIPTION</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:8%; background-color:#B3D9FF;">QTY</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:12%; background-color:#B3D9FF;">AMOUNT</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:15%; background-color:#B3D9FF;">PAYMENT</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:25%; background-color:#B3D9FF;">TOTAL</td>
 		</tr>
 	</table>
 
@@ -213,14 +215,11 @@ $emptyRows
 <table style="width:100%; border-collapse: collapse;">
 	<tr>
 		<td style="width:55%; padding:10px; vertical-align:top;">
-			<div style="font-size:10px;">
-				<strong>Thank you for your purchase!</strong><br>
-				This document is only used for after-sales certificate. Official Receipt will be issued separately.
-			</div>
+			&nbsp;
 		</td>
 		<td style="width:15%;"></td>
 		<td style="width:12%; vertical-align:top;">
-			<div style="font-size:11px; font-weight:bold; text-align:center; border:1px solid #000; padding:5px; background-color:#E0E0E0;">
+			<div style="font-size:11px; font-weight:bold; text-align:center; border:1px solid #000; padding:5px; background-color:#B3D9FF;">
 				TOTAL
 			</div>
 		</td>
@@ -236,11 +235,26 @@ $emptyRows
 
 <table style="width:100%;">
 	<tr>
-		<td style="width:100%; text-align:left;">
+		<td style="width:50%; text-align:left; vertical-align:bottom;">
 			<div style="font-size:10px;">
+				<strong>Thank you for your purchase!</strong>
+				<br><br>
+				<div style="font-size:9px; font-style:italic;">
+					This document is only used for after-sales certificate. Official Receipt will be issued separately.
+				</div>
+				<br><br>
 				<strong>Recipient Signature:</strong>
 				<br><br><br>
 				_________________________________________________
+			</div>
+		</td>
+		<td style="width:50%; text-align:right; vertical-align:bottom;">
+			<div style="font-size:10px;">
+				<strong>Sales Representative:</strong>
+				<br><br><br>
+				<div style="border-top:1px solid #000; padding-top:5px; width:80%; margin-left:auto; text-align:center;">
+					$answerSeller[name]
+				</div>
 			</div>
 		</td>
 	</tr>

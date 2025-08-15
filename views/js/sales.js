@@ -796,6 +796,19 @@ $(".tables").on("click", ".btnPrintBill", function () {
 });
 
 /*=============================================
+PRINT ACKNOWLEDGMENT RECEIPT
+=============================================*/
+
+$(".tables").on("click", ".btnPrintAcknowledgment", function () {
+  var saleCode = $(this).attr("saleCode");
+
+  window.open(
+    "extensions/tcpdf/pdf/acknowledgment-receipt.php?code=" + saleCode,
+    "_blank"
+  );
+});
+
+/*=============================================
 DATES RANGE
 =============================================*/
 

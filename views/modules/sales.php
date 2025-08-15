@@ -12,6 +12,8 @@ if($_SESSION["profile"] == "Special"){
 
 }
 
+require_once "models/connection.php";
+
 ?>
 <div class="content-wrapper">
 
@@ -134,6 +136,24 @@ if($_SESSION["profile"] == "Special"){
                         <i class="fa fa-print"></i>
 
                       </button>';
+
+                      // Check if this is an installment payment with downpayment to show acknowledgment receipt button
+                      if(strpos($value["paymentMethod"], "installment") !== false) {
+                        try {
+                          $stmt = Connection::connect()->prepare("SELECT downpayment_amount FROM installment_plans WHERE sale_id = :sale_id");
+                          $stmt->bindParam(":sale_id", $value["id"], PDO::PARAM_INT);
+                          $stmt->execute();
+                          $installmentPlan = $stmt->fetch();
+                          
+                          if($installmentPlan && isset($installmentPlan["downpayment_amount"]) && floatval($installmentPlan["downpayment_amount"]) > 0) {
+                            echo '<button class="btn btn-info btnPrintAcknowledgment" saleCode="'.$value["code"].'" title="Print Acknowledgment Receipt">
+                                    <i class="fa fa-file-text"></i>
+                                  </button>';
+                          }
+                        } catch(Exception $e) {
+                          // Ignore error if table doesn't exist yet
+                        }
+                      }
 
                        if($_SESSION["profile"] == "Administrator"){
                         

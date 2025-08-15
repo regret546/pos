@@ -187,6 +187,23 @@ class ProductsModel{
 		$stmt = null;
 	}
 
+	/*=============================================
+	SHOW TOTAL INVENTORY VALUE
+	=============================================*/	
+
+	static public function mdlShowTotalInventoryValue($table){
+
+		$stmt = Connection::connect()->prepare("SELECT SUM(stock * sellingPrice) as total FROM $table");
+
+		$stmt -> execute();
+
+		return $stmt -> fetch();
+
+		$stmt -> close();
+
+		$stmt = null;
+	}
+
 
 	
 }

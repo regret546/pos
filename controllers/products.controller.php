@@ -1,6 +1,6 @@
 <?php
 
-class controllerProducts{
+class ControllerProducts{
 	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
 	/*=============================================
 	SHOW PRODUCTS
@@ -412,6 +412,20 @@ class controllerProducts{
 		$table = "products";
 
 		$answer = ProductsModel::mdlShowTotalInventoryItems($table);
+
+		return $answer;
+
+	}
+
+	/*=============================================
+	SHOW TOTAL INVENTORY VALUE
+	=============================================*/
+
+	static public function ctrShowTotalInventoryValue(){
+
+		$table = "products";
+
+		$answer = ProductsModel::mdlShowTotalInventoryValue($table);
 
 		return $answer;
 

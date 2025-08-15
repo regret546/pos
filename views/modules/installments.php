@@ -20,6 +20,45 @@ if($_SESSION["profile"] == "Special"){
   </section>
   
   <section class="content">
+    
+    <!-- Dashboard Boxes Row -->
+    <div class="row">
+      <?php
+      // Get installment statistics for dashboard boxes
+      $installmentStats = ControllerSales::ctrInstallmentStats();
+      ?>
+      
+      <div class="col-lg-6 col-xs-12">
+        <div class="small-box bg-yellow">
+          <div class="inner">
+            <h3>₱<?php echo number_format($installmentStats["paid_total"] ? $installmentStats["paid_total"] : 0, 2); ?></h3>
+            <p>Total Paid Installments</p>
+          </div>
+          <div class="icon">
+            <i class="fa fa-check-circle"></i>
+          </div>
+          <div class="small-box-footer" style="background-color: rgba(0,0,0,0.1); color: #fff; padding: 8px; text-align: center;">
+            <?php echo number_format($installmentStats["paid_count"] ? $installmentStats["paid_count"] : 0); ?> payments completed
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-6 col-xs-12">
+        <div class="small-box bg-red">
+          <div class="inner">
+            <h3>₱<?php echo number_format($installmentStats["pending_total"] ? $installmentStats["pending_total"] : 0, 2); ?></h3>
+            <p>Total Pending Installments</p>
+          </div>
+          <div class="icon">
+            <i class="fa fa-clock-o"></i>
+          </div>
+          <div class="small-box-footer" style="background-color: rgba(0,0,0,0.1); color: #fff; padding: 8px; text-align: center;">
+            <?php echo number_format($installmentStats["pending_count"] ? $installmentStats["pending_count"] : 0); ?> payments pending
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <div class="box">
       <div class="box-header with-border">
         <h3 class="box-title">Active Installment Plans</h3>
@@ -31,13 +70,14 @@ if($_SESSION["profile"] == "Special"){
       </div>
       <div class="box-body">
         
-        <table class="table table-bordered table-striped" width="100%">
+        <table class="table table-bordered table-striped dt-responsive tables" width="100%" id="installmentTable">
           <thead>
             <tr>
               <th style="width:10px">#</th>
               <th>Bill Number</th>
               <th>Customer</th>
               <th>Total Amount</th>
+              <th>Downpayment</th>
               <th>Payment Amount</th>
               <th>Interest Rate</th>
               <th>Payment Frequency</th>
@@ -101,11 +141,16 @@ if($_SESSION["profile"] == "Special"){
                             $frequencyDisplay = "Every 30th";
                     }
 
+                    // Handle downpayment display
+                    $downpaymentAmount = isset($plan["downpayment_amount"]) ? floatval($plan["downpayment_amount"]) : 0;
+                    $downpaymentDisplay = $downpaymentAmount > 0 ? "₱".number_format($downpaymentAmount, 2) : "None";
+
                     echo '<tr>
                             <td>'.($key+1).'</td>
                             <td><strong>'.($plan["bill_number"] ?: 'N/A').'</strong></td>
                             <td>'.$customerName.'</td>
                             <td>₱'.number_format($plan["total_amount"], 2).'</td>
+                            <td>'.$downpaymentDisplay.'</td>
                             <td>₱'.number_format($plan["payment_amount"], 2).'</td>
                             <td>'.$plan["interest_rate"].'%</td>
                             <td><span class="label label-info">'.$frequencyDisplay.'</span></td>
@@ -118,8 +163,16 @@ if($_SESSION["profile"] == "Special"){
                                 </button>
                                 <button class="btn btn-success btn-xs btnMarkPayment" data-toggle="modal" data-target="#modalMarkPayment" planId="'.$plan["id"].'" customerName="'.$customerName.'" title="Mark Payment">
                                   <i class="fa fa-check"></i>
-                                </button>
-                                <button class="btn btn-danger btn-xs btnDeletePlan" data-toggle="modal" data-target="#modalDeletePlan" planId="'.$plan["id"].'" customerName="'.$customerName.'" saleId="'.$plan["sale_id"].'" title="Delete Plan">
+                                </button>';
+                                
+                                // Add acknowledgment receipt button if there's a downpayment
+                                if($downpaymentAmount > 0 && $plan["bill_number"]) {
+                                  echo '<button class="btn btn-warning btn-xs btnPrintAcknowledgment" saleCode="'.$plan["bill_number"].'" title="Print Acknowledgment Receipt">
+                                          <i class="fa fa-file-text"></i>
+                                        </button>';
+                                }
+                                
+                                echo '<button class="btn btn-danger btn-xs btnDeletePlan" data-toggle="modal" data-target="#modalDeletePlan" planId="'.$plan["id"].'" customerName="'.$customerName.'" saleId="'.$plan["sale_id"].'" title="Delete Plan">
                                   <i class="fa fa-trash"></i>
                                 </button>
                               </div>
@@ -129,7 +182,7 @@ if($_SESSION["profile"] == "Special"){
                   
                 } else {
                   echo '<tr>
-                          <td colspan="10" class="text-center">
+                          <td colspan="11" class="text-center">
                             <h4>No installment plans found</h4>
                             <p>Create a sale with installment payment to see plans here.</p>
                           </td>
@@ -137,7 +190,7 @@ if($_SESSION["profile"] == "Special"){
                 }
               } else {
                 echo '<tr>
-                        <td colspan="8" class="text-center">
+                        <td colspan="11" class="text-center">
                           <h4>Database tables not found</h4>
                           <p>Please import the installment_tables.sql file first.</p>
                         </td>
@@ -146,7 +199,7 @@ if($_SESSION["profile"] == "Special"){
               
             } catch(Exception $e) {
               echo '<tr>
-                      <td colspan="8" class="text-center">
+                      <td colspan="11" class="text-center">
                         <h4>Database connection error</h4>
                         <p>Please check your database configuration.</p>
                       </td>

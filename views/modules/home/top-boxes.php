@@ -27,6 +27,9 @@ $totalProducts = count($products);
 $inventoryItems = ControllerProducts::ctrShowTotalInventoryItems();
 $totalInventoryItems = $inventoryItems["total"] ? $inventoryItems["total"] : 0;
 
+$inventoryValue = ControllerProducts::ctrShowTotalInventoryValue();
+$totalInventoryValue = $inventoryValue["total"] ? $inventoryValue["total"] : 0;
+
 ?>
 
 <!-- Payment Method Statistics Row -->
@@ -34,7 +37,7 @@ $totalInventoryItems = $inventoryItems["total"] ? $inventoryItems["total"] : 0;
   <div class="small-box bg-green">
     <div class="inner">
       <h3>₱<?php echo number_format($completedSales["total"] ? $completedSales["total"] : 0, 2); ?></h3>
-      <p>Total Sales</p>
+      <p>Total Completed Sales</p>
     </div>
     <div class="icon">
       <i class="fa fa-money"></i>
@@ -130,6 +133,21 @@ $totalInventoryItems = $inventoryItems["total"] ? $inventoryItems["total"] : 0;
     </div>
     <div class="icon">
       <i class="fa fa-cubes"></i>
+    </div>
+    <a href="products" class="small-box-footer">
+      More info <i class="fa fa-arrow-circle-right"></i>
+    </a>
+  </div>
+</div>
+
+<div class="col-lg-3 col-xs-6">
+  <div class="small-box bg-orange">
+    <div class="inner">
+      <h3>₱<?php echo number_format($totalInventoryValue, 2); ?></h3>
+      <p>Total Inventory Value</p>
+    </div>
+    <div class="icon">
+      <i class="fa fa-calculator"></i>
     </div>
     <a href="products" class="small-box-footer">
       More info <i class="fa fa-arrow-circle-right"></i>

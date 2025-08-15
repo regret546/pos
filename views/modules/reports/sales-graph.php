@@ -14,7 +14,7 @@ $finalDate = null;
 
 }
 
-$answer = ControllerSales::ctrSalesDatesRange($initialDate, $finalDate);
+$answer = ControllerSales::ctrCompletedSalesDatesRange($initialDate, $finalDate);
 
 $arrayDates = array();
 $arraySales = array();
@@ -28,8 +28,8 @@ foreach ($answer as $key => $value) {
     #Introduce dates in arrayDates
 	array_push($arrayDates, $singleDate);
 
-	#We capture the sales
-	$arraySales = array($singleDate => $value["totalPrice"]);
+	#We capture the completed sales amount (cash/card/qrph full + paid installments only)
+	$arraySales = array($singleDate => $value["completedAmount"]);
 
     #we add payments made in the same month
 	foreach ($arraySales as $key => $value) {
@@ -56,7 +56,7 @@ SALES GRAPH
 		
  		<i class="fa fa-th"></i>
 
-  		<h3 class="box-title">Sales Graph</h3>
+  		<h3 class="box-title">Completed Sales Graph</h3>
 
 	</div>
 
@@ -81,16 +81,16 @@ SALES GRAPH
 
 	    foreach($noRepeatDates as $key){
 
-	    	echo "{ y: '".$key."', Sales: ".$addingMonthPayments[$key]." },";
+	    	echo "{ y: '".$key."', Sales: ".number_format($addingMonthPayments[$key], 2, '.', '')." },";
 
 
 	    }
 
-	    echo "{y: '".$key."', Sales: ".$addingMonthPayments[$key]." }";
+	    echo "{y: '".$key."', Sales: ".number_format($addingMonthPayments[$key], 2, '.', '')." }";
 
     }else{
 
-       echo "{ y: '0', Sales: '0' }";
+       echo "{ y: '0', Sales: '0.00' }";
 
     }
 
@@ -110,7 +110,8 @@ SALES GRAPH
     gridLineColor    : '#efefef',
     gridTextFamily   : 'Open Sans',
     preUnits         : '₱',
-    gridTextSize     : 10
+    gridTextSize     : 10,
+    yLabelFormat     : function(y) { return '₱' + y.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
   });
 
 </script>
