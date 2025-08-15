@@ -35,6 +35,93 @@ if($_SESSION["profile"] == "Seller"){
 
   <section class="content">
 
+    <!-- Product Dashboard Boxes -->
+    <div class="row">
+      <?php
+      $item = null;
+      $value = null;
+      $order = "id";
+      
+      // Get actual product list and filter same as DataTable (only products with valid categories)
+      $allProducts = ControllerProducts::ctrShowProducts($item, $value, $order);
+      $validProducts = array();
+      
+      // Filter products same way as DataTable does
+      foreach($allProducts as $product) {
+        // Check if product has valid category (same logic as datatable-products.ajax.php)
+        if(isset($product["idCategory"])) {
+          $categoryItem = "id";
+          $categoryValue = $product["idCategory"];
+          $categories = ControllerCategories::ctrShowCategories($categoryItem, $categoryValue);
+          
+          // Only include products with valid categories
+          if(is_array($categories) && isset($categories["Category"])) {
+            $validProducts[] = $product;
+          }
+        }
+      }
+      
+      $totalProducts = count($validProducts);
+      
+      // Calculate inventory statistics from valid products only
+      $totalInventoryItems = 0;
+      $totalInventoryValue = 0;
+      
+      foreach($validProducts as $product) {
+        $stock = floatval($product["stock"]);
+        $sellingPrice = floatval($product["sellingPrice"]);
+        
+        $totalInventoryItems += $stock;
+        $totalInventoryValue += ($stock * $sellingPrice);
+      }
+      ?>
+      
+      <div class="col-lg-4 col-xs-6">
+        <div class="small-box bg-blue">
+          <div class="inner">
+            <h3><?php echo number_format($totalProducts); ?></h3>
+            <p>Total Products</p>
+          </div>
+          <div class="icon">
+            <i class="fa fa-cube"></i>
+          </div>
+          <div class="small-box-footer" style="background-color: rgba(0,0,0,0.1); color: #fff; padding: 8px; text-align: center;">
+            Product catalog management
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-xs-6">
+        <div class="small-box bg-maroon">
+          <div class="inner">
+            <h3><?php echo number_format($totalInventoryItems); ?></h3>
+            <p>Items in Inventory</p>
+          </div>
+          <div class="icon">
+            <i class="fa fa-cubes"></i>
+          </div>
+          <div class="small-box-footer" style="background-color: rgba(0,0,0,0.1); color: #fff; padding: 8px; text-align: center;">
+            Total items in stock
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4 col-xs-6">
+        <div class="small-box bg-orange">
+          <div class="inner">
+            <h3>₱<?php echo number_format($totalInventoryValue, 2); ?></h3>
+            <p>Total Inventory Value</p>
+          </div>
+          <div class="icon">
+            <i class="fa fa-calculator"></i>
+          </div>
+          <div class="small-box-footer" style="background-color: rgba(0,0,0,0.1); color: #fff; padding: 8px; text-align: center;">
+            Total inventory worth
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="box">
 
       <div class="box-header with-border">

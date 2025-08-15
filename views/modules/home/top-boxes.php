@@ -21,14 +21,38 @@ $totalCategories = count($categories);
 $customers = ControllerCustomers::ctrShowCustomers($item, $value);
 $totalCustomers = count($customers);
 
-$products = ControllerProducts::ctrShowProducts($item, $value, $order);
-$totalProducts = count($products);
+// Get products and filter same as DataTable (only products with valid categories)
+$allProducts = ControllerProducts::ctrShowProducts($item, $value, $order);
+$validProducts = array();
 
-$inventoryItems = ControllerProducts::ctrShowTotalInventoryItems();
-$totalInventoryItems = $inventoryItems["total"] ? $inventoryItems["total"] : 0;
+// Filter products same way as DataTable does
+foreach($allProducts as $product) {
+  // Check if product has valid category (same logic as datatable-products.ajax.php)
+  if(isset($product["idCategory"])) {
+    $categoryItem = "id";
+    $categoryValue = $product["idCategory"];
+    $categories = ControllerCategories::ctrShowCategories($categoryItem, $categoryValue);
+    
+    // Only include products with valid categories
+    if(is_array($categories) && isset($categories["Category"])) {
+      $validProducts[] = $product;
+    }
+  }
+}
 
-$inventoryValue = ControllerProducts::ctrShowTotalInventoryValue();
-$totalInventoryValue = $inventoryValue["total"] ? $inventoryValue["total"] : 0;
+$totalProducts = count($validProducts);
+
+// Calculate inventory statistics from valid products only
+$totalInventoryItems = 0;
+$totalInventoryValue = 0;
+
+foreach($validProducts as $product) {
+  $stock = floatval($product["stock"]);
+  $sellingPrice = floatval($product["sellingPrice"]);
+  
+  $totalInventoryItems += $stock;
+  $totalInventoryValue += ($stock * $sellingPrice);
+}
 
 ?>
 
