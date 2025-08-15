@@ -137,9 +137,13 @@
 
 						</a>
 
-					</li>
+					</li>';
 
-					<li>
+				}
+
+				if($_SESSION["profile"] == "Administrator" || $_SESSION["profile"] == "Seller"){
+
+					echo '<li>
 
 						<a href="index.php?route=installments">
 
@@ -149,7 +153,13 @@
 
 						</a>
 
-					</li>
+					</li>';
+
+				}
+
+				if($_SESSION["profile"] == "Administrator"){
+
+					echo '
 					
 					
 					<li>

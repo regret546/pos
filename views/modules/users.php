@@ -344,12 +344,12 @@
 
                 <span class="input-group-addon"><i class="fa fa-key"></i></span>
 
-                <select class="form-control input-lg" name="EditProfile">
+                <select class="form-control input-lg" name="EditProfile" id="EditProfileSelect">
 
-                  <option value="" id="EditProfile"></option>
-                  <option value="administrator">Administrator</option>
-                  <option value="special">Special</option>
-                  <option value="seller">Seller</option>
+                  <option value="">Select Level</option>
+                  <option value="Administrator">Administrator</option>
+                  <option value="Special">Special</option>
+                  <option value="Seller">Seller</option>
 
                 </select>
 

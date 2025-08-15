@@ -67,9 +67,8 @@ $(document).on("click", ".btnEditUser", function () {
 
       $("#EditUser").val(answer["user"]);
 
-      $("#EditProfile").html(answer["profile"]);
-
-      $("#EditProfile").val(answer["profile"]);
+      // Set the selected value to match the dropdown options (capitalized)
+      $("#EditProfileSelect").val(answer["profile"]);
 
       $("#currentPasswd").val(answer["password"]);
 
