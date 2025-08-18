@@ -866,9 +866,9 @@ class ControllerSales{
 
 			$table = "sales";
 
-			if(isset($_GET["initialDate"]) && isset($_GET["finalDate"])){
+			if(isset($_GET["inicialDate"]) && isset($_GET["finalDate"])){
 
-				$sales = ModelSales::mdlSalesDatesRange($table, $_GET["initialDate"], $_GET["finalDate"]);
+				$sales = ModelSales::mdlSalesDatesRange($table, $_GET["inicialDate"], $_GET["finalDate"]);
 
 			}else{
 
@@ -879,11 +879,22 @@ class ControllerSales{
 
 			}
 
+			// Check if this is an installment report
+			$isInstallmentReport = isset($_GET["type"]) && $_GET["type"] == "installments";
+
 			/*=============================================
 			WE CREATE EXCEL FILE
 			=============================================*/
 
-			$name = $_GET["report"].'.xls';
+			// Generate filename with date range
+			$dateRange = "";
+			if(isset($_GET["inicialDate"]) && isset($_GET["finalDate"])){
+				$dateRange = "_" . $_GET["inicialDate"] . "_to_" . $_GET["finalDate"];
+			} else {
+				$dateRange = "_all_time";
+			}
+
+			$name = $_GET["report"] . ($isInstallmentReport ? '_installments' : '_regular') . $dateRange . '.xls';
 
 			header('Expires: 0');
 			header('Cache-control: private');
@@ -898,60 +909,250 @@ class ControllerSales{
             // Define peso sign - using PHP chr() function
             $pesoSign = chr(0x20B1); // Unicode for peso sign
 
-			echo utf8_decode("<table border='0'> 
-
-					<tr> 
-					<td style='font-weight:bold; border:1px solid #eee;'>CODE</td> 
-					<td style='font-weight:bold; border:1px solid #eee;'>CUSTOMER</td>
-					<td style='font-weight:bold; border:1px solid #eee;'>SELLER</td>
-					<td style='font-weight:bold; border:1px solid #eee;'>QUANTITY</td>
-					<td style='font-weight:bold; border:1px solid #eee;'>PRODUCTS</td>
-					<td style='font-weight:bold; border:1px solid #eee;'>TAX</td>
-					<td style='font-weight:bold; border:1px solid #eee;'>NET PRICE</td>		
-					<td style='font-weight:bold; border:1px solid #eee;'>TOTAL</td>		
-					<td style='font-weight:bold; border:1px solid #eee;'>METHOD OF PAYMENT</td>	
-					<td style='font-weight:bold; border:1px solid #eee;'>DATE</td>		
-					</tr>");
-
-			foreach ($sales as $row => $item){
-
-				$customer = ControllerCustomers::ctrShowCustomers("id", $item["idCustomer"]);
-				$Seller = ControllerUsers::ctrShowUsers("id", $item["idSeller"]);
-
-			 echo utf8_decode("<tr>
-			 			<td style='border:1px solid #eee;'>".$item["code"]."</td> 
-			 			<td style='border:1px solid #eee;'>".$customer["name"]."</td>
-			 			<td style='border:1px solid #eee;'>".$Seller["name"]."</td>
-			 			<td style='border:1px solid #eee;'>");
-
-			 	$products =  json_decode($item["products"], true);
-
-			 	foreach ($products as $key => $valueproducts) {
-			 			
-			 			echo utf8_decode($valueproducts["quantity"]."<br>");
-			 		}
-
-			 	echo utf8_decode("</td><td style='border:1px solid #eee;'>");	
-
-		 		foreach ($products as $key => $valueproducts) {
-			 			
-		 			echo utf8_decode($valueproducts["description"]."<br>");
-		 		
-		 		}
-
-		 		echo utf8_decode("</td>
-					<td style='border:1px solid #eee;'>PHP ".number_format($item["tax"],2)."</td>
-					<td style='border:1px solid #eee;'>PHP ".number_format($item["netPrice"],2)."</td>	
-					<td style='border:1px solid #eee;'>PHP ".number_format($item["totalPrice"],2)."</td>
-					<td style='border:1px solid #eee;'>".$item["paymentMethod"]."</td>
-					<td style='border:1px solid #eee;'>".substr($item["saledate"],0,10)."</td>		
-		 			</tr>");
-
+			// Prepare date range display
+			$dateRangeDisplay = "";
+			if(isset($_GET["inicialDate"]) && isset($_GET["finalDate"])){
+				$inicialDate = $_GET["inicialDate"];
+				$finalDate = $_GET["finalDate"];
+				$inicialDateFormatted = date("F j, Y", strtotime($inicialDate));
+				$finalDateFormatted = date("F j, Y", strtotime($finalDate));
+				
+				if($inicialDate == $finalDate){
+					$dateRangeDisplay = "Sales Report for " . $inicialDateFormatted;
+				} else {
+					$dateRangeDisplay = "Sales Report from " . $inicialDateFormatted . " to " . $finalDateFormatted;
+				}
+			} else {
+				$dateRangeDisplay = "Sales Report - All Time";
 			}
 
+			$reportTypeDisplay = $isInstallmentReport ? "Installment Sales" : "Regular Sales";
+			$generatedTime = date("F j, Y g:i A");
+
+			if($isInstallmentReport){
+
+				// Installment Sales Report
+				echo utf8_decode("<table border='0'> 
+
+						<tr> 
+						<td colspan='11' style='font-weight:bold; text-align:center; font-size:16px; padding:10px; background-color:#f8f9fa; border:1px solid #eee;'>$reportTypeDisplay</td>
+						</tr>
+						<tr> 
+						<td colspan='11' style='text-align:center; font-size:12px; padding:5px; background-color:#f8f9fa; border:1px solid #eee;'>$dateRangeDisplay</td>
+						</tr>
+						<tr> 
+						<td colspan='11' style='text-align:center; font-size:10px; padding:5px; background-color:#f8f9fa; border:1px solid #eee;'>Generated on: $generatedTime</td>
+						</tr>
+						<tr> 
+						<td style='font-weight:bold; border:1px solid #eee;'>CODE</td> 
+						<td style='font-weight:bold; border:1px solid #eee;'>CUSTOMER</td>
+						<td style='font-weight:bold; border:1px solid #eee;'>SELLER</td>
+						<td style='font-weight:bold; border:1px solid #eee;'>QUANTITY</td>
+						<td style='font-weight:bold; border:1px solid #eee;'>PRODUCTS</td>	
+						<td style='font-weight:bold; border:1px solid #eee;'>TOTAL</td>		
+						<td style='font-weight:bold; border:1px solid #eee;'>METHOD OF PAYMENT</td>	
+						<td style='font-weight:bold; border:1px solid #eee;'>INSTALLMENT STATUS</td>
+						<td style='font-weight:bold; border:1px solid #eee;'>PAID AMOUNT</td>
+						<td style='font-weight:bold; border:1px solid #eee;'>PENDING AMOUNT</td>
+						<td style='font-weight:bold; border:1px solid #eee;'>DATE</td>		
+						</tr>");
+
+				// Filter installment sales only
+				$installmentSales = array_filter($sales, function($sale) {
+					return strpos($sale["paymentMethod"], "installment") === 0;
+				});
+
+				// Calculate totals for installment sales
+				$totalSales = 0;
+				$totalPaidAmount = 0;
+				$totalPendingAmount = 0;
+
+				foreach ($installmentSales as $row => $item){
+
+					$customer = ControllerCustomers::ctrShowCustomers("id", $item["idCustomer"]);
+					$Seller = ControllerUsers::ctrShowUsers("id", $item["idSeller"]);
+
+					// Get installment details
+					$installmentDetails = $this->getInstallmentDetails($item["id"]);
+
+					// Add to totals
+					$totalSales += $item["totalPrice"];
+					$totalPaidAmount += $installmentDetails["paid_amount"];
+					$totalPendingAmount += $installmentDetails["pending_amount"];
+
+				 echo utf8_decode("<tr>
+				 			<td style='border:1px solid #eee;'>".$item["code"]."</td> 
+				 			<td style='border:1px solid #eee;'>".$customer["name"]."</td>
+				 			<td style='border:1px solid #eee;'>".$Seller["name"]."</td>
+				 			<td style='border:1px solid #eee;'>");
+
+				 	$products =  json_decode($item["products"], true);
+
+				 	foreach ($products as $key => $valueproducts) {
+				 			
+				 			echo utf8_decode($valueproducts["quantity"]."<br>");
+				 		}
+
+				 	echo utf8_decode("</td><td style='border:1px solid #eee;'>");	
+
+			 		foreach ($products as $key => $valueproducts) {
+				 			
+			 			echo utf8_decode($valueproducts["description"]."<br>");
+			 		
+			 		}
+
+			 		echo utf8_decode("</td>
+						<td style='border:1px solid #eee;'>PHP ".number_format($item["totalPrice"],2)."</td>
+						<td style='border:1px solid #eee;'>".$item["paymentMethod"]."</td>
+						<td style='border:1px solid #eee;'>".$installmentDetails["status"]."</td>
+						<td style='border:1px solid #eee;'>PHP ".number_format($installmentDetails["paid_amount"],2)."</td>
+						<td style='border:1px solid #eee;'>PHP ".number_format($installmentDetails["pending_amount"],2)."</td>
+						<td style='border:1px solid #eee;'>".substr($item["saledate"],0,10)."</td>		
+			 			</tr>");
+
+				}
+
+				// Add totals row for installment sales
+				echo utf8_decode("<tr style='background-color:#f0f0f0;'>
+						<td colspan='5' style='font-weight:bold; border:1px solid #eee; text-align:right;'>TOTALS:</td>
+						<td style='font-weight:bold; border:1px solid #eee;'>PHP ".number_format($totalSales,2)."</td>
+						<td style='border:1px solid #eee;'></td>
+						<td style='border:1px solid #eee;'></td>
+						<td style='font-weight:bold; border:1px solid #eee;'>PHP ".number_format($totalPaidAmount,2)."</td>
+						<td style='font-weight:bold; border:1px solid #eee;'>PHP ".number_format($totalPendingAmount,2)."</td>
+						<td style='border:1px solid #eee;'></td>
+					</tr>");
+
+			} else {
+
+				// Regular Sales Report (cash, qrph, card/debit)
+				echo utf8_decode("<table border='0'> 
+
+						<tr> 
+						<td colspan='8' style='font-weight:bold; text-align:center; font-size:16px; padding:10px; background-color:#f8f9fa; border:1px solid #eee;'>$reportTypeDisplay</td>
+						</tr>
+						<tr> 
+						<td colspan='8' style='text-align:center; font-size:12px; padding:5px; background-color:#f8f9fa; border:1px solid #eee;'>$dateRangeDisplay</td>
+						</tr>
+						<tr> 
+						<td colspan='8' style='text-align:center; font-size:10px; padding:5px; background-color:#f8f9fa; border:1px solid #eee;'>Generated on: $generatedTime</td>
+						</tr>
+						<tr> 
+						<td style='font-weight:bold; border:1px solid #eee;'>CODE</td> 
+						<td style='font-weight:bold; border:1px solid #eee;'>CUSTOMER</td>
+						<td style='font-weight:bold; border:1px solid #eee;'>SELLER</td>
+						<td style='font-weight:bold; border:1px solid #eee;'>QUANTITY</td>
+						<td style='font-weight:bold; border:1px solid #eee;'>PRODUCTS</td>		
+						<td style='font-weight:bold; border:1px solid #eee;'>TOTAL</td>		
+						<td style='font-weight:bold; border:1px solid #eee;'>METHOD OF PAYMENT</td>	
+						<td style='font-weight:bold; border:1px solid #eee;'>DATE</td>		
+						</tr>");
+
+				// Filter regular payment sales only (exclude installments)
+				$regularSales = array_filter($sales, function($sale) {
+					return strpos($sale["paymentMethod"], "installment") !== 0;
+				});
+
+				// Calculate totals for regular sales
+				$totalRegularSales = 0;
+
+				foreach ($regularSales as $row => $item){
+
+					$customer = ControllerCustomers::ctrShowCustomers("id", $item["idCustomer"]);
+					$Seller = ControllerUsers::ctrShowUsers("id", $item["idSeller"]);
+
+					// Add to totals
+					$totalRegularSales += $item["totalPrice"];
+
+				 echo utf8_decode("<tr>
+				 			<td style='border:1px solid #eee;'>".$item["code"]."</td> 
+				 			<td style='border:1px solid #eee;'>".$customer["name"]."</td>
+				 			<td style='border:1px solid #eee;'>".$Seller["name"]."</td>
+				 			<td style='border:1px solid #eee;'>");
+
+				 	$products =  json_decode($item["products"], true);
+
+				 	foreach ($products as $key => $valueproducts) {
+				 			
+				 			echo utf8_decode($valueproducts["quantity"]."<br>");
+				 		}
+
+				 	echo utf8_decode("</td><td style='border:1px solid #eee;'>");	
+
+			 		foreach ($products as $key => $valueproducts) {
+				 			
+			 			echo utf8_decode($valueproducts["description"]."<br>");
+			 		
+			 		}
+
+			 		echo utf8_decode("</td>
+						<td style='border:1px solid #eee;'>PHP ".number_format($item["totalPrice"],2)."</td>
+						<td style='border:1px solid #eee;'>".$item["paymentMethod"]."</td>
+						<td style='border:1px solid #eee;'>".substr($item["saledate"],0,10)."</td>		
+			 			</tr>");
+
+				}
+
+				// Add totals row for regular sales
+				echo utf8_decode("<tr style='background-color:#f0f0f0;'>
+						<td colspan='5' style='font-weight:bold; border:1px solid #eee; text-align:right;'>TOTALS:</td>
+						<td style='font-weight:bold; border:1px solid #eee;'>PHP ".number_format($totalRegularSales,2)."</td>
+						<td style='border:1px solid #eee;'></td>
+						<td style='border:1px solid #eee;'></td>
+					</tr>");
+			}
 
 			echo "</table>";
 
+		}
+
+	}
+
+	/*=============================================
+	GET INSTALLMENT DETAILS FOR REPORT
+	=============================================*/
+
+	private function getInstallmentDetails($saleId){
+
+		try {
+			// Get installment plan for this sale
+			$stmt = Connection::connect()->prepare("SELECT * FROM installment_plans WHERE sale_id = :sale_id");
+			$stmt->bindParam(":sale_id", $saleId, PDO::PARAM_INT);
+			$stmt->execute();
+			$plan = $stmt->fetch();
+
+			if(!$plan) {
+				return array(
+					"status" => "No Plan",
+					"paid_amount" => 0,
+					"pending_amount" => 0
+				);
+			}
+
+			// Get payment summary
+			$paymentStmt = Connection::connect()->prepare("
+				SELECT 
+					SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) as paid_total,
+					SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) as pending_total
+				FROM installment_payments 
+				WHERE installment_plan_id = :plan_id
+			");
+			$paymentStmt->bindParam(":plan_id", $plan["id"], PDO::PARAM_INT);
+			$paymentStmt->execute();
+			$payments = $paymentStmt->fetch();
+
+			return array(
+				"status" => ucfirst($plan["status"]),
+				"paid_amount" => $payments["paid_total"] ? $payments["paid_total"] : 0,
+				"pending_amount" => $payments["pending_total"] ? $payments["pending_total"] : 0
+			);
+
+		} catch(Exception $e) {
+			return array(
+				"status" => "Error",
+				"paid_amount" => 0,
+				"pending_amount" => 0
+			);
 		}
 
 	}

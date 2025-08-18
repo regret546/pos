@@ -41,6 +41,130 @@ if($_SESSION["profile"] == "Special"){
     width: 60px;
     min-width: 60px;
   }
+
+  /* Payment Summary Styling */
+  .payment-summary-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 0;
+  }
+
+  .payment-summary-header {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+  }
+
+  .payment-summary-header i {
+    margin-right: 8px;
+    opacity: 0.9;
+  }
+
+  .payment-summary-content {
+    padding: 16px;
+    color: white;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 13px;
+  }
+
+  .summary-row:last-child {
+    border-bottom: none;
+  }
+
+  .summary-label {
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    flex: 1;
+  }
+
+  .summary-value {
+    font-weight: 600;
+    color: white;
+    text-align: right;
+    margin-left: 10px;
+  }
+
+  .total-row {
+    background: rgba(255,255,255,0.1);
+    margin: 8px -16px 8px -16px;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .total-row .summary-label,
+  .total-row .summary-value {
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .monthly-row {
+    background: rgba(76, 175, 80, 0.2);
+    margin: 8px -16px -16px -16px;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .monthly-row .summary-label,
+  .monthly-row .summary-value {
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .example-header {
+    background: rgba(255,193,7,0.2);
+    color: #fff;
+    padding: 8px 12px;
+    margin: -16px -16px 12px -16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .preview-notice {
+    background-color: #fff3cd !important;
+    border-color: #ffeaa7 !important;
+    color: #856404 !important;
+  }
+
+  .calculating-placeholder {
+    text-align: center;
+    color: rgba(255,255,255,0.8);
+    font-style: italic;
+    padding: 20px;
+  }
+
+  .calculating-placeholder i {
+    margin-right: 8px;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .summary-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .summary-value {
+      text-align: left;
+      margin-left: 0;
+      margin-top: 4px;
+      font-size: 14px;
+    }
+  }
 </style>
 <!-- Log on to codeastro.com for more projects! -->
 <div class="content-wrapper">
@@ -520,11 +644,13 @@ $(document).ready(function() {
                        '</select>' +
                        '</div>' +
                        '</div>' +
-                       '<div class="col-xs-12" id="installmentSummaryDiv" style="display: none; margin-top: 10px;">' +
-                       '<div class="alert alert-info" style="margin-bottom: 0; background-color: #f9f9f9; border: 1px solid #ddd; color: #333;">' +
-                       '<strong>Payment Summary:</strong>' +
+                       '<div class="col-xs-12" id="installmentSummaryDiv" style="display: none; margin-top: 15px;">' +
+                       '<div class="payment-summary-container">' +
+                       '<div class="payment-summary-header">' +
+                       '<i class="fa fa-calculator"></i> Payment Summary' +
+                       '</div>' +
                        '<div id="installmentSummary">' +
-                       '<p>Calculating...</p>' +
+                       '<div class="calculating-placeholder"><i class="fa fa-spinner fa-spin"></i> Calculating...</div>' +
                        '</div>' +
                        '</div>' +
                        '</div>';
@@ -594,17 +720,40 @@ $(document).ready(function() {
                         var totalInterestAmount = totalWithInterest - remainingAmount;
                         var finalTotalToPay = downpayment + totalWithInterest;
                         
-                        var summaryHTML = '<p><strong>Original Amount:</strong> ₱' + total.toFixed(2) + '</p>';
+                        var summaryHTML = '<div class="payment-summary-content">' +
+                            '<div class="summary-row">' +
+                                '<span class="summary-label">Original Amount:</span>' +
+                                '<span class="summary-value">₱' + total.toFixed(2) + '</span>' +
+                            '</div>';
                         
                         if (hasDownpayment && downpayment > 0) {
-                            summaryHTML += '<p><strong>Downpayment:</strong> ₱' + downpayment.toFixed(2) + '</p>' +
-                                         '<p><strong>Remaining for Installment:</strong> ₱' + remainingAmount.toFixed(2) + '</p>';
+                            summaryHTML += '<div class="summary-row">' +
+                                '<span class="summary-label">Downpayment:</span>' +
+                                '<span class="summary-value">₱' + downpayment.toFixed(2) + '</span>' +
+                            '</div>' +
+                            '<div class="summary-row">' +
+                                '<span class="summary-label">Remaining for Installment:</span>' +
+                                '<span class="summary-value">₱' + remainingAmount.toFixed(2) + '</span>' +
+                            '</div>';
                         }
                         
-                        summaryHTML += '<p><strong>Interest Rate:</strong> ' + interest + '% (' + months + ' months)</p>' +
-                                     '<p><strong>Interest Amount:</strong> ₱' + totalInterestAmount.toFixed(2) + '</p>' +
-                                     '<p style="font-size: 16px; color: #00a65a;"><strong>Total to Pay:</strong> ₱' + total.toFixed(2) + ' + ₱' + totalInterestAmount.toFixed(2) + ' interest = ₱' + (total + totalInterestAmount).toFixed(2) + '</p>' +
-                                     '<p style="font-size: 16px; color: #3c8dbc;"><strong>Monthly Payment:</strong> ₱' + monthlyPayment.toFixed(2) + '</p>';
+                        summaryHTML += '<div class="summary-row">' +
+                                '<span class="summary-label">Interest Rate:</span>' +
+                                '<span class="summary-value">' + interest + '% (' + months + ' months)</span>' +
+                            '</div>' +
+                            '<div class="summary-row">' +
+                                '<span class="summary-label">Interest Amount:</span>' +
+                                '<span class="summary-value">₱' + totalInterestAmount.toFixed(2) + '</span>' +
+                            '</div>' +
+                            '<div class="summary-row total-row">' +
+                                '<span class="summary-label">Total to Pay:</span>' +
+                                '<span class="summary-value">₱' + (total + totalInterestAmount).toFixed(2) + '</span>' +
+                            '</div>' +
+                            '<div class="summary-row monthly-row">' +
+                                '<span class="summary-label">Monthly Payment:</span>' +
+                                '<span class="summary-value">₱' + monthlyPayment.toFixed(2) + '</span>' +
+                            '</div>' +
+                        '</div>';
                     } else {
                         // Show example with 1000 pesos when no products added yet
                         var exampleTotal = 1000;
@@ -615,18 +764,40 @@ $(document).ready(function() {
                         var totalInterestAmount = totalWithInterest - remainingAmount;
                         var finalTotalToPay = exampleDownpayment + totalWithInterest;
                         
-                        var summaryHTML = '<div class="alert alert-warning" style="margin-bottom: 10px;"><small><strong>Preview:</strong> Add products to see actual calculation</small></div>' +
-                                        '<p><strong>Example (₱1,000):</strong></p>';
+                        var summaryHTML = '<div class="alert alert-warning preview-notice" style="margin-bottom: 15px; padding: 8px 12px; font-size: 12px; border-radius: 4px;">' +
+                                        '<i class="fa fa-info-circle"></i> <strong>Preview:</strong> Add products to see actual calculation' +
+                                    '</div>' +
+                                    '<div class="payment-summary-content">' +
+                                        '<div class="example-header">Example Calculation (₱1,000)</div>';
                         
                         if (hasDownpayment) {
-                            summaryHTML += '<p><strong>Example Downpayment:</strong> ₱' + exampleDownpayment.toFixed(2) + '</p>' +
-                                         '<p><strong>Remaining for Installment:</strong> ₱' + remainingAmount.toFixed(2) + '</p>';
+                            summaryHTML += '<div class="summary-row">' +
+                                '<span class="summary-label">Example Downpayment:</span>' +
+                                '<span class="summary-value">₱' + exampleDownpayment.toFixed(2) + '</span>' +
+                            '</div>' +
+                            '<div class="summary-row">' +
+                                '<span class="summary-label">Remaining for Installment:</span>' +
+                                '<span class="summary-value">₱' + remainingAmount.toFixed(2) + '</span>' +
+                            '</div>';
                         }
                         
-                        summaryHTML += '<p><strong>Interest Rate:</strong> ' + interest + '% (' + months + ' months)</p>' +
-                                     '<p><strong>Interest Amount:</strong> ₱' + totalInterestAmount.toFixed(2) + '</p>' +
-                                     '<p style="font-size: 16px; color: #00a65a;"><strong>Total to Pay:</strong> ₱' + exampleTotal.toFixed(2) + ' + ₱' + totalInterestAmount.toFixed(2) + ' interest = ₱' + (exampleTotal + totalInterestAmount).toFixed(2) + '</p>' +
-                                     '<p style="font-size: 16px; color: #3c8dbc;"><strong>Monthly Payment:</strong> ₱' + monthlyPayment.toFixed(2) + '</p>';
+                        summaryHTML += '<div class="summary-row">' +
+                                '<span class="summary-label">Interest Rate:</span>' +
+                                '<span class="summary-value">' + interest + '% (' + months + ' months)</span>' +
+                            '</div>' +
+                            '<div class="summary-row">' +
+                                '<span class="summary-label">Interest Amount:</span>' +
+                                '<span class="summary-value">₱' + totalInterestAmount.toFixed(2) + '</span>' +
+                            '</div>' +
+                            '<div class="summary-row total-row">' +
+                                '<span class="summary-label">Total to Pay:</span>' +
+                                '<span class="summary-value">₱' + (exampleTotal + totalInterestAmount).toFixed(2) + '</span>' +
+                            '</div>' +
+                            '<div class="summary-row monthly-row">' +
+                                '<span class="summary-label">Monthly Payment:</span>' +
+                                '<span class="summary-value">₱' + monthlyPayment.toFixed(2) + '</span>' +
+                            '</div>' +
+                        '</div>';
                     }
                     
                     // Wait a moment for DOM to be ready, then update
@@ -644,9 +815,11 @@ $(document).ready(function() {
                             });
                         } else {
                             // Create the summary div manually and append it
-                            var manualSummaryHtml = '<div class="col-xs-12" id="installmentSummaryDiv" style="display: block !important; margin-top: 10px;">' +
-                                                  '<div class="alert alert-info" style="margin-bottom: 0; background-color: #f9f9f9; border: 1px solid #ddd; color: #333;">' +
-                                                  '<strong>Payment Summary:</strong>' +
+                            var manualSummaryHtml = '<div class="col-xs-12" id="installmentSummaryDiv" style="display: block !important; margin-top: 15px;">' +
+                                                  '<div class="payment-summary-container">' +
+                                                  '<div class="payment-summary-header">' +
+                                                  '<i class="fa fa-calculator"></i> Payment Summary' +
+                                                  '</div>' +
                                                   '<div id="installmentSummary">' + summaryHTML + '</div>' +
                                                   '</div>' +
                                                   '</div>';

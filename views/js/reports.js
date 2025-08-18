@@ -13,40 +13,96 @@ $(function () {
     DATES RANGE
     =============================================*/
 
-  $("#daterange-btn2").daterangepicker(
-    {
-      ranges: {
-        Today: [moment(), moment()],
-        "Last 7 days": [moment().subtract(6, "days"), moment()],
-        "Last 30 days": [moment().subtract(29, "days"), moment()],
-        "This Month": [moment().startOf("month"), moment().endOf("month")],
-        "Last Month": [
-          moment().subtract(1, "month").startOf("month"),
-          moment().subtract(1, "month").endOf("month"),
-        ],
-      },
-      startDate: moment(),
-      endDate: moment(),
+  $("#daterange-btn2").daterangepicker({
+    ranges: {
+      Today: [moment(), moment()],
+      Yesterday: [moment().subtract(1, "days"), moment().subtract(1, "days")],
+      "Last 7 Days": [moment().subtract(6, "days"), moment()],
+      "Last 30 Days": [moment().subtract(29, "days"), moment()],
+      "This Month": [moment().startOf("month"), moment().endOf("month")],
+      "Last Month": [
+        moment().subtract(1, "month").startOf("month"),
+        moment().subtract(1, "month").endOf("month"),
+      ],
+      "Last 3 Months": [
+        moment().subtract(3, "months").startOf("month"),
+        moment().subtract(1, "month").endOf("month"),
+      ],
+      "This Year": [moment().startOf("year"), moment().endOf("year")],
+      "Last Year": [
+        moment().subtract(1, "year").startOf("year"),
+        moment().subtract(1, "year").endOf("year"),
+      ],
     },
-    function (start, end) {
-      $("#daterange-btn2 span").html(
-        start.format("MMMM D, YYYY") + " - " + end.format("MMMM D, YYYY")
-      );
+    startDate: moment(),
+    endDate: moment(),
+    opens: "left",
+    drops: "down",
+    showDropdowns: true,
+    showWeekNumbers: false,
+    alwaysShowCalendars: true,
+    autoUpdateInput: false,
+    autoApply: false,
+    linkedCalendars: false,
+    timePicker: false,
+    showCustomRangeLabel: true,
+    buttonClasses: "btn btn-sm",
+    applyClass: "btn-success",
+    cancelClass: "btn-default",
+    locale: {
+      format: "MMMM D, YYYY",
+      separator: " - ",
+      applyLabel: "Apply",
+      cancelLabel: "Cancel",
+      fromLabel: "From",
+      toLabel: "To",
+      customRangeLabel: "Custom Range",
+      weekLabel: "W",
+      daysOfWeek: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+      monthNames: [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ],
+      firstDay: 1,
+    },
+  });
 
-      var initialDate = start.format("YYYY-MM-DD");
-      var finalDate = end.format("YYYY-MM-DD");
+  // Handle apply button click
+  $("#daterange-btn2").on("apply.daterangepicker", function (ev, picker) {
+    $("#daterange-btn2 span").html(
+      picker.startDate.format("MMMM D, YYYY") +
+        " - " +
+        picker.endDate.format("MMMM D, YYYY")
+    );
 
-      var captureRange = $("#daterange-btn2 span").html();
+    var initialDate = picker.startDate.format("YYYY-MM-DD");
+    var finalDate = picker.endDate.format("YYYY-MM-DD");
 
-      localStorage.setItem("captureRange2", captureRange);
+    var captureRange = $("#daterange-btn2 span").html();
 
-      window.location =
-        "index.php?route=reports&initialDate=" +
-        initialDate +
-        "&finalDate=" +
-        finalDate;
-    }
-  );
+    localStorage.setItem("captureRange2", captureRange);
+
+    window.location =
+      "index.php?route=reports&inicialDate=" +
+      initialDate +
+      "&finalDate=" +
+      finalDate;
+  });
+
+  // Handle cancel button click
+  $("#daterange-btn2").on("cancel.daterangepicker", function (ev, picker) {
+    // Do nothing, just close the picker
+  });
 
   /*=============================================
     CANCEL DATES RANGE
