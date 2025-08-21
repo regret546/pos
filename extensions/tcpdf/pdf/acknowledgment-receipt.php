@@ -46,6 +46,8 @@ $products = json_decode($answerSale["products"], true);
 $paymentMethod = $answerSale["paymentMethod"];
 
 $tax = number_format($answerSale["tax"],2);
+$discount = number_format(isset($answerSale["discount"]) ? $answerSale["discount"] : 0, 2);
+$subtotal = number_format($answerSale["totalPrice"] + (isset($answerSale["discount"]) ? $answerSale["discount"] : 0), 2);
 $saleTotalPrice = number_format($answerSale["totalPrice"],2);
 
 //GET CUSTOMER INFORMATION
@@ -218,8 +220,16 @@ $block2 .= <<<EOF
 			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:right;">0</td>
 		</tr>
 		<tr>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center;" colspan="4">TOTAL</td>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:right;">$saleTotalPrice</td>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold; text-align:center;" colspan="4">SUBTOTAL</td>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold; text-align:right;">$subtotal</td>
+		</tr>
+		<tr>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold; text-align:center;" colspan="4">DISCOUNT</td>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold; text-align:right;">$discount</td>
+		</tr>
+		<tr>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; background-color:#D3D3D3;" colspan="4">TOTAL</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:right; background-color:#D3D3D3;">$saleTotalPrice</td>
 		</tr>
 	</table>
 

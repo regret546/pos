@@ -150,8 +150,75 @@
       font-size: 14px;
     }
   }
+
+  /* Customer Search Dropdown Styles */
+  .customer-selection-container {
+    position: relative;
+  }
+
+  .customer-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .customer-dropdown-content {
+    padding: 0;
+  }
+
+  .customer-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+  }
+
+  .customer-item:hover {
+    background-color: #f5f5f5;
+  }
+
+  .customer-item:last-child {
+    border-bottom: none;
+  }
+
+  .customer-item.selected {
+    background-color: #337ab7;
+    color: white;
+  }
+
+  .customer-name {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .customer-details {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+  }
+
+  .customer-item.selected .customer-name,
+  .customer-item.selected .customer-details {
+    color: white;
+  }
+
+  .no-results {
+    padding: 15px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+  }
 </style>
-<!-- Log on to codeastro.com for more projects! -->
+
 <div class="content-wrapper">
 
   <section class="content-header">
@@ -167,7 +234,7 @@
       <li><a href="index.php?route=home"><i class="fa fa-dashboard"></i> Home</a></li>
 
       <li class="active">Edit Sale</li>
-		<!-- Log on to codeastro.com for more projects! -->
+		
     </ol>
 
   </section>
@@ -284,7 +351,7 @@
                         <input type="hidden" name="idSeller" value="<?php echo $seller["id"]; ?>">
 
                       </div>
-					<!-- Log on to codeastro.com for more projects! -->
+					
                     </div>
 
 
@@ -311,37 +378,41 @@
                     =            CUSTOMER INPUT           =
                     ======================================-->
                   
-                    <!-- Log on to codeastro.com for more projects! -->
+                    
                     <div class="form-group">
 
-                      <div class="input-group">
+                      <div class="customer-selection-container">
+                        <div class="input-group">
+                          <span class="input-group-addon"><i class="fa fa-users"></i></span>
+                          <input type="text" class="form-control" id="customerSearchInput" placeholder="Search customers by name..." autocomplete="off" value="<?php echo $customers["name"]; ?>">
+                          <span class="input-group-addon">
+                              <button type="button" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modalAddCustomer" data-dismiss="modal">
+                                  <i class="fa fa-plus"></i> Add
+                              </button>
+                          </span>
+                        </div>
                         
-                        <span class="input-group-addon"><i class="fa fa-users"></i></span>
-
-                        <select class="form-control" name="selectCustomer" id="selectCustomer" required>
-                          
-                            <option value="<?php echo $customers["id"]; ?>"><?php echo $customers["name"]; ?></option>
-
-                            <?php 
-
-                            $item = null;
-                            $value = null;
-
-                            $customers = ControllerCustomers::ctrShowCustomers($item, $value);
-
-                            foreach ($customers as $key => $value) {
-                              echo '<option value="'.$value["id"].'">'.$value["name"].'</option>';
-                            }
-
-
-                            ?>
-
+                        <!-- Hidden dropdown for customer selection -->
+                        <div class="customer-dropdown" id="customerDropdown" style="display: none;">
+                          <div class="customer-dropdown-content">
+                            <div class="no-results" style="display: none;">No customers found</div>
+                          </div>
+                        </div>
+                        
+                        <!-- Hidden select for form submission -->
+                        <select name="selectCustomer" id="selectCustomer" style="display: none;" required>
+                          <option value="<?php echo $customers["id"]; ?>"><?php echo $customers["name"]; ?></option>
+                          <?php 
+                          $item = null;
+                          $value = null;
+                          $customers = ControllerCustomers::ctrShowCustomers($item, $value);
+                          foreach ($customers as $key => $value) {
+                            echo '<option value="'.$value["id"].'" data-name="'.$value["name"].'" data-email="'.$value["email"].'" data-phone="'.$value["phone"].'">'.$value["name"].'</option>';
+                          }
+                          ?>
                         </select>
-
-                        <span class="input-group-addon"><button type="button" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modalAddCustomer" data-dismiss="modal">Add Customer</button></span>
-
                       </div>
-					<!-- Log on to codeastro.com for more projects! -->
+					
                     </div>
 
                     <!--=====================================
@@ -453,32 +524,30 @@
                       PAYMENT METHOD
                       ======================================-->
 
-                    <div class="form-group row">
-                      
-                      <div class="col-xs-6" style="padding-right: 0">
-
-                        <div class="input-group">
-                      
-                          <select class="form-control" name="newPaymentMethod" id="newPaymentMethod" required>
-                            
+                    <div class="form-group">
+                      <label>Payment Method</label>
+                      <div class="row">
+                        <div class="col-xs-12">
+                          <div class="input-group">
+                            <span class="input-group-addon"><i class="fa fa-credit-card"></i></span>
+                            <select class="form-control" name="newPaymentMethod" id="newPaymentMethod" required>
                               <option value="">-Select Payment Method-</option>
-                              <option value="cash" <?php if($sale["paymentMethod"] == "cash") echo "selected"; ?>>Cash</option>
-                              <option value="QRPH" <?php if($sale["paymentMethod"] == "QRPH" || $sale["paymentMethod"] == "CC") echo "selected"; ?>>QRPH</option>
-                              <option value="Card" <?php if($sale["paymentMethod"] == "Card" || $sale["paymentMethod"] == "DC") echo "selected"; ?>>Debit/Credit Card</option>
+                              <option value="cash" <?php if($sale["paymentMethod"] == "cash") echo "selected"; ?>>💵 Cash Payment</option>
+                              <option value="QRPH" <?php if($sale["paymentMethod"] == "QRPH" || $sale["paymentMethod"] == "CC") echo "selected"; ?>>📱 QRPH Payment</option>
+                              <option value="Card" <?php if($sale["paymentMethod"] == "Card" || $sale["paymentMethod"] == "DC") echo "selected"; ?>>💳 Debit/Credit Card</option>
                               <?php if(strpos($sale["paymentMethod"], "installment") !== false): ?>
-                              <option value="installment" selected>Installment</option>
+                              <option value="installment" selected>📅 Installment Plan</option>
                               <?php endif; ?>
-
-                          </select>
-
+                            </select>
+                          </div>
                         </div>
-
+                      </div>
+                      
+                      <div class="row paymentMethodBoxes" style="margin-top: 15px;">
+                        <!-- Payment method specific options will be inserted here -->
                       </div>
 
-                      <div class="paymentMethodBoxes"></div>
-
                       <input type="hidden" name="listPaymentMethod" id="listPaymentMethod" required>
-
                     </div>
 
                     <br>
@@ -486,7 +555,7 @@
                 </div>
 
             </div>
-			<!-- Log on to codeastro.com for more projects! -->
+			
             <div class="box-footer">
               <button type="submit" class="btn btn-success pull-right">Save Changes</button>
             </div>
@@ -624,7 +693,7 @@
           <button type="button" class="btn btn-danger pull-left" data-dismiss="modal">Close</button>
           <button type="submit" class="btn btn-success">Save Customer</button>
         </div>
-      </form><!-- Log on to codeastro.com for more projects! -->
+      </form>
 
       <?php
 
@@ -635,7 +704,7 @@
     </div>
 
   </div>
-</div><!-- Log on to codeastro.com for more projects! -->
+</div>
 
 <!--====  End of module add Customer  ====-->
 
@@ -650,12 +719,22 @@ window.showTransactionField = function(paymentMethod) {
     var fieldLabel = paymentMethod === 'QRPH' ? 'QRPH Transaction Code' : 'Card Transaction Code';
     var placeholder = paymentMethod === 'QRPH' ? 'Enter QRPH transaction reference' : 'Enter card transaction reference';
     
-    var html = '<div class="col-xs-12">' +
+    var html = '<div class="col-xs-6">' +
                '<label for="transactionCode">' + fieldLabel + ':</label>' +
                '<div class="input-group">' +
                '<span class="input-group-addon"><i class="fa fa-credit-card"></i></span>' +
                '<input type="text" class="form-control" name="transactionCode" id="transactionCode" ' +
                'placeholder="' + placeholder + '" required>' +
+               '</div>' +
+               '</div>' +
+               '<div class="col-xs-6" id="electronicPaymentSummaryDiv" style="margin-top: 10px;">' +
+               '<div class="payment-summary-container">' +
+               '<div class="payment-summary-header">' +
+               '<i class="fa fa-calculator"></i> Payment Summary' +
+               '</div>' +
+               '<div id="electronicPaymentSummary">' +
+               '<div class="calculating-placeholder"><i class="fa fa-spinner fa-spin"></i> Calculating...</div>' +
+               '</div>' +
                '</div>' +
                '</div>';
     
@@ -666,6 +745,172 @@ window.showTransactionField = function(paymentMethod) {
     var addedContent = $('.paymentMethodBoxes').html();
     console.log('Transaction field added, content length:', addedContent.length);
     console.log('Transaction field exists:', $('#transactionCode').length > 0);
+};
+
+// Function to update electronic payment summary
+window.updateElectronicPaymentSummary = function(paymentMethod) {
+    var total = parseFloat($('#saleTotal').val()) || 0;
+    var discount = parseFloat($('#saleDiscount').val()) || 0;
+    var subtotal = total + discount; // Calculate original subtotal before discount
+    var paymentTypeLabel = paymentMethod === 'QRPH' ? 'QRPH Payment' : 'Card Payment';
+    var paymentIcon = paymentMethod === 'QRPH' ? 'fa-qrcode' : 'fa-credit-card';
+    
+    if (total > 0 || discount > 0) {
+        var summaryHTML = '<div class="payment-summary-content">' +
+            '<div class="summary-row">' +
+                '<span class="summary-label"><i class="fa ' + paymentIcon + '"></i> Payment Method:</span>' +
+                '<span class="summary-value">' + paymentTypeLabel + '</span>' +
+            '</div>' +
+            '<div class="summary-row">' +
+                '<span class="summary-label">Subtotal:</span>' +
+                '<span class="summary-value">₱' + subtotal.toFixed(2) + '</span>' +
+            '</div>';
+            
+        if (discount > 0) {
+            summaryHTML += '<div class="summary-row">' +
+                '<span class="summary-label">Discount:</span>' +
+                '<span class="summary-value">-₱' + discount.toFixed(2) + '</span>' +
+            '</div>';
+        }
+        
+        summaryHTML += '<div class="summary-row">' +
+                '<span class="summary-label">Processing Fee:</span>' +
+                '<span class="summary-value">₱0.00</span>' +
+            '</div>' +
+            '<div class="summary-row total-row">' +
+                '<span class="summary-label">Total Amount:</span>' +
+                '<span class="summary-value">₱' + total.toFixed(2) + '</span>' +
+            '</div>' +
+        '</div>';
+    } else {
+        var exampleDiscount = 100;
+        var exampleSubtotal = 1000;
+        var exampleTotal = exampleSubtotal - exampleDiscount;
+        
+        var summaryHTML = '<div class="alert alert-warning preview-notice" style="margin-bottom: 15px; padding: 8px 12px; font-size: 12px; border-radius: 4px;">' +
+                        '<i class="fa fa-info-circle"></i> <strong>Preview:</strong> Add products to see actual calculation' +
+                    '</div>' +
+                    '<div class="payment-summary-content">' +
+                        '<div class="example-header">Example Calculation (₱1,000 - ₱100 discount)</div>' +
+                        '<div class="summary-row">' +
+                            '<span class="summary-label"><i class="fa ' + paymentIcon + '"></i> Payment Method:</span>' +
+                            '<span class="summary-value">' + paymentTypeLabel + '</span>' +
+                        '</div>' +
+                        '<div class="summary-row">' +
+                            '<span class="summary-label">Subtotal:</span>' +
+                            '<span class="summary-value">₱' + exampleSubtotal.toFixed(2) + '</span>' +
+                        '</div>' +
+                        '<div class="summary-row">' +
+                            '<span class="summary-label">Discount:</span>' +
+                            '<span class="summary-value">-₱' + exampleDiscount.toFixed(2) + '</span>' +
+                        '</div>' +
+                        '<div class="summary-row">' +
+                            '<span class="summary-label">Processing Fee:</span>' +
+                            '<span class="summary-value">₱0.00</span>' +
+                        '</div>' +
+                        '<div class="summary-row total-row">' +
+                            '<span class="summary-label">Total Amount:</span>' +
+                            '<span class="summary-value">₱' + exampleTotal.toFixed(2) + '</span>' +
+                        '</div>' +
+                    '</div>';
+    }
+    
+    setTimeout(function() {
+        var summaryDiv = $('#electronicPaymentSummaryDiv');
+        var summaryContent = $('#electronicPaymentSummary');
+        
+        if (summaryDiv.length > 0 && summaryContent.length > 0) {
+            summaryContent.html(summaryHTML);
+            summaryDiv.show();
+        }
+    }, 100);
+};
+
+// Function to update cash payment summary
+window.updateCashPaymentSummary = function() {
+    var total = parseFloat($('#saleTotal').val()) || 0;
+    var discount = parseFloat($('#saleDiscount').val()) || 0;
+    var subtotal = total + discount; // Calculate original subtotal before discount
+    var cashValue = parseFloat($('#newCashValue').val()) || 0;
+    var change = Math.max(0, cashValue - total);
+    
+    if (total > 0 || discount > 0) {
+        var summaryHTML = '<div class="payment-summary-content">' +
+            '<div class="summary-row">' +
+                '<span class="summary-label"><i class="fa fa-money"></i> Payment Method:</span>' +
+                '<span class="summary-value">Cash Payment</span>' +
+            '</div>' +
+            '<div class="summary-row">' +
+                '<span class="summary-label">Subtotal:</span>' +
+                '<span class="summary-value">₱' + subtotal.toFixed(2) + '</span>' +
+            '</div>';
+            
+        if (discount > 0) {
+            summaryHTML += '<div class="summary-row">' +
+                '<span class="summary-label">Discount:</span>' +
+                '<span class="summary-value">-₱' + discount.toFixed(2) + '</span>' +
+            '</div>';
+        }
+        
+        summaryHTML += '<div class="summary-row">' +
+                '<span class="summary-label">Total Amount:</span>' +
+                '<span class="summary-value">₱' + total.toFixed(2) + '</span>' +
+            '</div>' +
+            '<div class="summary-row">' +
+                '<span class="summary-label">Cash Received:</span>' +
+                '<span class="summary-value">₱' + cashValue.toFixed(2) + '</span>' +
+            '</div>' +
+            '<div class="summary-row total-row">' +
+                '<span class="summary-label">Change Due:</span>' +
+                '<span class="summary-value">₱' + change.toFixed(2) + '</span>' +
+            '</div>' +
+        '</div>';
+    } else {
+        var exampleDiscount = 100;
+        var exampleSubtotal = 1000;
+        var exampleTotal = exampleSubtotal - exampleDiscount;
+        
+        var summaryHTML = '<div class="alert alert-warning preview-notice" style="margin-bottom: 15px; padding: 8px 12px; font-size: 12px; border-radius: 4px;">' +
+                        '<i class="fa fa-info-circle"></i> <strong>Preview:</strong> Add products to see actual calculation' +
+                    '</div>' +
+                    '<div class="payment-summary-content">' +
+                        '<div class="example-header">Example Calculation (₱1,000 - ₱100 discount)</div>' +
+                        '<div class="summary-row">' +
+                            '<span class="summary-label"><i class="fa fa-money"></i> Payment Method:</span>' +
+                            '<span class="summary-value">Cash Payment</span>' +
+                        '</div>' +
+                        '<div class="summary-row">' +
+                            '<span class="summary-label">Subtotal:</span>' +
+                            '<span class="summary-value">₱' + exampleSubtotal.toFixed(2) + '</span>' +
+                        '</div>' +
+                        '<div class="summary-row">' +
+                            '<span class="summary-label">Discount:</span>' +
+                            '<span class="summary-value">-₱' + exampleDiscount.toFixed(2) + '</span>' +
+                        '</div>' +
+                        '<div class="summary-row">' +
+                            '<span class="summary-label">Total Amount:</span>' +
+                            '<span class="summary-value">₱' + exampleTotal.toFixed(2) + '</span>' +
+                        '</div>' +
+                        '<div class="summary-row">' +
+                            '<span class="summary-label">Cash Received:</span>' +
+                            '<span class="summary-value">₱' + cashValue.toFixed(2) + '</span>' +
+                        '</div>' +
+                        '<div class="summary-row total-row">' +
+                            '<span class="summary-label">Change Due:</span>' +
+                            '<span class="summary-value">₱' + Math.max(0, cashValue - exampleTotal).toFixed(2) + '</span>' +
+                        '</div>' +
+                    '</div>';
+    }
+    
+    setTimeout(function() {
+        var summaryDiv = $('#cashPaymentSummaryDiv');
+        var summaryContent = $('#cashPaymentSummary');
+        
+        if (summaryDiv.length > 0 && summaryContent.length > 0) {
+            summaryContent.html(summaryHTML);
+            summaryDiv.show();
+        }
+    }, 100);
 };
 
 $(document).ready(function() {
@@ -1066,9 +1311,6 @@ $(document).ready(function() {
         console.log('Payment method boxes after clear:', $('.paymentMethodBoxes').html());
         
          if (method === 'installment') {
-             // Reset container classes for installment layout
-             $('#newPaymentMethod').parent().parent().removeClass('col-xs-4');
-             $('#newPaymentMethod').parent().parent().addClass('col-xs-6');
              
              console.log('Payment method changed to installment - showing installment options');
              showInstallmentOptions();
@@ -1076,36 +1318,40 @@ $(document).ready(function() {
              // For QRPH and Card payments, show transaction field
              $('#listPaymentMethod').val(method);
              
-             // Reset container classes for non-cash layout
-             $('#newPaymentMethod').parent().parent().removeClass('col-xs-4');
-             $('#newPaymentMethod').parent().parent().addClass('col-xs-6');
-             
              console.log('Electronic payment selected:', method, '- showing transaction field');
              showTransactionField(method);
+             
+             // Update electronic payment summary after field is shown
+             setTimeout(function() {
+                 updateElectronicPaymentSummary(method);
+             }, 100);
          } else if (method === 'cash') {
              // For cash payments, show cash value and change fields
              $('#listPaymentMethod').val(method);
              
-             // Adjust container classes for cash layout
-             $('#newPaymentMethod').parent().parent().removeClass('col-xs-6');
-             $('#newPaymentMethod').parent().parent().addClass('col-xs-4');
-             
              // Create cash payment fields
-             var cashHtml = '<div class="col-xs-4">' +
-                           '<div class="form-group">' +
-                           '<label>Customer Cash</label>' +
+             var cashHtml = '<div class="col-xs-6">' +
+                           '<label for="newCashValue">Customer Cash:</label>' +
                            '<div class="input-group">' +
-                           '<span class="input-group-addon"><i class="fa fa-money"></i></span>' +
-                           '<input type="text" class="form-control" id="newCashValue" placeholder="0.00" required>' +
+                           '<span class="input-group-addon">₱</span>' +
+                           '<input type="number" class="form-control" name="newCashValue" id="newCashValue" ' +
+                           'placeholder="0.00" min="0" step="0.01" required>' +
                            '</div>' +
-                           '</div>' +
-                           '</div>' +
-                           '<div class="col-xs-4" id="getCashChange" style="padding-left:0px">' +
-                           '<div class="form-group">' +
-                           '<label>Change</label>' +
+                           '<br>' +
+                           '<label for="newCashChange">Change:</label>' +
                            '<div class="input-group">' +
-                           '<span class="input-group-addon"><i class="fa fa-money"></i></span>' +
-                           '<input type="text" class="form-control" id="newCashChange" name="newCashChange" placeholder="0.00" readonly required>' +
+                           '<span class="input-group-addon">₱</span>' +
+                           '<input type="text" class="form-control" name="newCashChange" id="newCashChange" ' +
+                           'placeholder="0.00" readonly>' +
+                           '</div>' +
+                           '</div>' +
+                           '<div class="col-xs-6" id="cashPaymentSummaryDiv" style="margin-top: 10px;">' +
+                           '<div class="payment-summary-container">' +
+                           '<div class="payment-summary-header">' +
+                           '<i class="fa fa-calculator"></i> Payment Summary' +
+                           '</div>' +
+                           '<div id="cashPaymentSummary">' +
+                           '<div class="calculating-placeholder"><i class="fa fa-spinner fa-spin"></i> Calculating...</div>' +
                            '</div>' +
                            '</div>' +
                            '</div>';
@@ -1126,6 +1372,9 @@ $(document).ready(function() {
                  } else {
                      $('#newCashChange').val('0.00');
                  }
+                 
+                 // Update cash payment summary
+                 updateCashPaymentSummary();
              });
              
              // Focus on cash input
@@ -1133,14 +1382,13 @@ $(document).ready(function() {
                  $("#newCashValue").focus();
              }, 100);
              
+             // Initial summary update
+             updateCashPaymentSummary();
+             
              console.log('Cash payment selected:', method, '- showing cash fields');
          } else {
              // For other payments, clear all additional options
              $('#listPaymentMethod').val(method);
-             
-             // Reset container classes for normal layout
-             $('#newPaymentMethod').parent().parent().removeClass('col-xs-4');
-             $('#newPaymentMethod').parent().parent().addClass('col-xs-6');
              
              // Clear payment method boxes
              $('.paymentMethodBoxes').empty();
@@ -1159,5 +1407,136 @@ $(document).ready(function() {
         
         // Don't prevent submission, just log
     });
+    
+    // Customer search dropdown functionality
+    var customerData = [];
+    
+    // Build customer data array from select options
+    $('#selectCustomer option').each(function() {
+        if ($(this).val() !== '') {
+            customerData.push({
+                id: $(this).val(),
+                name: $(this).data('name') || $(this).text(),
+                email: $(this).data('email') || '',
+                phone: $(this).data('phone') || ''
+            });
+        }
+    });
+    
+    // Search input event handler
+    $('#customerSearchInput').on('input focus', function() {
+        var searchTerm = $(this).val().toLowerCase().trim();
+        showCustomerDropdown(searchTerm);
+    });
+    
+    // Hide dropdown when clicking outside
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.customer-selection-container').length) {
+            $('#customerDropdown').hide();
+        }
+    });
+    
+    // Handle keyboard navigation
+    $('#customerSearchInput').on('keydown', function(e) {
+        var dropdown = $('#customerDropdown');
+        if (dropdown.is(':visible')) {
+            var items = dropdown.find('.customer-item');
+            var selected = items.filter('.selected');
+            
+            if (e.keyCode === 38) { // Up arrow
+                e.preventDefault();
+                if (selected.length) {
+                    var prev = selected.prev('.customer-item');
+                    if (prev.length) {
+                        selected.removeClass('selected');
+                        prev.addClass('selected');
+                    }
+                } else {
+                    items.last().addClass('selected');
+                }
+            } else if (e.keyCode === 40) { // Down arrow
+                e.preventDefault();
+                if (selected.length) {
+                    var next = selected.next('.customer-item');
+                    if (next.length) {
+                        selected.removeClass('selected');
+                        next.addClass('selected');
+                    }
+                } else {
+                    items.first().addClass('selected');
+                }
+            } else if (e.keyCode === 13) { // Enter
+                e.preventDefault();
+                if (selected.length) {
+                    selectCustomer(selected.data('customer-id'), selected.find('.customer-name').text());
+                }
+            } else if (e.keyCode === 27) { // Escape
+                dropdown.hide();
+            }
+        }
+    });
+    
+    function showCustomerDropdown(searchTerm) {
+        var dropdown = $('#customerDropdown');
+        var content = dropdown.find('.customer-dropdown-content');
+        var noResults = content.find('.no-results');
+        
+        // Clear existing items
+        content.find('.customer-item').remove();
+        
+        var matchedCustomers = [];
+        
+        if (searchTerm === '') {
+            // Show all customers if no search term
+            matchedCustomers = customerData;
+        } else {
+            // Filter customers based on search term
+            matchedCustomers = customerData.filter(function(customer) {
+                return customer.name.toLowerCase().includes(searchTerm) ||
+                       customer.email.toLowerCase().includes(searchTerm) ||
+                       customer.phone.toLowerCase().includes(searchTerm);
+            });
+        }
+        
+        if (matchedCustomers.length > 0) {
+            noResults.hide();
+            
+            // Add customer items to dropdown
+            matchedCustomers.forEach(function(customer) {
+                var customerItem = $('<div class="customer-item" data-customer-id="' + customer.id + '">' +
+                    '<div class="customer-name">' + customer.name + '</div>' +
+                    '<div class="customer-details">' + 
+                    (customer.email ? 'Email: ' + customer.email : '') +
+                    (customer.email && customer.phone ? ' | ' : '') +
+                    (customer.phone ? 'Phone: ' + customer.phone : '') +
+                    '</div>' +
+                    '</div>');
+                
+                customerItem.on('click', function() {
+                    selectCustomer(customer.id, customer.name);
+                });
+                
+                content.append(customerItem);
+            });
+            
+            dropdown.show();
+        } else if (searchTerm !== '') {
+            // Show no results message
+            content.find('.customer-item').remove();
+            noResults.show();
+            dropdown.show();
+        } else {
+            dropdown.hide();
+        }
+    }
+    
+    function selectCustomer(customerId, customerName) {
+        $('#selectCustomer').val(customerId);
+        $('#customerSearchInput').val(customerName);
+        $('#customerDropdown').hide();
+        
+        // Trigger change event for any other handlers
+        $('#selectCustomer').trigger('change');
+    }
 });
 </script>

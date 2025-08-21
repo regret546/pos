@@ -6,7 +6,7 @@ use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 
 class ControllerSales{
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	SHOW SALES
 	=============================================*/
@@ -340,7 +340,7 @@ class ControllerSales{
 		}
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	EDIT SALE
 	=============================================*/
@@ -658,7 +658,7 @@ class ControllerSales{
 		}
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	Delete Sale
 	=============================================*/
@@ -727,7 +727,7 @@ class ControllerSales{
 				$customerPurchases = ModelCustomers::mdlUpdateCustomer($tableCustomers, $item, $value, $valueIdCustomer);
 
 			}
-			/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+		
 			/*=============================================
 			FORMAT PRODUCTS AND CUSTOMERS TABLE
 			=============================================*/
@@ -827,7 +827,7 @@ class ControllerSales{
 		}
 
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	DATES RANGE
 	=============================================*/	
@@ -1157,7 +1157,7 @@ class ControllerSales{
 
 	}
 
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	Adding TOTAL sales
 	=============================================*/

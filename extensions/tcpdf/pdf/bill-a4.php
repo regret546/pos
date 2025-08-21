@@ -35,6 +35,8 @@ $products = json_decode($answerSale["products"], true);
 $paymentMethod = $answerSale["paymentMethod"];
 
 $tax = number_format($answerSale["tax"],2);
+$discount = number_format(isset($answerSale["discount"]) ? $answerSale["discount"] : 0, 2);
+$subtotal = number_format($answerSale["totalPrice"] + (isset($answerSale["discount"]) ? $answerSale["discount"] : 0), 2);
 $saleTotalPrice = number_format($answerSale["totalPrice"],2);
 
 //TRAEMOS LA INFORMACIÓN DEL Customer
@@ -142,14 +144,12 @@ $block2 = <<<EOF
 
 	<table style="width:100%; border-collapse: collapse;">
 		<tr>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:12%; background-color:#B3D9FF;">CODE</td>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:28%; background-color:#B3D9FF;">DESCRIPTION</td>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:8%; background-color:#B3D9FF;">QTY</td>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:12%; background-color:#B3D9FF;">AMOUNT</td>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:15%; background-color:#B3D9FF;">PAYMENT</td>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:25%; background-color:#B3D9FF;">TOTAL</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:15%; background-color:#B3D9FF;">CODE</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:35%; background-color:#B3D9FF;">DESCRIPTION</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:10%; background-color:#B3D9FF;">QTY</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:20%; background-color:#B3D9FF;">AMOUNT</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:20%; background-color:#B3D9FF;">TOTAL</td>
 		</tr>
-	</table>
 
 EOF;
 
@@ -157,79 +157,78 @@ $pdf->writeHTML($block2, false, false, false, false, '');
 
 // ---------------------------------------------------------
 
+$block3 = '';
+
 foreach ($products as $key => $item) {
 
-$itemProduct = "description";
-$valueProduct = $item["description"];
-$orden = null;
+$valueProduct = $item["id"];
+$orderProduct = "id";
 
-$answerProduct = ControllerProducts::ctrShowProducts($itemProduct, $valueProduct, $orden);
+$answerProduct = ControllerProducts::ctrShowProducts($orderProduct, $valueProduct, null);
 
-$valueUnit = number_format($answerProduct["sellingPrice"], 2);
+// Format the prices properly
+$itemPrice = number_format($item["price"], 2);
 $itemTotalPrice = number_format($item["totalPrice"], 2);
 
 // Get product code if available
 $productCode = isset($answerProduct["code"]) ? $answerProduct["code"] : 'N/A';
 
-$block3 = <<<EOF
+$block3 .= <<<EOF
+		<tr>
+			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center;">$productCode</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px;">$answerProduct[description]</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center;">$item[quantity]</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:right;">$peso $itemPrice</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:right;">$peso $itemTotalPrice</td>
+		</tr>
+
+EOF;
+
+}
+
+// Add the complete table with all products
+$block3Full = <<<EOF
+
+	<table style="width:100%; border-collapse: collapse;">
+$block3
+	</table>
+
+EOF;
+
+$pdf->writeHTML($block3Full, false, false, false, false, '');
+
+// ---------------------------------------------------------
+
+// Add totals section
+$totalsBlock = <<<EOF
 
 	<table style="width:100%; border-collapse: collapse;">
 		<tr>
-			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:12%;">$productCode</td>
-			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:left; width:28%;">$item[description]</td>
-			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:8%;">$item[quantity]</td>
-			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:12%;">$peso $valueUnit</td>
-			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:15%;">$paymentMethod</td>
-			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:right; width:25%;">$peso $itemTotalPrice</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px;">&nbsp;</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px;">&nbsp;</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px;">&nbsp;</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px;">&nbsp;</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:right;">0</td>
+		</tr>
+		<tr>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold; text-align:center;" colspan="4">SUBTOTAL</td>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold; text-align:right;">$peso $subtotal</td>
+		</tr>
+		<tr>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold; text-align:center;" colspan="4">DISCOUNT</td>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold; text-align:right;">$peso $discount</td>
+		</tr>
+		<tr>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; background-color:#B3D9FF;" colspan="4">TOTAL</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:right; background-color:#B3D9FF;">$peso $saleTotalPrice</td>
 		</tr>
 	</table>
 
 EOF;
 
-$pdf->writeHTML($block3, false, false, false, false, '');
-
-}
-
-// ---------------------------------------------------------
-
-// Add empty rows to match the design
-$emptyRows = '';
-for($i = 0; $i < 5; $i++) {
-    $emptyRows .= '
-        <table style="width:100%; border-collapse: collapse;">
-            <tr>
-                <td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:12%; height:25px;"></td>
-                <td style="border:1px solid #000; padding:8px; font-size:10px; text-align:left; width:28%;"></td>
-                <td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:8%;"></td>
-                <td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:12%;"></td>
-                <td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center; width:15%;"></td>
-                <td style="border:1px solid #000; padding:8px; font-size:10px; text-align:right; width:25%;">0</td>
-            </tr>
-        </table>';
-}
+$pdf->writeHTML($totalsBlock, false, false, false, false, '');
 
 $block4 = <<<EOF
-
-$emptyRows
-
-<table style="width:100%; border-collapse: collapse;">
-	<tr>
-		<td style="width:55%; padding:10px; vertical-align:top;">
-			&nbsp;
-		</td>
-		<td style="width:15%;"></td>
-		<td style="width:12%; vertical-align:top;">
-			<div style="font-size:11px; font-weight:bold; text-align:center; border:1px solid #000; padding:5px; background-color:#B3D9FF;">
-				TOTAL
-			</div>
-		</td>
-		<td style="width:18%; vertical-align:top;">
-			<div style="font-size:11px; text-align:right; border:1px solid #000; padding:8px;">
-				$peso $saleTotalPrice
-			</div>
-		</td>
-	</tr>
-</table>
 
 <br><br>
 
@@ -269,7 +268,7 @@ $pdf->writeHTML($block4, false, false, false, false, '');
 // ---------------------------------------------------------
 //SALIDA DEL ARCHIVO 
 
-$pdf->Output('bill.pdf', 'D');
+$pdf->Output('delivery-receipt-'.$valueSale.'.pdf', 'I');
 
 }
 

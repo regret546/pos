@@ -13,7 +13,7 @@ if($_SESSION["profile"] == "Special"){
 }
 
 ?>
-<!-- Log on to codeastro.com for more projects! -->
+
 <div class="content-wrapper">
 
   <section class="content-header">
@@ -189,7 +189,7 @@ if($_SESSION["profile"] == "Special"){
           ?>
             
           </tbody>
-		<!-- Log on to codeastro.com for more projects! -->
+		
         </table>
 
       </div>
@@ -337,7 +337,7 @@ MODAL EDIT CUSTOMER
           <h4 class="modal-title">Edit Customer</h4>
 
         </div>
-		<!-- Log on to codeastro.com for more projects! -->
+		
         <!--=====================================
         MODAL BODY
         ======================================-->
@@ -458,7 +458,7 @@ MODAL EDIT CUSTOMER
     
 
     </div>
-	<!-- Log on to codeastro.com for more projects! -->
+	
   </div>
 
 </div>

@@ -75,7 +75,7 @@ class ControllerCategories
 
 		return $answer;
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	EDIT CATEGORY
 	=============================================*/
@@ -136,7 +136,7 @@ class ControllerCategories
 			}
 		}
 	}
-	/* --LOG ON TO codeastro.com FOR MORE PROJECTS-- */
+
 	/*=============================================
 	DELETE CATEGORY
 	=============================================*/

@@ -35,6 +35,8 @@ $products = json_decode($answerSale["products"], true);
 $paymentMethod = $answerSale["paymentMethod"];
 
 $tax = number_format($answerSale["tax"],2);
+$discount = number_format(isset($answerSale["discount"]) ? $answerSale["discount"] : 0, 2);
+$subtotal = number_format($answerSale["totalPrice"] + (isset($answerSale["discount"]) ? $answerSale["discount"] : 0), 2);
 $saleTotalPrice = number_format($answerSale["totalPrice"],2);
 
 //TRAEMOS LA INFORMACIÓN DEL Customer
@@ -159,11 +161,23 @@ $block3 = <<<EOF
 	<tr>
 	
 		<td style="width:80px;">
-			 NET: 
+			 SUBTOTAL: 
 		</td>
 
 		<td style="width:80px;">
-			$peso $saleTotalPrice
+			$peso $subtotal
+		</td>
+
+	</tr>
+
+	<tr>
+	
+		<td style="width:80px;">
+			 DISCOUNT: 
+		</td>
+
+		<td style="width:80px;">
+			$peso $discount
 		</td>
 
 	</tr>
@@ -216,7 +230,7 @@ EOF;
 
 $pdf->writeHTML($block3, false, false, false, false, '');
 
-$pdf->Output('bill.pdf');
+$pdf->Output('delivery-receipt-'.$valueSale.'.pdf', 'I');
 
 }
 
