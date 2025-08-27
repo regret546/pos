@@ -32,10 +32,12 @@ $(document).ready(function () {
         '<div class="input-group">' +
         '<select class="form-control" name="installmentMonths" id="installmentMonths" required>' +
         '<option value="">Select Payment Plan</option>' +
+        '<option value="1">1 Month</option>' +
+        '<option value="2">2 Months</option>' +
         '<option value="3">3 Months</option>' +
+        '<option value="4">4 Months</option>' +
+        '<option value="5">5 Months</option>' +
         '<option value="6">6 Months</option>' +
-        '<option value="9">9 Months</option>' +
-        '<option value="12">12 Months</option>' +
         "</select>" +
         "</div>" +
         "</div>" +
@@ -716,8 +718,15 @@ function updateCashChange() {
   var total = Number($("#saleTotal").val()) || 0;
   var change = cash - total;
 
-  // Format to exactly 2 decimal places
+  // Always show the actual change, including negative values
   $("#newCashChange").val(change.toFixed(2));
+
+  // Add visual indicator for insufficient cash
+  if (change < 0) {
+    $("#newCashChange").addClass("insufficient-cash");
+  } else {
+    $("#newCashChange").removeClass("insufficient-cash");
+  }
 }
 
 /*=============================================
@@ -873,20 +882,38 @@ $(document).on("input change", "#saleDiscount", function () {
   // Recalculate tax if needed
   addTax();
 
+  // Update payment summaries based on current payment method
+  var currentMethod =
+    $("#newPaymentMethod").val() || $("#listPaymentMethod").val();
+
   // Update cash change calculation if cash payment is selected
-  if (
-    $("#newPaymentMethod").val() === "cash" &&
-    $("#newCashValue").length > 0
-  ) {
+  if (currentMethod === "cash" && $("#newCashValue").length > 0) {
     var cashValue = parseFloat($("#newCashValue").val()) || 0;
     var totalPrice = parseFloat($("#saleTotal").val()) || 0;
     var change = cashValue - totalPrice;
 
-    if (change >= 0) {
-      $("#newCashChange").val(change.toFixed(2));
+    // Always show the actual change, including negative values
+    $("#newCashChange").val(change.toFixed(2));
+
+    // Add visual indicator for insufficient cash
+    if (change < 0) {
+      $("#newCashChange").addClass("insufficient-cash");
     } else {
-      $("#newCashChange").val("0.00");
+      $("#newCashChange").removeClass("insufficient-cash");
     }
+
+    // Update cash payment summary if function exists
+    if (typeof updateCashPaymentSummary === "function") {
+      updateCashPaymentSummary();
+    }
+  }
+
+  // Update electronic payment summaries (QRPH/Card) if function exists
+  if (
+    (currentMethod === "QRPH" || currentMethod === "Card") &&
+    typeof updateElectronicPaymentSummary === "function"
+  ) {
+    updateElectronicPaymentSummary(currentMethod);
   }
 });
 
@@ -1004,6 +1031,54 @@ $(".saleForm").on("submit", function (e) {
     return;
   }
 
+  // Validate cash payment if applicable
+  var paymentMethod =
+    $("#newPaymentMethod").val() || $("#listPaymentMethod").val();
+  if (paymentMethod === "cash") {
+    var cashValue = parseFloat($("#newCashValue").val()) || 0;
+    var totalPrice = parseFloat($("#saleTotal").val()) || 0;
+    var change = cashValue - totalPrice;
+
+    if (change < 0) {
+      var shortfall = Math.abs(change);
+
+      swal({
+        type: "warning",
+        title: "Insufficient Cash Payment",
+        html:
+          "Customer cash is insufficient!<br><br>" +
+          "<strong>Total Amount:</strong> ₱" +
+          totalPrice.toFixed(2) +
+          "<br>" +
+          "<strong>Customer Cash:</strong> ₱" +
+          cashValue.toFixed(2) +
+          "<br>" +
+          "<strong>Shortfall:</strong> ₱" +
+          shortfall.toFixed(2) +
+          "<br><br>" +
+          "Please collect additional ₱" +
+          shortfall.toFixed(2) +
+          " from the customer.",
+        showCancelButton: true,
+        confirmButtonText: "Continue Anyway",
+        cancelButtonText: "Fix Payment",
+        confirmButtonColor: "#dd6b55",
+      }).then(function (result) {
+        if (result.value) {
+          // Continue with form submission by calling the rest of the function
+          proceedWithFormSubmission(e);
+        }
+        // If cancelled, user can fix the payment amount
+      });
+      return; // Stop execution here for insufficient cash
+    }
+  }
+
+  // If we get here, continue with normal form submission
+  proceedWithFormSubmission(e);
+});
+
+function proceedWithFormSubmission(e) {
   // Validate if payment method is selected
   if ($("#newPaymentMethod").val() === "") {
     swal({
@@ -1019,8 +1094,8 @@ $(".saleForm").on("submit", function (e) {
   $("#listPaymentMethod").val($("#newPaymentMethod").val());
 
   // Submit form
-  this.submit();
-});
+  e.target.submit();
+}
 
 /*=============================================
 CALCULATE CHANGE

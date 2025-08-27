@@ -157,9 +157,9 @@
 
               <div class="input-group">
 
-                <span class="input-group-addon"><i class="fa fa-code"></i></span>
+                <span class="input-group-addon"><i class="fa fa-tag"></i></span>
 
-                <input class="form-control input-lg" type="text" name="newCode" placeholder="Add Code" required>
+                <input class="form-control input-lg" type="text" name="newCode" placeholder="Add Model" required>
 
               </div>
 

@@ -361,7 +361,7 @@ if($_SESSION["profile"] == "Special"){
                         </div>
                         
                         <!-- Hidden select for form submission -->
-                        <select name="selectCustomer" id="selectCustomer" style="display: none;" required>
+                        <select name="selectCustomer" id="selectCustomer" style="display: none;">
                           <option value="">Select Customer</option>
                           <?php 
                           $item = null;
@@ -481,6 +481,18 @@ if($_SESSION["profile"] == "Special"){
 
       </div>
 
+      <!-- Add CSS for insufficient cash styling -->
+      <style>
+      .insufficient-cash {
+          background-color: #ffebee !important;
+          color: #d32f2f !important;
+          border-color: #d32f2f !important;
+      }
+      .insufficient-cash:focus {
+          border-color: #d32f2f !important;
+          box-shadow: 0 0 0 0.2rem rgba(211, 47, 47, 0.25) !important;
+      }
+      </style>
 
       <!--=============================================
       =            PRODUCTS TABLE                   =
@@ -561,14 +573,6 @@ if($_SESSION["profile"] == "Special"){
               </div>
             </div>
 
-            <!--Input email -->
-            <div class="form-group">
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
-                <input class="form-control input-lg" type="text" name="newEmail" placeholder="Email" required>
-              </div>
-            </div>
-
             <!--Input phone -->
             <div class="form-group">
               <div class="input-group">
@@ -582,15 +586,6 @@ if($_SESSION["profile"] == "Special"){
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-map-marker"></i></span>
                 <input class="form-control input-lg" type="text" name="newAddress" placeholder="Address" required>
-              </div>
-            </div>
-
-
-            <!--Input phone -->
-            <div class="form-group">
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                <input class="form-control input-lg" type="text" name="newBirthdate" placeholder="Birth Date" data-inputmask="'alias': 'yyyy/mm/dd'" data-mask required>
               </div>
             </div>
 
@@ -849,10 +844,12 @@ $(document).ready(function() {
                        '<div class="input-group">' +
                        '<select class="form-control" name="installmentMonths" id="installmentMonths" required>' +
                        '<option value="">Select Payment Plan</option>' +
+                       '<option value="1">1 Month</option>' +
+                       '<option value="2">2 Months</option>' +
                        '<option value="3">3 Months</option>' +
+                       '<option value="4">4 Months</option>' +
+                       '<option value="5">5 Months</option>' +
                        '<option value="6">6 Months</option>' +
-                       '<option value="9">9 Months</option>' +
-                       '<option value="12">12 Months</option>' +
                        '</select>' +
                        '</div>' +
                        '</div>' +
@@ -963,11 +960,32 @@ $(document).ready(function() {
                         var totalInterestAmount = totalWithInterest - remainingAmount;
                         var finalTotalToPay = downpayment + totalWithInterest;
                         
-                        var summaryHTML = '<div class="payment-summary-content">' +
+                        // Calculate subtotal before discount
+                        var discount = parseFloat($('#saleDiscount').val()) || 0;
+                        var subtotal = total + discount;
+                        
+                        var summaryHTML = '<div class="payment-summary-content">';
+                        
+                        // Show subtotal and discount if there's a discount
+                        if (discount > 0) {
+                            summaryHTML += '<div class="summary-row">' +
+                                '<span class="summary-label">Subtotal:</span>' +
+                                '<span class="summary-value">₱' + subtotal.toFixed(2) + '</span>' +
+                            '</div>' +
                             '<div class="summary-row">' +
-                                '<span class="summary-label">Original Amount:</span>' +
+                                '<span class="summary-label">Discount:</span>' +
+                                '<span class="summary-value">-₱' + discount.toFixed(2) + '</span>' +
+                            '</div>' +
+                            '<div class="summary-row">' +
+                                '<span class="summary-label">Net Amount:</span>' +
                                 '<span class="summary-value">₱' + total.toFixed(2) + '</span>' +
                             '</div>';
+                        } else {
+                            summaryHTML += '<div class="summary-row">' +
+                                '<span class="summary-label">Sale Amount:</span>' +
+                                '<span class="summary-value">₱' + total.toFixed(2) + '</span>' +
+                            '</div>';
+                        }
                         
                         if (hasDownpayment && downpayment > 0) {
                             summaryHTML += '<div class="summary-row">' +
@@ -990,7 +1008,7 @@ $(document).ready(function() {
                             '</div>' +
                             '<div class="summary-row total-row">' +
                                 '<span class="summary-label">Total to Pay:</span>' +
-                                '<span class="summary-value">₱' + (total + totalInterestAmount).toFixed(2) + '</span>' +
+                                '<span class="summary-value">₱' + finalTotalToPay.toFixed(2) + '</span>' +
                             '</div>' +
                             '<div class="summary-row monthly-row">' +
                                 '<span class="summary-label">Monthly Payment:</span>' +
@@ -1011,7 +1029,11 @@ $(document).ready(function() {
                                         '<i class="fa fa-info-circle"></i> <strong>Preview:</strong> Add products to see actual calculation' +
                                     '</div>' +
                                     '<div class="payment-summary-content">' +
-                                        '<div class="example-header">Example Calculation (₱1,000)</div>';
+                                        '<div class="example-header">Example Calculation (₱1,000)</div>' +
+                                        '<div class="summary-row">' +
+                                            '<span class="summary-label">Sale Amount:</span>' +
+                                            '<span class="summary-value">₱' + exampleTotal.toFixed(2) + '</span>' +
+                                        '</div>';
                         
                         if (hasDownpayment) {
                             summaryHTML += '<div class="summary-row">' +
@@ -1034,7 +1056,7 @@ $(document).ready(function() {
                             '</div>' +
                             '<div class="summary-row total-row">' +
                                 '<span class="summary-label">Total to Pay:</span>' +
-                                '<span class="summary-value">₱' + (exampleTotal + totalInterestAmount).toFixed(2) + '</span>' +
+                                '<span class="summary-value">₱' + finalTotalToPay.toFixed(2) + '</span>' +
                             '</div>' +
                             '<div class="summary-row monthly-row">' +
                                 '<span class="summary-label">Monthly Payment:</span>' +
@@ -1097,16 +1119,6 @@ $(document).ready(function() {
                     updateCashPaymentSummary();
                 }
             });
-            
-            // Monitor discount changes
-            $(document).on('input change', '#saleDiscount', function() {
-                var currentMethod = $('#newPaymentMethod').val();
-                if ((currentMethod === 'QRPH' || currentMethod === 'Card') && $('#electronicPaymentSummaryDiv').is(':visible')) {
-                    updateElectronicPaymentSummary(currentMethod);
-                } else if (currentMethod === 'cash' && $('#cashPaymentSummaryDiv').is(':visible')) {
-                    updateCashPaymentSummary();
-                }
-            });
         } else if (method === 'QRPH' || method === 'Card') {
             // For QRPH and Card payments, show transaction field
             $('#listPaymentMethod').val(method);
@@ -1160,10 +1172,14 @@ $(document).ready(function() {
                 var totalPrice = parseFloat($('#saleTotal').val()) || 0;
                 var change = cashValue - totalPrice;
                 
-                if (change >= 0) {
-                    $('#newCashChange').val(change.toFixed(2));
+                // Always show the actual change, including negative values
+                $('#newCashChange').val(change.toFixed(2));
+                
+                // Add visual indicator for insufficient cash
+                if (change < 0) {
+                    $('#newCashChange').addClass('insufficient-cash');
                 } else {
-                    $('#newCashChange').val('0.00');
+                    $('#newCashChange').removeClass('insufficient-cash');
                 }
                 
                 // Update cash payment summary
@@ -1314,4 +1330,91 @@ $(document).ready(function() {
         $('#selectCustomer').trigger('change');
     }
 });
+
+
+// Fixed form validation - handle both customer validation and cash validation
+$(document).ready(function() {
+    console.log('Create-sale page loaded with fixed validation');
+    
+    // Handle form submission with proper validation
+    $('.saleForm').on('submit', function(e) {
+        console.log('=== FORM SUBMISSION DETECTED ===');
+        
+        // Manual validation since we removed required attribute from hidden field
+        var customerId = $('#selectCustomer').val();
+        var paymentMethod = $('#newPaymentMethod').val();
+        var productsCount = $('.newProduct').children().length;
+        
+        console.log('Customer ID:', customerId);
+        console.log('Payment method:', paymentMethod);
+        console.log('Products count:', productsCount);
+        
+        // Check if customer is selected (since we removed required attribute)
+        if (!customerId || customerId === '') {
+            e.preventDefault();
+            swal({
+                type: "error",
+                title: "You must select a customer",
+                showConfirmButton: true,
+                confirmButtonText: "Close"
+            });
+            return false;
+        }
+        
+        // Cash validation for negative change
+        if (paymentMethod === 'cash') {
+            var cashValue = parseFloat($('#newCashValue').val()) || 0;
+            var totalPrice = parseFloat($('#saleTotal').val()) || 0;
+            var change = cashValue - totalPrice;
+            
+            console.log('Cash validation - cashValue:', cashValue, 'totalPrice:', totalPrice, 'change:', change);
+            
+            if (change < 0) {
+                e.preventDefault();
+                var shortfall = Math.abs(change);
+                
+                console.log('Blocking submission due to insufficient cash');
+                
+                swal({
+                    type: "warning",
+                    title: "Insufficient Cash Payment",
+                    html: "Customer cash is insufficient!<br><br>" +
+                          "<strong>Total Amount:</strong> ₱" + totalPrice.toFixed(2) + "<br>" +
+                          "<strong>Customer Cash:</strong> ₱" + cashValue.toFixed(2) + "<br>" +
+                          "<strong>Shortfall:</strong> ₱" + shortfall.toFixed(2) + "<br><br>" +
+                          "Please collect additional ₱" + shortfall.toFixed(2) + " from the customer.",
+                    showCancelButton: true,
+                    confirmButtonText: "Continue Anyway",
+                    cancelButtonText: "Fix Payment",
+                    confirmButtonColor: "#dd6b55"
+                }).then(function(result) {
+                    if (result.value) {
+                        console.log('User chose to continue anyway, submitting form');
+                        // Remove our validation temporarily and submit
+                        $('.saleForm').off('submit').get(0).submit();
+                    }
+                });
+                return false;
+            }
+        }
+        
+        console.log('All validations passed, allowing submission');
+        // Let the form continue - all validations passed
+    });
+});
+
+// Global discount change handler for all payment methods
+$(document).on('input change', '#saleDiscount', function() {
+    var currentMethod = $('#newPaymentMethod').val();
+    console.log('Discount changed, current method:', currentMethod);
+    
+    if (currentMethod === 'installment' && $('#installmentSummaryDiv').is(':visible')) {
+        updateInstallmentSummary();
+    } else if ((currentMethod === 'QRPH' || currentMethod === 'Card') && $('#electronicPaymentSummaryDiv').is(':visible')) {
+        updateElectronicPaymentSummary(currentMethod);
+    } else if (currentMethod === 'cash' && $('#cashPaymentSummaryDiv').is(':visible')) {
+        updateCashPaymentSummary();
+    }
+});
+
 </script>

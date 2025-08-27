@@ -140,7 +140,7 @@ if($_SESSION["profile"] == "Seller"){
              
              <th style="width:10px">#</th>
              <th>Image</th>
-             <th>Code</th>
+             <th>Model</th>
              <th>Description</th>
              <th>Category</th>
              <th>Stock</th>
@@ -229,14 +229,14 @@ if($_SESSION["profile"] == "Seller"){
 
             </div>
 
-            <!--Input Code -->
+            <!--Input Model -->
             <div class="form-group">
 
               <div class="input-group">
 
-                <span class="input-group-addon"><i class="fa fa-code"></i></span>
+                <span class="input-group-addon"><i class="fa fa-tag"></i></span>
 
-                <input class="form-control input-lg" type="text" id="newCode" name="newCode" placeholder="Add Product Code" required>
+                <input class="form-control input-lg" type="text" id="newCode" name="newCode" placeholder="Add Product Model" required>
 
               </div>
 
@@ -426,14 +426,17 @@ EDIT PRODUCT
 
             </div>
 
-            <!-- INPUT FOR THE CODE -->          
+            <!-- HIDDEN INPUT FOR PRODUCT ID -->
+            <input type="hidden" id="editId" name="editId">
+
+            <!-- INPUT FOR THE MODEL -->          
             <div class="form-group">
               
               <div class="input-group">
               
-                <span class="input-group-addon"><i class="fa fa-code"></i></span> 
+                <span class="input-group-addon"><i class="fa fa-tag"></i></span> 
 
-                <input type="text" class="form-control input-lg" id="editCode" name="editCode" readonly required>
+                <input type="text" class="form-control input-lg" id="editCode" name="editCode" required>
 
               </div>
 

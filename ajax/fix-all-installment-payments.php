@@ -35,8 +35,12 @@ function autoFixMissingPaymentRecords($planId) {
         
         $paymentFrequency = $plan['payment_frequency'];
         $actualNumberOfPayments = intval($plan['number_of_payments']);
+        
+        // Calculate payment amount based on installment amount only (excluding downpayment)
         $totalAmount = floatval($plan['total_amount']);
-        $paymentAmount = round($totalAmount / $actualNumberOfPayments, 2);
+        $downpaymentAmount = isset($plan['downpayment_amount']) ? floatval($plan['downpayment_amount']) : 0;
+        $installmentAmount = $totalAmount - $downpaymentAmount;
+        $paymentAmount = round($installmentAmount / $actualNumberOfPayments, 2);
         $startDate = $plan['start_date'];
         
         // Calculate original months

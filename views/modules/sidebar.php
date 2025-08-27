@@ -161,6 +161,17 @@
 
 					echo '
 					
+					<li>
+
+						<a href="index.php?route=backup">
+
+							<i class="fa fa-database"></i>
+
+							<span>Database Backup</span>
+
+						</a>
+
+					</li>
 					
 					<li>
 

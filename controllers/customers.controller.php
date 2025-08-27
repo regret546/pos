@@ -12,7 +12,6 @@ class ControllerCustomers{
 
 			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["newCustomer"]) &&
 			   preg_match('/^[0-9]+$/', $_POST["newIdDocument"]) &&
-			   preg_match('/^[^0-9][a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[@][a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{2,4}$/', $_POST["newEmail"]) && 
 			   preg_match('/^[()\-0-9 ]+$/', $_POST["newPhone"]) && 
 			   preg_match('/^[#\.\-a-zA-Z0-9 ]+$/', $_POST["newAddress"])){
 
@@ -20,10 +19,8 @@ class ControllerCustomers{
 
 			   	$data = array("name"=>$_POST["newCustomer"],
 					           "idDocument"=>$_POST["newIdDocument"],
-					           "email"=>$_POST["newEmail"],
 					           "phone"=>$_POST["newPhone"],
 					           "address"=>$_POST["newAddress"],
-					           "birthdate"=>$_POST["newBirthdate"],
 					           "purchases"=>0,
 					           "lastPurchase"=>"0000-00-00 00:00:00");
 
@@ -120,7 +117,6 @@ class ControllerCustomers{
 
 			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["editCustomer"]) &&
 			   preg_match('/^[0-9]+$/', $_POST["editIdDocument"]) &&
-			   preg_match('/^[^0-9][a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[@][a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{2,4}$/', $_POST["editEmail"]) && 
 			   preg_match('/^[()\-0-9 ]+$/', $_POST["editPhone"]) && 
 			   preg_match('/^[#\.\-a-zA-Z0-9 ]+$/', $_POST["editAddress"])){
 
@@ -129,10 +125,8 @@ class ControllerCustomers{
 			   	$data = array("id"=>$_POST["idCustomer"],
 			   				   "name"=>$_POST["editCustomer"],
 					           "idDocument"=>$_POST["editIdDocument"],
-					           "email"=>$_POST["editEmail"],
 					           "phone"=>$_POST["editPhone"],
-					           "address"=>$_POST["editAddress"],
-					           "birthdate"=>$_POST["editBirthdate"]);
+					           "address"=>$_POST["editAddress"]);
 
 			   	$answer = ModelCustomers::mdlEditCustomer($table, $data);
 

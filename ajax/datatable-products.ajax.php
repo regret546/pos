@@ -36,10 +36,12 @@ class productsTable{
 			$data = array();
 
 			foreach($products as $i => $product){
-				// Skip any invalid product entries
+				// Skip any invalid product entries - check for both model and code fields for backward compatibility
+				$modelField = isset($product["model"]) ? $product["model"] : (isset($product["code"]) ? $product["code"] : null);
 				if(!isset($product["image"], $product["idCategory"], $product["stock"], 
-					     $product["id"], $product["code"], $product["description"], 
-					     $product["buyingPrice"], $product["sellingPrice"], $product["date"])) {
+					     $product["id"], $product["description"], 
+					     $product["buyingPrice"], $product["sellingPrice"], $product["date"]) || 
+				   $modelField === null) {
 					continue;
 				}
 
@@ -68,14 +70,14 @@ class productsTable{
 				if (isset($_GET["hiddenProfile"]) && $_GET["hiddenProfile"] == "Special") {
 					$buttons = "<div class='btn-group'><button class='btn btn-primary btnEditProduct' idProduct='".$productId."' data-toggle='modal' data-target='#modalEditProduct'><i class='fa fa-pencil'></i></button></div>";
 				} else {
-					$buttons = "<div class='btn-group'><button class='btn btn-primary btnEditProduct' idProduct='".$productId."' data-toggle='modal' data-target='#modalEditProduct'><i class='fa fa-pencil'></i></button><button class='btn btn-danger btnDeleteProduct' idProduct='".$productId."' code='".htmlspecialchars($product["code"])."' image='".htmlspecialchars($product["image"])."'><i class='fa fa-trash'></i></button></div>";
+					$buttons = "<div class='btn-group'><button class='btn btn-primary btnEditProduct' idProduct='".$productId."' data-toggle='modal' data-target='#modalEditProduct'><i class='fa fa-pencil'></i></button><button class='btn btn-danger btnDeleteProduct' idProduct='".$productId."' model='".htmlspecialchars($modelField)."' image='".htmlspecialchars($product["image"])."'><i class='fa fa-trash'></i></button></div>";
 				}
 
 				// Build the row data
 				$row = array(
 					($i + 1),
 					"<img src='".htmlspecialchars($product["image"])."' width='40px'>",
-					htmlspecialchars($product["code"]),
+					htmlspecialchars($modelField),
 					htmlspecialchars($product["description"]),
 					strtoupper(htmlspecialchars($categories["Category"])),
 					$stock,

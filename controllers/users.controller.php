@@ -22,7 +22,7 @@ class ControllerUsers{
 
 				$answer = UsersModel::MdlShowUsers($table, $item, $value);
 
-				if($answer["user"] == $_POST["loginUser"] && $answer["password"] == $encryptpass){
+				if($answer && is_array($answer) && $answer["user"] == $_POST["loginUser"] && $answer["password"] == $encryptpass){
 
 					if($answer["status"] == 1){
 
@@ -154,13 +154,20 @@ class ControllerUsers{
 
 				$encryptpass = crypt($_POST["newPasswd"], '$2a$07$asxx54ahjppf45sd87a5a4dDDGsystemdev$');
 
+				/*=============================================
+				Set proper lastLogin datetime using DateHelper
+				=============================================*/
+				require_once "models/date.helper.php";
+				DateHelper::init();
+				$initialLastLogin = DateHelper::getDateTime();
+
 				$data = array('name' => $_POST["newName"],
 							  'user' => $_POST["newUser"],
 								'password' => $encryptpass,
 								'profile' => $_POST["newProfile"],
 								'photo' => $photo,
 								'status' => 1,
-								'lastLogin' => '0000-00-00 00:00:00');
+								'lastLogin' => $initialLastLogin);
 
 				$answer = UsersModel::mdlAddUser($table, $data);
 

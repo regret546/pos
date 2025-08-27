@@ -1,271 +1,316 @@
-# 🚀 Local Deployment Guide - POS PHP System
+# POSYS Deployment Guide
+
+This guide helps you deploy the POSYS system with backup functionality to a new computer.
 
 ## 📋 Prerequisites
 
-### Required Software:
+### Required Software
 
-1. **Laragon** (Latest version)
-   - Download from: https://laragon.org/download/
-   - Includes Apache, MySQL, PHP, and phpMyAdmin
+- **Web Server**: Apache/Nginx (XAMPP, WAMP, Laragon, or similar)
+- **PHP**: Version 7.4 or higher
+- **MySQL**: Version 5.7 or higher
+- **PHP Extensions**: PDO, PDO_MySQL, GD, ZIP
 
-## 🛠️ Installation Steps
+## 🚀 Step-by-Step Deployment
 
-### Step 1: Install Laragon
+### 1. **Copy Project Files**
 
-1. Download Laragon from the official website
-2. Run the installer with administrator privileges
-3. Install with default settings (recommended)
-4. Start Laragon after installation
+```bash
+# Copy the entire POSYS folder to your web directory
+# Example paths:
+# XAMPP: C:\xampp\htdocs\POSYS
+# WAMP: C:\wamp64\www\POSYS
+# Laragon: C:\laragon\www\POSYS
+```
 
-### Step 2: Setup Project Directory
+### 2. **Database Setup**
 
-1. Copy the POS-PHP project folder to Laragon's www directory:
-   ```
-   C:\laragon\www\POS-PHP\
-   ```
-2. The project should be accessible at: `http://localhost/POS-PHP` or `http://pos-php.test`
+#### Option A: Import Existing Database
 
-### Step 3: Database Setup
+```sql
+-- Create database
+CREATE DATABASE posystem;
 
-#### Option A: Create Empty Database (Recommended for clean deployment)
+-- Import your database dump
+mysql -u root -p posystem < your_backup_file.sql
+```
 
-1. Open Laragon
-2. Click **"Database"** → **"Open"** (opens phpMyAdmin)
-3. Create a new database:
-   - Database name: `pos_database` (or your preferred name)
-   - Collation: `utf8mb4_general_ci`
+#### Option B: Fresh Installation
 
-#### Option B: Import Existing Database Structure
+```sql
+-- Create database and user
+CREATE DATABASE posystem;
+CREATE USER 'db_admin'@'localhost' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON posystem.* TO 'db_admin'@'localhost';
+FLUSH PRIVILEGES;
+```
 
-1. If you have an SQL dump file, import it via phpMyAdmin
-2. Go to **Import** tab and select your SQL file
+### 3. **Database Configuration**
 
-### Step 4: Configure Database Connection
+#### Update Connection Settings
 
-1. Open the project in your code editor
-2. Navigate to `models/connection.php`
-3. Update the database configuration:
+Edit `models/connection.php` or set environment variables:
+
+**Option A: Direct Edit (Quick)**
 
 ```php
-class Connection{
-
-    static public function connect(){
-
-        // For Laragon default setup
-        $link = new PDO("mysql:host=localhost;dbname=pos_database",
-                       "root",
-                       "",
-                       array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
-
-        return $link;
-
-    }
-
-}
+// In models/connection.php, update the defaults:
+$dbHost = $env('DB_HOST', 'localhost');        // Your MySQL host
+$dbName = $env('DB_NAME', 'posystem');         // Your database name
+$dbUser = $env('DB_USER', 'root');             // Your MySQL user
+$dbPass = $env('DB_PASS', '');                 // Your MySQL password
 ```
 
-**Default Laragon Settings:**
+**Option B: Environment Variables (Recommended)**
+Create a `.env` file in the project root:
 
-- **Host:** `localhost`
-- **Username:** `root`
-- **Password:** `` (empty)
-- **Database:** `pos_database` (or your chosen name)
+```env
+DB_HOST=localhost
+DB_NAME=posystem
+DB_USER=root
+DB_PASS=your_password_here
+```
 
-### Step 5: Create Database Tables
+### 4. **Backup System Configuration**
 
-If you're starting with an empty database, you'll need to create the necessary tables. Here's the basic structure:
+#### Automatic MySQL Path Detection
 
-#### Users Table:
+The backup system will automatically try to find `mysqldump` in these locations:
+
+- **XAMPP**: `C:\xampp\mysql\bin\mysqldump.exe`
+- **WAMP**: `C:\wamp\bin\mysql\mysql8.0.31\bin\mysqldump.exe`
+- **Laragon**: `C:\laragon\bin\mysql\mysql-8.0.30-winx64\bin\mysqldump.exe`
+- **System PATH**: If MySQL is in your system PATH
+
+#### Manual Configuration (If Auto-Detection Fails)
+
+If auto-detection doesn't work, you can:
+
+1. **Find your mysqldump path**:
+
+   ```cmd
+   # Windows - search for mysqldump.exe
+   where mysqldump
+   # Or manually check these directories:
+   dir C:\xampp\mysql\bin\mysqldump.exe
+   dir "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe"
+   ```
+
+2. **Update the backup script** (if needed):
+   Edit `backup/database_backup.php` and add your path to the `$possiblePaths` array around line 120.
+
+### 5. **File Permissions**
+
+#### Windows
+
+```cmd
+# Make sure these directories are writable:
+# - backup/backups/ (for backup files)
+# - backup/ (for backup.log)
+# - views/img/products/ (for product images)
+# - views/img/users/ (for user photos)
+```
+
+#### Linux/Mac
+
+```bash
+# Set proper permissions
+chmod 755 backup/
+chmod 777 backup/backups/
+chmod 777 views/img/products/
+chmod 777 views/img/users/
+```
+
+### 6. **Test the Installation**
+
+#### 1. Test Database Connection
+
+```bash
+# Navigate to your project directory
+cd /path/to/POSYS
+
+# Test the connection
+php -r "require_once 'models/connection.php'; try { \$pdo = Connection::connect(); echo 'Database connection successful!'; } catch(Exception \$e) { echo 'Error: ' . \$e->getMessage(); }"
+```
+
+#### 2. Test Backup System
+
+```bash
+# Test manual backup
+php backup/database_backup.php
+```
+
+#### 3. Test Web Interface
+
+1. Visit: `http://localhost/POSYS` (or your domain)
+2. Login with your credentials
+3. Go to: `http://localhost/POSYS/index.php?route=backup`
+4. Click "Create Backup Now"
+
+## 🔧 Environment-Specific Configuration
+
+### XAMPP Setup
+
+```php
+// Typical XAMPP configuration
+DB_HOST=localhost
+DB_NAME=posystem
+DB_USER=root
+DB_PASS=          // Usually empty
+```
+
+### WAMP Setup
+
+```php
+// Typical WAMP configuration
+DB_HOST=localhost
+DB_NAME=posystem
+DB_USER=root
+DB_PASS=          // Usually empty
+```
+
+### MAMP Setup
+
+```php
+// Typical MAMP configuration
+DB_HOST=localhost
+DB_NAME=posystem
+DB_USER=root
+DB_PASS=root      // Default MAMP password
+```
+
+### Production Server Setup
+
+```php
+// Production configuration
+DB_HOST=your_server_host
+DB_NAME=your_db_name
+DB_USER=your_db_user
+DB_PASS=your_secure_password
+```
+
+## 🔒 Security Considerations
+
+### 1. **Change Default Passwords**
 
 ```sql
-CREATE TABLE `users` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` text NOT NULL,
-  `user` text NOT NULL,
-  `password` text NOT NULL,
-  `profile` text NOT NULL,
-  `photo` text NOT NULL,
-  `status` int(11) NOT NULL,
-  `lastLogin` datetime NOT NULL,
-  `date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- Change default admin password
+UPDATE users SET password = '$2y$10$new_hashed_password' WHERE id = 1;
 ```
 
-#### Default Admin User:
+### 2. **Secure Database Credentials**
 
-```sql
-INSERT INTO `users` (`name`, `user`, `password`, `profile`, `photo`, `status`, `lastLogin`)
-VALUES ('Administrator', 'admin', '$2a$07$asxx54ahjppf45sd87a5a4dDDGsystemdev$', 'Administrator', 'views/img/users/default/anonymous.png', 1, '0000-00-00 00:00:00');
+- Use strong database passwords
+- Consider using environment variables instead of hardcoded values
+- Restrict database user privileges to only what's needed
+
+### 3. **File Permissions**
+
+- Ensure backup files are not publicly accessible
+- Set proper file permissions on sensitive directories
+
+### 4. **Backup Security**
+
+- Store backups in a secure location
+- Consider encrypting backup files
+- Implement regular backup rotation
+
+## 📅 Automated Backup Setup
+
+### Windows Task Scheduler
+
+1. Open **Task Scheduler**
+2. Create Basic Task: **"POSYS Daily Backup"**
+3. **Trigger**: Daily at 2:00 AM
+4. **Action**: Start a program
+5. **Program**: `C:\path\to\your\project\backup\run_backup.bat`
+6. **Start in**: `C:\path\to\your\project\backup`
+
+### Linux/Mac Cron Job
+
+```bash
+# Edit crontab
+crontab -e
+
+# Add this line for daily backup at 2 AM
+0 2 * * * cd /path/to/POSYS && php backup/database_backup.php
 ```
 
-**Default Login Credentials:**
+## 🐛 Troubleshooting
 
-- **Username:** `admin`
-- **Password:** `admin`
+### Common Issues
 
-#### Additional Required Tables:
+#### 1. "Database connection failed"
 
-```sql
--- Categories Table
-CREATE TABLE `categories` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `category` text NOT NULL,
-  `date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+- Check database credentials in `models/connection.php`
+- Ensure MySQL service is running
+- Verify database exists
 
--- Customers Table
-CREATE TABLE `customers` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` text NOT NULL,
-  `idDocument` int(11) NOT NULL,
-  `email` text NOT NULL,
-  `phone` text NOT NULL,
-  `address` text NOT NULL,
-  `dateOfBirth` date NOT NULL,
-  `purchases` int(11) NOT NULL,
-  `lastPurchase` datetime NOT NULL,
-  `registerDate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+#### 2. "mysqldump not found"
 
--- Products Table
-CREATE TABLE `products` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `idCategory` int(11) NOT NULL,
-  `code` text NOT NULL,
-  `description` text NOT NULL,
-  `image` text NOT NULL,
-  `stock` int(11) NOT NULL,
-  `buyingPrice` float NOT NULL,
-  `sellingPrice` float NOT NULL,
-  `date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+- Check if MySQL is installed
+- Verify the path in backup script
+- Add MySQL bin directory to system PATH
 
--- Sales Table
-CREATE TABLE `sales` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `code` int(11) NOT NULL,
-  `idCustomer` int(11) NOT NULL,
-  `idSeller` int(11) NOT NULL,
-  `products` text NOT NULL,
-  `tax` float NOT NULL,
-  `netPrice` float NOT NULL,
-  `totalPrice` float NOT NULL,
-  `discount` float NOT NULL DEFAULT 0,
-  `paymentMethod` text NOT NULL,
-  `date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+#### 3. "Permission denied" errors
+
+- Check file/directory permissions
+- Ensure web server can write to backup directories
+
+#### 4. "Backup page 404"
+
+- Ensure `backup` is added to allowed routes in `views/template.php`
+- Check if all backup files are copied
+
+#### 5. "JSON response error"
+
+- Clear browser cache
+- Check PHP error logs
+- Verify all backup files are properly uploaded
+
+### Getting Help
+
+#### Check Logs
+
+1. **Backup Log**: `backup/backup.log`
+2. **PHP Error Log**: Check your server's PHP error log
+3. **MySQL Error Log**: Check MySQL error log
+
+#### Debug Mode
+
+Enable PHP error reporting temporarily:
+
+```php
+// Add to top of index.php for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 ```
 
-### Step 6: Set Permissions (if needed)
+## ✅ Deployment Checklist
 
-1. Ensure the following directories have write permissions:
-   - `views/img/users/`
-   - `views/img/products/`
-   - `extensions/tcpdf/pdf/` (for PDF generation)
-
-### Step 7: Start the Application
-
-1. Open Laragon
-2. Start **Apache** and **MySQL** services
-3. Visit: `http://localhost/POS-PHP`
-4. Login with:
-   - **Username:** `admin`
-   - **Password:** `admin`
-
-## 🔧 Troubleshooting
-
-### Common Issues:
-
-#### 1. Database Connection Error
-
-**Solution:** Check `models/connection.php` settings match your Laragon configuration
-
-#### 2. Apache Not Starting
-
-**Solution:**
-
-- Check if port 80 is free
-- Stop IIS or other web servers
-- Run Laragon as Administrator
-
-#### 3. MySQL Not Starting
-
-**Solution:**
-
-- Check if port 3306 is free
-- Stop other MySQL services
-- Restart Laragon
-
-#### 4. Permission Denied Errors
-
-**Solution:**
-
-- Run Laragon as Administrator
-- Check folder permissions for www directory
-
-#### 5. PHP Errors
-
-**Solution:**
-
-- Ensure Laragon is using PHP 7.4 or higher
-- Check PHP error logs in Laragon
-
-## 📱 Features Available After Setup
-
-✅ **User Management** - Admin can manage users  
-✅ **Product Management** - Add/edit products and categories  
-✅ **Customer Management** - Customer database with search  
-✅ **Sales Processing** - Multiple payment methods (Cash, QRPH, Card, Installment)  
-✅ **Payment Summaries** - Dynamic calculation for all payment types  
-✅ **Receipt Generation** - PDF receipts (delivery & acknowledgment)  
-✅ **Discount System** - Integrated discount calculations  
-✅ **Reports** - Sales reports and analytics  
-✅ **Stock Management** - Automatic inventory updates
-
-## 🛡️ Security Notes
-
-1. **Change Default Password:** Immediately change the admin password after first login
-2. **Database Security:** Consider setting a MySQL root password in production
-3. **File Permissions:** Ensure proper permissions on upload directories
-4. **Updates:** Keep Laragon and PHP updated
-
-## 🔄 Moving to Another PC
-
-To deploy this application on another PC:
-
-1. **Install Laragon** on the new PC
-2. **Copy Project Folder** to `C:\laragon\www\`
-3. **Export Database** from old PC via phpMyAdmin
-4. **Import Database** on new PC via phpMyAdmin
-5. **Update** `models/connection.php` if database settings differ
-6. **Start Services** in Laragon
+- [ ] Web server installed and running
+- [ ] PHP 7.4+ with required extensions
+- [ ] MySQL 5.7+ installed and running
+- [ ] Project files copied to web directory
+- [ ] Database created and imported
+- [ ] Database credentials configured
+- [ ] File permissions set correctly
+- [ ] Backup directories writable
+- [ ] mysqldump path detected/configured
+- [ ] Web interface accessible
+- [ ] Backup functionality tested
+- [ ] Automated backup scheduled (optional)
+- [ ] Security settings reviewed
 
 ## 📞 Support
 
-If you encounter any issues:
+If you encounter issues during deployment:
 
-1. Check Laragon logs in the Laragon interface
-2. Verify all services are running (Apache + MySQL)
-3. Ensure database connection settings are correct
-4. Check PHP error logs for detailed error information
+1. Check the troubleshooting section above
+2. Review the backup log file
+3. Verify all prerequisites are met
+4. Test each component individually
 
 ---
 
-**Project Structure:**
-
-```
-POS-PHP/
-├── controllers/          # Application logic
-├── models/              # Database models
-├── views/               # User interface
-├── extensions/          # Third-party libraries (TCPDF)
-├── .htaccess           # Apache configuration
-└── index.php           # Main entry point
-```
-
-🎉 **You're all set! Your POS system should now be running locally on Laragon.**
+_This guide covers the most common deployment scenarios. Specific environments may require additional configuration._

@@ -70,7 +70,7 @@ class productsTableSales{
 					$jsonData .='[
 						"'.($i+1).'",
 						"'.$image.'",
-						"'.$products[$i]["code"].'",
+						"'.$products[$i]["model"].'",
 						"'.$products[$i]["description"].'",
 						"'.$stock.'",
 						"₱'.$products[$i]["sellingPrice"].'",

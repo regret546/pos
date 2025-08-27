@@ -126,10 +126,8 @@ if($_SESSION["profile"] == "Special"){
              <th style="width:10px">#</th>
              <th>Name</th>
              <th>I.D Doc.</th>
-             <th>Email</th>
              <th>Contact</th>
              <th>Address</th>
-             <th>Birthday</th>
              <th>Total Purchases</th>
              <th>Last Purchase</th>
              <th>Actions</th>
@@ -158,13 +156,9 @@ if($_SESSION["profile"] == "Special"){
 
                       <td>'.$value["idDocument"].'</td>
 
-                      <td>'.$value["email"].'</td>
-
                       <td>'.$value["phone"].'</td>
 
                       <td>'.$value["address"].'</td>
-
-                      <td>'.$value["birthdate"].'</td>             
 
                       <td>'.$value["purchases"].'</td>
 
@@ -250,15 +244,6 @@ MODAL ADD CUSTOMER
               </div>
             </div>
 
-            <!-- EMAIL INPUT -->
-
-            <div class="form-group">
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
-                <input class="form-control input-lg" type="text" name="newEmail" placeholder="Email" required>
-              </div>
-            </div>
-
             <!-- PHONE INPUT -->
 
             <div class="form-group">
@@ -274,16 +259,6 @@ MODAL ADD CUSTOMER
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-map-marker"></i></span>
                 <input class="form-control input-lg" type="text" name="newAddress" placeholder="Address" required>
-              </div>
-            </div>
-
-
-             <!-- BIRTH DATE INPUT -->
-
-            <div class="form-group">
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                <input class="form-control input-lg" type="text" name="newBirthdate" placeholder="Birth Date" data-inputmask="'alias': 'yyyy/mm/dd'" data-mask required>
               </div>
             </div>
 
@@ -374,20 +349,6 @@ MODAL EDIT CUSTOMER
 
             </div>
 
-            <!-- EMAIL INPUT -->
-            
-            <div class="form-group">
-              
-              <div class="input-group">
-              
-                <span class="input-group-addon"><i class="fa fa-envelope"></i></span> 
-
-                <input type="email" class="form-control input-lg" name="editEmail" id="editEmail" required>
-
-              </div>
-
-            </div>
-
             <!-- PHONE INPUT -->
             
             <div class="form-group">
@@ -416,20 +377,6 @@ MODAL EDIT CUSTOMER
 
             </div>
 
-            <!-- BIRTH DATE INPUT -->
-            
-            <div class="form-group">
-              
-              <div class="input-group">
-              
-                <span class="input-group-addon"><i class="fa fa-calendar"></i></span> 
-
-                <input type="text" class="form-control input-lg" name="editBirthdate" id="editBirthdate"  data-inputmask="'alias': 'yyyy/mm/dd'" data-mask required>
-
-              </div>
-
-            </div>
-  
           </div>
 
         </div>

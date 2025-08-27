@@ -16,12 +16,15 @@ class ModelCustomers{
 
 		$stmt = Connection::connect()->prepare("INSERT INTO $table(name, idDocument, email, phone, address, birthdate, purchases, lastPurchase) VALUES (:name, :idDocument, :email, :phone, :address, :birthdate, :purchases, :lastPurchase)");
 
+		$defaultEmail = "";
+		$defaultBirthdate = "1900-01-01";  // Valid default date for customers without birthdate
+		
 		$stmt->bindParam(":name", $data["name"], PDO::PARAM_STR);
 		$stmt->bindParam(":idDocument", $data["idDocument"], PDO::PARAM_INT);
-		$stmt->bindParam(":email", $data["email"], PDO::PARAM_STR);
+		$stmt->bindParam(":email", $defaultEmail, PDO::PARAM_STR);
 		$stmt->bindParam(":phone", $data["phone"], PDO::PARAM_STR);
 		$stmt->bindParam(":address", $data["address"], PDO::PARAM_STR);
-		$stmt->bindParam(":birthdate", DateHelper::formatDate($data["birthdate"]), PDO::PARAM_STR);
+		$stmt->bindParam(":birthdate", $defaultBirthdate, PDO::PARAM_STR);
 		$stmt->bindParam(":purchases", $data["purchases"], PDO::PARAM_INT);
 		$stmt->bindParam(":lastPurchase", $lastPurchase, PDO::PARAM_STR);
 
@@ -80,13 +83,16 @@ class ModelCustomers{
 
 		$stmt = Connection::connect()->prepare("UPDATE $table SET name = :name, idDocument = :idDocument, email = :email, phone = :phone, address = :address, birthdate = :birthdate WHERE id = :id");
 
+		$defaultEmail = "";
+		$defaultBirthdate = "1900-01-01";  // Valid default date for customers without birthdate
+		
 		$stmt->bindParam(":id", $data["id"], PDO::PARAM_INT);
 		$stmt->bindParam(":name", $data["name"], PDO::PARAM_STR);
 		$stmt->bindParam(":idDocument", $data["idDocument"], PDO::PARAM_INT);
-		$stmt->bindParam(":email", $data["email"], PDO::PARAM_STR);
+		$stmt->bindParam(":email", $defaultEmail, PDO::PARAM_STR);
 		$stmt->bindParam(":phone", $data["phone"], PDO::PARAM_STR);
 		$stmt->bindParam(":address", $data["address"], PDO::PARAM_STR);
-		$stmt->bindParam(":birthdate", DateHelper::formatDate($data["birthdate"]), PDO::PARAM_STR);
+		$stmt->bindParam(":birthdate", $defaultBirthdate, PDO::PARAM_STR);
 
 		if($stmt->execute()){
 

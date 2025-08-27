@@ -26,8 +26,8 @@ class Connection
 
         $dbHost = $env('DB_HOST', 'localhost');
         $dbName = $env('DB_NAME', 'posystem');
-        $dbUser = $env('DB_USER', 'db_admin');
-        $dbPass = $env('DB_PASS', 'Pa07xyav!');
+        $dbUser = $env('DB_USER', 'root');
+        $dbPass = $env('DB_PASS', '');
 
         $dsn = sprintf('mysql:host=%s;dbname=%s;charset=utf8', $dbHost, $dbName);
 

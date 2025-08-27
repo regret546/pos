@@ -47,8 +47,12 @@ function autoFixMissingPaymentRecords($planId) {
         
         $paymentFrequency = $plan['payment_frequency'];
         $actualNumberOfPayments = intval($plan['number_of_payments']);
+        
+        // Calculate payment amount based on installment amount only (excluding downpayment)
         $totalAmount = floatval($plan['total_amount']);
-        $paymentAmount = round($totalAmount / $actualNumberOfPayments, 2);
+        $downpaymentAmount = isset($plan['downpayment_amount']) ? floatval($plan['downpayment_amount']) : 0;
+        $installmentAmount = $totalAmount - $downpaymentAmount;
+        $paymentAmount = round($installmentAmount / $actualNumberOfPayments, 2);
         $startDate = $plan['start_date'];
         
         // Calculate original months
@@ -137,6 +141,53 @@ if(isset($_POST["planId"])) {
         $nextPayment = $stmt->fetch();
         
         if($nextPayment) {
+            // Check for advance payments (overpayments applied to future payments)
+            $advanceInfo = [];
+            
+            // Get the original payment amount for this payment number
+            $planStmt = Connection::connect()->prepare("SELECT payment_amount FROM installment_plans WHERE id = :plan_id");
+            $planStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
+            $planStmt->execute();
+            $planInfo = $planStmt->fetch();
+            
+            $originalAmount = $planInfo ? floatval($planInfo['payment_amount']) : floatval($nextPayment['amount']);
+            $currentAmount = floatval($nextPayment['amount']);
+            
+            if($currentAmount < $originalAmount) {
+                $advanceApplied = $originalAmount - $currentAmount;
+                $advanceInfo = [
+                    'has_advance' => true,
+                    'original_amount' => $originalAmount,
+                    'advance_applied' => $advanceApplied,
+                    'remaining_amount' => $currentAmount
+                ];
+            } else {
+                $advanceInfo = [
+                    'has_advance' => false,
+                    'original_amount' => $originalAmount,
+                    'advance_applied' => 0,
+                    'remaining_amount' => $currentAmount
+                ];
+            }
+            
+            // Check for any fully paid future payments (advance payments)
+            $prepaidStmt = Connection::connect()->prepare("
+                SELECT COUNT(*) as prepaid_count, SUM(amount) as prepaid_amount 
+                FROM installment_payments 
+                WHERE installment_plan_id = :plan_id 
+                AND payment_number > :current_payment_number 
+                AND status = 'paid'
+            ");
+            $prepaidStmt->bindParam(":plan_id", $planId, PDO::PARAM_INT);
+            $prepaidStmt->bindParam(":current_payment_number", $nextPayment['payment_number'], PDO::PARAM_INT);
+            $prepaidStmt->execute();
+            $prepaidInfo = $prepaidStmt->fetch();
+            
+            $advanceInfo['prepaid_payments'] = [
+                'count' => $prepaidInfo['prepaid_count'],
+                'amount' => floatval($prepaidInfo['prepaid_amount'])
+            ];
+            
             echo json_encode([
                 'success' => true,
                 'payment' => [
@@ -144,7 +195,8 @@ if(isset($_POST["planId"])) {
                     'payment_number' => $nextPayment['payment_number'],
                     'amount' => $nextPayment['amount'],
                     'due_date' => date('M j, Y', strtotime($nextPayment['due_date']))
-                ]
+                ],
+                'advance_info' => $advanceInfo
             ]);
         } else {
             // Check if all payments are completed

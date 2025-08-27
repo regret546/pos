@@ -72,6 +72,7 @@ require_once "models/connection.php";
              <th>Customer</th>
              <th>Seller</th>
              <th>Payment Method</th>
+             <th>Discount</th>
              <th>Total Cost</th>
              <th>Date</th>
              <th>Actions</th>
@@ -120,6 +121,8 @@ require_once "models/connection.php";
                   echo '<td>'.$userAnswer["name"].'</td>
 
                   <td>'.$value["paymentMethod"].'</td>
+
+                  <td>₱ '.number_format($value["discount"],2).'</td>
 
                   <td>₱ '.number_format($value["totalPrice"],2).'</td>
 

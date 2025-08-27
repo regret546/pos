@@ -89,6 +89,16 @@ try {
 
 $downpaymentAmount = isset($installmentPlan["downpayment_amount"]) ? floatval($installmentPlan["downpayment_amount"]) : 0;
 
+// Calculate original installment plan details
+$totalAmount = floatval($installmentPlan["total_amount"]);
+$originalPaymentAmount = floatval($installmentPlan["payment_amount"]); // This is the original planned amount
+$numberOfPayments = intval($installmentPlan["number_of_payments"]);
+$interestRate = floatval($installmentPlan["interest_rate"]);
+$paymentFrequency = isset($installmentPlan["payment_frequency"]) ? $installmentPlan["payment_frequency"] : "30th";
+
+// Calculate installment amount (total minus downpayment)
+$installmentAmount = $totalAmount - $downpaymentAmount;
+
 // Clean output buffer before PDF generation
 ob_end_clean();
 
@@ -176,7 +186,7 @@ $block2 = <<<EOF
 
 	<table style="width:100%; border-collapse: collapse;">
 		<tr>
-			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:15%;">CODE</td>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:15%;">MODEL</td>
 			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:35%;">DESCRIPTION</td>
 			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:10%;">QTY</td>
 			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; width:20%;">AMOUNT</td>
@@ -199,7 +209,7 @@ foreach ($products as $key => $item) {
 	$block2 .= <<<EOF
 		
 		<tr>
-			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center;">$answerProduct[code]</td>
+			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center;">$answerProduct[model]</td>
 			<td style="border:1px solid #000; padding:8px; font-size:10px;">$answerProduct[description]</td>
 			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:center;">$item[quantity]</td>
 			<td style="border:1px solid #000; padding:8px; font-size:10px; text-align:right;">$itemPrice</td>
@@ -241,7 +251,66 @@ $pdf->writeHTML($block2, false, false, false, false, '');
 
 // ---------------------------------------------------------
 
+// Add installment plan summary
 $downpaymentFormatted = number_format($downpaymentAmount, 2);
+$installmentAmountFormatted = number_format($installmentAmount, 2);
+$originalPaymentAmountFormatted = number_format($originalPaymentAmount, 2);
+
+// Format payment frequency display
+$frequencyDisplay = "";
+switch($paymentFrequency) {
+    case "15th":
+        $frequencyDisplay = "Every 15th of the month";
+        break;
+    case "30th":
+        $frequencyDisplay = "Every 30th of the month";
+        break;
+    case "both":
+        $frequencyDisplay = "Every 15th and 30th of the month";
+        break;
+    default:
+        $frequencyDisplay = "Monthly";
+}
+
+$installmentSummary = <<<EOF
+
+	<table style="width:100%; border-collapse: collapse; margin-bottom:15px;">
+		<tr>
+			<td style="border:1px solid #000; padding:8px; font-size:11px; font-weight:bold; text-align:center; background-color:#D3D3D3;" colspan="2">INSTALLMENT PLAN SUMMARY</td>
+		</tr>
+		<tr>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold; width:50%;">Total Purchase Amount</td>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; text-align:right; width:50%;">$saleTotalPrice</td>
+		</tr>
+		<tr>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold;">Downpayment</td>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; text-align:right;">$downpaymentFormatted</td>
+		</tr>
+		<tr>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold;">Total Installment Amount</td>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; text-align:right;">$installmentAmountFormatted</td>
+		</tr>
+		<tr>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold;">Number of Payments</td>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; text-align:right;">$numberOfPayments payments</td>
+		</tr>
+		<tr>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold;">Payment Amount</td>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; text-align:right;">$originalPaymentAmountFormatted per payment</td>
+		</tr>
+		<tr>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold;">Payment Frequency</td>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; text-align:right;">$frequencyDisplay</td>
+		</tr>
+		<tr>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; font-weight:bold;">Interest Rate</td>
+			<td style="border:1px solid #000; padding:6px; font-size:10px; text-align:right;">$interestRate%</td>
+		</tr>
+	</table>
+
+EOF;
+
+$pdf->writeHTML($installmentSummary, false, false, false, false, '');
 
 // Generate the appropriate agreement text based on whether there's a downpayment
 if($downpaymentAmount > 0) {
@@ -270,10 +339,11 @@ $block3 = <<<EOF
 
 EOF;
 
-// Add payment schedule
+// Add payment schedule - using ORIGINAL payment amounts, not modified amounts
 foreach ($paymentSchedule as $payment) {
     $dueDate = date('j-M-y', strtotime($payment["due_date"]));
-    $paymentAmount = number_format($payment["amount"], 2);
+    // Use the original payment amount from installment plan, not the current modified amount
+    $paymentAmount = number_format($originalPaymentAmount, 2);
     
     $block3 .= <<<EOF
 		<tr>

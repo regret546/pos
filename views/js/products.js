@@ -2,63 +2,63 @@
 LOAD DYNAMIC PRODUCTS TABLE
 =============================================*/
 
-var hiddenProfile = $('#hiddenProfile').val();
+var hiddenProfile = $("#hiddenProfile").val();
 
 // First, make a test AJAX call
 $.ajax({
-	url: "ajax/datatable-products.ajax.php?hiddenProfile=" + hiddenProfile,
-	method: "GET",
-	success: function(response) {
-		console.log("Raw AJAX response:", response);
-	},
-	error: function(xhr, status, error) {
-		console.error("AJAX Error:", {xhr: xhr, status: status, error: error});
-	}
+  url: "ajax/datatable-products.ajax.php?hiddenProfile=" + hiddenProfile,
+  method: "GET",
+  success: function (response) {
+    console.log("Raw AJAX response:", response);
+  },
+  error: function (xhr, status, error) {
+    console.error("AJAX Error:", { xhr: xhr, status: status, error: error });
+  },
 });
 
 // Then initialize DataTable
-$('.productsTable').DataTable({
-	"ajax": {
-		"url": "ajax/datatable-products.ajax.php?hiddenProfile=" + hiddenProfile,
-		"type": "GET",
-		"dataType": "json",
-		"dataSrc": function(json) {
-			console.log("DataTables received JSON:", json);
-			return (json && json.data) ? json.data : [];
-		},
-		"error": function(xhr, error, thrown) {
-			console.error("DataTables AJAX error:", {
-				error: error,
-				thrown: thrown,
-				responseText: xhr.responseText,
-				status: xhr.status,
-				statusText: xhr.statusText
-			});
-		}
-	},
-	"deferRender": true,
-	"retrieve": true,
-	"processing": true,
-	"language": {
-		"sProcessing": "Processing...",
-		"sLengthMenu": "Show _MENU_ records",
-		"sZeroRecords": "No results found",
-		"sEmptyTable": "No data available in table",
-		"sInfo": "Showing _START_ to _END_ of _TOTAL_ records",
-		"sInfoEmpty": "Showing 0 to 0 of 0 records",
-		"sInfoFiltered": "(filtered from _MAX_ total records)",
-		"sInfoPostFix": "",
-		"sSearch": "Search:",
-		"sUrl": "",
-		"sInfoThousands": ",",
-		"sLoadingRecords": "Loading...",
-		"oPaginate": {
-			"sFirst": "First",
-			"sLast": "Last",
-			"sNext": "Next",
-			"sPrevious": "Previous"
-		}
-	}
+$(".productsTable").DataTable({
+  ajax: {
+    url: "ajax/datatable-products.ajax.php?hiddenProfile=" + hiddenProfile,
+    type: "GET",
+    dataType: "json",
+    dataSrc: function (json) {
+      console.log("DataTables received JSON:", json);
+      return json && json.data ? json.data : [];
+    },
+    error: function (xhr, error, thrown) {
+      console.error("DataTables AJAX error:", {
+        error: error,
+        thrown: thrown,
+        responseText: xhr.responseText,
+        status: xhr.status,
+        statusText: xhr.statusText,
+      });
+    },
+  },
+  deferRender: true,
+  retrieve: true,
+  processing: true,
+  language: {
+    sProcessing: "Processing...",
+    sLengthMenu: "Show _MENU_ records",
+    sZeroRecords: "No results found",
+    sEmptyTable: "No data available in table",
+    sInfo: "Showing _START_ to _END_ of _TOTAL_ records",
+    sInfoEmpty: "Showing 0 to 0 of 0 records",
+    sInfoFiltered: "(filtered from _MAX_ total records)",
+    sInfoPostFix: "",
+    sSearch: "Search:",
+    sUrl: "",
+    sInfoThousands: ",",
+    sLoadingRecords: "Loading...",
+    oPaginate: {
+      sFirst: "First",
+      sLast: "Last",
+      sNext: "Next",
+      sPrevious: "Previous",
+    },
+  },
 });
 
 /*=============================================
@@ -81,7 +81,7 @@ GETTING CATEGORY TO ASSIGN A CODE
 //       processData: false,
 //       dataType:"json",
 //       success:function(answer){
-      
+
 //       // console.log("answer", answer);
 
 //       	if(!answer){
@@ -95,7 +95,7 @@ GETTING CATEGORY TO ASSIGN A CODE
 //           $("#newCode").val(newCode);
 
 //       	}
-                
+
 //       }
 
 //   	})
@@ -105,223 +105,204 @@ GETTING CATEGORY TO ASSIGN A CODE
 /*=============================================
 ADDING SELLING PRICE
 =============================================*/
-$("#newBuyingPrice, #editBuyingPrice").change(function(){
+$("#newBuyingPrice, #editBuyingPrice").change(function () {
+  if ($(".percentage").prop("checked")) {
+    var valuePercentage = $(".newPercentage").val();
 
-	if($(".percentage").prop("checked")){
+    var percentage =
+      Number(($("#newBuyingPrice").val() * valuePercentage) / 100) +
+      Number($("#newBuyingPrice").val());
 
-		var valuePercentage = $(".newPercentage").val();
-		
-		var percentage = Number(($("#newBuyingPrice").val()*valuePercentage/100))+Number($("#newBuyingPrice").val());
+    var editPercentage =
+      Number(($("#editBuyingPrice").val() * valuePercentage) / 100) +
+      Number($("#editBuyingPrice").val());
 
-		var editPercentage = Number(($("#editBuyingPrice").val()*valuePercentage/100))+Number($("#editBuyingPrice").val());
+    $("#newSellingPrice").val(percentage);
+    $("#newSellingPrice").prop("readonly", true);
 
-		$("#newSellingPrice").val(percentage);
-		$("#newSellingPrice").prop("readonly",true);
-
-		$("#editSellingPrice").val(editPercentage);
-		$("#editSellingPrice").prop("readonly",true);
-
-	}
-
-})
+    $("#editSellingPrice").val(editPercentage);
+    $("#editSellingPrice").prop("readonly", true);
+  }
+});
 /*=============================================
 PERCENTAGE CHANGE
 =============================================*/
-$(".newPercentage").change(function(){
+$(".newPercentage").change(function () {
+  if ($(".percentage").prop("checked")) {
+    var valuePercentage = $(this).val();
 
-	if($(".percentage").prop("checked")){
+    var percentage =
+      Number(($("#newBuyingPrice").val() * valuePercentage) / 100) +
+      Number($("#newBuyingPrice").val());
 
-		var valuePercentage = $(this).val();
-		
-		var percentage = Number(($("#newBuyingPrice").val()*valuePercentage/100))+Number($("#newBuyingPrice").val());
+    var editPercentage =
+      Number(($("#editBuyingPrice").val() * valuePercentage) / 100) +
+      Number($("#editBuyingPrice").val());
 
-		var editPercentage = Number(($("#editBuyingPrice").val()*valuePercentage/100))+Number($("#editBuyingPrice").val());
+    $("#newSellingPrice").val(percentage);
+    $("#newSellingPrice").prop("readonly", true);
 
-		$("#newSellingPrice").val(percentage);
-		$("#newSellingPrice").prop("readonly",true);
+    $("#editSellingPrice").val(editPercentage);
+    $("#editSellingPrice").prop("readonly", true);
+  }
+});
 
-		$("#editSellingPrice").val(editPercentage);
-		$("#editSellingPrice").prop("readonly",true);
+$(".percentage").on("ifUnchecked", function () {
+  $("#newSellingPrice").prop("readonly", false);
+  $("#editSellingPrice").prop("readonly", false);
+});
 
-	}
-
-})
-
-$(".percentage").on("ifUnchecked",function(){
-
-	$("#newSellingPrice").prop("readonly",false);
-	$("#editSellingPrice").prop("readonly",false);
-
-})
-
-$(".percentage").on("ifChecked",function(){
-
-	$("#newSellingPrice").prop("readonly",true);
-	$("#editSellingPrice").prop("readonly",true);
-
-})
+$(".percentage").on("ifChecked", function () {
+  $("#newSellingPrice").prop("readonly", true);
+  $("#editSellingPrice").prop("readonly", true);
+});
 /*=============================================
 UPLOADING PRODUCT IMAGE
 =============================================*/
 
-$(".newImage").change(function(){
+$(".newImage").change(function () {
+  var image = this.files[0];
 
-	var image = this.files[0];
-	
-	/*=============================================
+  /*=============================================
   	WE VALIDATE THAT THE FORMAT IS JPG OR PNG
   	=============================================*/
 
-  	if(image["type"] != "image/jpeg" && image["type"] != "image/png"){
+  if (image["type"] != "image/jpeg" && image["type"] != "image/png") {
+    $(".newImage").val("");
 
-  		$(".newImage").val("");
+    swal({
+      title: "Error uploading image",
+      text: "¡The image should be in JPG o PNG format!",
+      type: "error",
+      confirmButtonText: "¡Close!",
+    });
+  } else if (image["size"] > 2000000) {
+    $(".newImage").val("");
 
-  		 swal({
-		      title: "Error uploading image",
-		      text: "¡The image should be in JPG o PNG format!",
-		      type: "error",
-		      confirmButtonText: "¡Close!"
-		    });
+    swal({
+      title: "Error uploading image",
+      text: "¡The image shouldn't be more than 2MB!",
+      type: "error",
+      confirmButtonText: "¡Close!",
+    });
+  } else {
+    var imageData = new FileReader();
+    imageData.readAsDataURL(image);
 
-  	}else if(image["size"] > 2000000){
+    $(imageData).on("load", function (event) {
+      var imagePath = event.target.result;
 
-  		$(".newImage").val("");
-
-  		 swal({
-		      title: "Error uploading image",
-		      text: "¡The image shouldn't be more than 2MB!",
-		      type: "error",
-		      confirmButtonText: "¡Close!"
-		    });
-
-  	}else{
-
-  		var imageData = new FileReader;
-  		imageData.readAsDataURL(image);
-
-  		$(imageData).on("load", function(event){
-
-  			var imagePath = event.target.result;
-
-  			$(".preview").attr("src", imagePath);
-
-  		})
-
-  	}
-})
+      $(".preview").attr("src", imagePath);
+    });
+  }
+});
 /*=============================================
 EDIT PRODUCT
 =============================================*/
 
-$(".productsTable tbody").on("click", "button.btnEditProduct", function(){
+$(".productsTable tbody").on("click", "button.btnEditProduct", function () {
+  var idProduct = $(this).attr("idProduct");
 
-	var idProduct = $(this).attr("idProduct");
-	
-	var datum = new FormData();
-    datum.append("idProduct", idProduct);
+  var datum = new FormData();
+  datum.append("idProduct", idProduct);
 
-     $.ajax({
+  $.ajax({
+    url: "ajax/products.ajax.php",
+    method: "POST",
+    data: datum,
+    cache: false,
+    contentType: false,
+    processData: false,
+    dataType: "json",
+    success: function (answer) {
+      // console.log("answer", answer);
 
-      url:"ajax/products.ajax.php",
-      method: "POST",
-      data: datum,
-      cache: false,
-      contentType: false,
-      processData: false,
-      dataType:"json",
-      success:function(answer){
-        
-        // console.log("answer", answer);
-          
-        var categoryData = new FormData();
-        categoryData.append("idCategory",answer["idCategory"]);
+      var categoryData = new FormData();
+      categoryData.append("idCategory", answer["idCategory"]);
 
-         $.ajax({
+      $.ajax({
+        url: "ajax/categories.ajax.php",
+        method: "POST",
+        data: categoryData,
+        cache: false,
+        contentType: false,
+        processData: false,
+        dataType: "json",
+        success: function (answer) {
+          $("#editCategory").val(answer["id"]);
+          $("#editCategory").html(answer["Category"]);
+        },
+      });
 
-            url:"ajax/categories.ajax.php",
-            method: "POST",
-            data: categoryData,
-            cache: false,
-            contentType: false,
-            processData: false,
-            dataType:"json",
-            success:function(answer){
-                
-                $("#editCategory").val(answer["id"]);
-                $("#editCategory").html(answer["Category"]);
+      $("#editId").val(answer["id"]);
 
-            }
+      // Use model field if available, otherwise fallback to code field
+      var modelValue = answer["model"] || answer["code"] || "";
+      $("#editCode").val(modelValue);
 
-        })
+      $("#editDescription").val(answer["description"]);
 
-         $("#editCode").val(answer["code"]);
+      $("#editStock").val(answer["stock"]);
 
-         $("#editDescription").val(answer["description"]);
+      $("#editBuyingPrice").val(answer["buyingPrice"]);
 
-         $("#editStock").val(answer["stock"]);
+      $("#editSellingPrice").val(answer["sellingPrice"]);
 
-         $("#editBuyingPrice").val(answer["buyingPrice"]);
+      if (answer["image"] != "") {
+        $("#currentImage").val(answer["image"]);
 
-         $("#editSellingPrice").val(answer["sellingPrice"]);
-
-         if(answer["image"] != ""){
-
-       	    $("#currentImage").val(answer["image"]);
-
-       	    $(".preview").attr("src",  answer["image"]);
-
-         }
-
+        $(".preview").attr("src", answer["image"]);
       }
-
-  })
-
-})
+    },
+  });
+});
 /*=============================================
 DELETE PRODUCT
 =============================================*/
 
-$(".productsTable tbody").on("click", "button.btnDeleteProduct", function(){
+$(".productsTable tbody").on("click", "button.btnDeleteProduct", function () {
+  var idProduct = $(this).attr("idProduct");
+  var model = $(this).attr("model");
+  var image = $(this).attr("image");
 
-	var idProduct = $(this).attr("idProduct");
-	var code = $(this).attr("code");
-	var image = $(this).attr("image");
-	
-	swal({
-
-		title: '¿Are you sure you want to delete the product?',
-		text: "¡If you're not sure you can cancel this action!",
-		type: 'warning',
+  swal({
+    title: "¿Are you sure you want to delete the product?",
+    text: "¡If you're not sure you can cancel this action!",
+    type: "warning",
     showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    cancelButtonText: 'Cancel',
-    confirmButtonText: 'Yes, delete product!'
-    }).then(function(result){
-      if (result.value) {
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    cancelButtonText: "Cancel",
+    confirmButtonText: "Yes, delete product!",
+  }).then(function (result) {
+    if (result.value) {
+      window.location =
+        "index.php?route=products&idProduct=" +
+        idProduct +
+        "&image=" +
+        image +
+        "&Model=" +
+        model;
+    }
+  });
+});
 
-      	window.location = "index.php?route=products&idProduct="+idProduct+"&image="+image+"&Code="+code;
+$(".productsTable").on("draw.dt", function () {
+  // ... existing code ...
+});
 
-      }
-    })
-})
+$(".productsTable tbody").on("click", "button.editProduct", function () {
+  // ... existing code ...
+});
 
-$(".productsTable").on("draw.dt", function() {
-	// ... existing code ...
-})
+$(".productsTable tbody").on("click", "button.deleteProduct", function () {
+  // ... existing code ...
+});
 
-$(".productsTable tbody").on("click", "button.editProduct", function(){
-	// ... existing code ...
-})
+$("#newProduct").click(function () {
+  // ... existing code ...
+});
 
-$(".productsTable tbody").on("click", "button.deleteProduct", function(){
-	// ... existing code ...
-})
-
-$("#newProduct").click(function(){
-	// ... existing code ...
-})
-
-$(".productsTable").on("draw.dt", function(){
-	// ... existing code ...
-})
+$(".productsTable").on("draw.dt", function () {
+  // ... existing code ...
+});

@@ -535,9 +535,7 @@
                               <option value="cash" <?php if($sale["paymentMethod"] == "cash") echo "selected"; ?>>💵 Cash Payment</option>
                               <option value="QRPH" <?php if($sale["paymentMethod"] == "QRPH" || $sale["paymentMethod"] == "CC") echo "selected"; ?>>📱 QRPH Payment</option>
                               <option value="Card" <?php if($sale["paymentMethod"] == "Card" || $sale["paymentMethod"] == "DC") echo "selected"; ?>>💳 Debit/Credit Card</option>
-                              <?php if(strpos($sale["paymentMethod"], "installment") !== false): ?>
-                              <option value="installment" selected>📅 Installment Plan</option>
-                              <?php endif; ?>
+                              <option value="installment" <?php if(strpos($sale["paymentMethod"], "installment") !== false) echo "selected"; ?>>📅 Installment Plan</option>
                             </select>
                           </div>
                         </div>
@@ -654,14 +652,6 @@
               </div>
             </div>
 
-            <!--Input email -->
-            <div class="form-group">
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
-                <input class="form-control input-lg" type="text" name="newEmail" placeholder="Email" required>
-              </div>
-            </div>
-
             <!--Input phone -->
             <div class="form-group">
               <div class="input-group">
@@ -675,15 +665,6 @@
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-map-marker"></i></span>
                 <input class="form-control input-lg" type="text" name="newAddress" placeholder="Address" required>
-              </div>
-            </div>
-
-
-            <!--Input phone -->
-            <div class="form-group">
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                <input class="form-control input-lg" type="text" name="newBirthdate" placeholder="Birth Date" data-inputmask="'alias': 'yyyy/mm/dd'" data-mask required>
               </div>
             </div>
 
@@ -939,9 +920,17 @@ $(document).ready(function() {
         
         // Get installment data from PHP
         <?php if($installmentPlan && isset($installmentPlan["number_of_payments"])): ?>
-            installmentMonths = '<?php echo $installmentPlan["number_of_payments"]; ?>';
+            <?php 
+                // Calculate actual months based on payment frequency and number of payments
+                $actualMonths = $installmentPlan["number_of_payments"];
+                $paymentFreq = isset($installmentPlan["payment_frequency"]) ? $installmentPlan["payment_frequency"] : "30th";
+                if($paymentFreq === "both") {
+                    $actualMonths = $installmentPlan["number_of_payments"] / 2;
+                }
+            ?>
+            installmentMonths = '<?php echo $actualMonths; ?>';
             installmentInterest = '<?php echo isset($installmentPlan["interest_rate"]) ? $installmentPlan["interest_rate"] : 0; ?>';
-            installmentFrequency = '<?php echo isset($installmentPlan["payment_frequency"]) ? $installmentPlan["payment_frequency"] : "30th"; ?>';
+            installmentFrequency = '<?php echo $paymentFreq; ?>';
             
             // Get downpayment data
             var existingDownpayment = <?php echo isset($installmentPlan["downpayment_amount"]) ? floatval($installmentPlan["downpayment_amount"]) : 0; ?>;
@@ -979,31 +968,40 @@ $(document).ready(function() {
             if (installmentMonths) {
                 console.log('Setting months dropdown to:', installmentMonths);
                 $('#installmentMonths').val(installmentMonths);
+                
+                // Trigger change event to show the hidden fields first
                 $('#installmentMonths').trigger('change');
                 
                 // Also manually set the listPaymentMethod to ensure it's correct
                 $('#listPaymentMethod').val('installment_' + installmentMonths);
                 console.log('Set listPaymentMethod to:', 'installment_' + installmentMonths);
-            }
-            if (installmentInterest !== null) {
-                console.log('Setting interest rate to:', installmentInterest);
-                $('#installmentInterest').val(installmentInterest);
-                $('#installmentInterest').trigger('input');
-            }
-            if (installmentFrequency) {
-                console.log('Setting payment frequency to:', installmentFrequency);
-                $('#installmentFrequency').val(installmentFrequency);
-            }
-            
-            // Set downpayment values if they exist
-            if (hasExistingDownpayment) {
-                console.log('Setting existing downpayment:', existingDownpayment);
-                $('#hasDownpayment').prop('checked', true);
-                $('#downpaymentAmount').prop('disabled', false).val(existingDownpayment);
-            } else {
-                console.log('No existing downpayment found');
-                $('#hasDownpayment').prop('checked', false);
-                $('#downpaymentAmount').prop('disabled', true).val('');
+                
+                // Wait a bit more for the fields to become visible, then populate them
+                setTimeout(function() {
+                    if (installmentInterest !== null) {
+                        console.log('Setting interest rate to:', installmentInterest);
+                        $('#installmentInterest').val(installmentInterest);
+                        $('#installmentInterest').trigger('input');
+                    }
+                    if (installmentFrequency) {
+                        console.log('Setting payment frequency to:', installmentFrequency);
+                        $('#installmentFrequency').val(installmentFrequency);
+                    }
+                    
+                    // Set downpayment values if they exist
+                    if (hasExistingDownpayment) {
+                        console.log('Setting existing downpayment:', existingDownpayment);
+                        $('#hasDownpayment').prop('checked', true);
+                        $('#downpaymentAmount').prop('disabled', false).val(existingDownpayment);
+                    } else {
+                        console.log('No existing downpayment found');
+                        $('#hasDownpayment').prop('checked', false);
+                        $('#downpaymentAmount').prop('disabled', true).val('');
+                    }
+                    
+                    // Update the installment summary with all the populated values
+                    updateInstallmentSummary();
+                }, 100);
             }
         }, 300);
         
@@ -1055,11 +1053,32 @@ $(document).ready(function() {
                 var totalInterestAmount = totalWithInterest - remainingAmount;
                 var finalTotalToPay = downpayment + totalWithInterest;
                 
-                var summaryHTML = '<div class="payment-summary-content">' +
+                // Calculate subtotal before discount
+                var discount = parseFloat($('#saleDiscount').val()) || 0;
+                var subtotal = total + discount;
+                
+                var summaryHTML = '<div class="payment-summary-content">';
+                
+                // Show subtotal and discount if there's a discount
+                if (discount > 0) {
+                    summaryHTML += '<div class="summary-row">' +
+                        '<span class="summary-label">Subtotal:</span>' +
+                        '<span class="summary-value">₱' + subtotal.toFixed(2) + '</span>' +
+                    '</div>' +
                     '<div class="summary-row">' +
-                        '<span class="summary-label">Original Amount:</span>' +
+                        '<span class="summary-label">Discount:</span>' +
+                        '<span class="summary-value">-₱' + discount.toFixed(2) + '</span>' +
+                    '</div>' +
+                    '<div class="summary-row">' +
+                        '<span class="summary-label">Net Amount:</span>' +
                         '<span class="summary-value">₱' + total.toFixed(2) + '</span>' +
                     '</div>';
+                } else {
+                    summaryHTML += '<div class="summary-row">' +
+                        '<span class="summary-label">Sale Amount:</span>' +
+                        '<span class="summary-value">₱' + total.toFixed(2) + '</span>' +
+                    '</div>';
+                }
                 
                 if (hasDownpayment && downpayment > 0) {
                     summaryHTML += '<div class="summary-row">' +
@@ -1082,7 +1101,7 @@ $(document).ready(function() {
                     '</div>' +
                     '<div class="summary-row total-row">' +
                         '<span class="summary-label">Total to Pay:</span>' +
-                        '<span class="summary-value">₱' + (total + totalInterestAmount).toFixed(2) + '</span>' +
+                        '<span class="summary-value">₱' + finalTotalToPay.toFixed(2) + '</span>' +
                     '</div>' +
                     '<div class="summary-row monthly-row">' +
                         '<span class="summary-label">Monthly Payment:</span>' +
@@ -1103,7 +1122,11 @@ $(document).ready(function() {
                                 '<i class="fa fa-info-circle"></i> <strong>Preview:</strong> Add products to see actual calculation' +
                             '</div>' +
                             '<div class="payment-summary-content">' +
-                                '<div class="example-header">Example Calculation (₱1,000)</div>';
+                                '<div class="example-header">Example Calculation (₱1,000)</div>' +
+                                '<div class="summary-row">' +
+                                    '<span class="summary-label">Sale Amount:</span>' +
+                                    '<span class="summary-value">₱' + exampleTotal.toFixed(2) + '</span>' +
+                                '</div>';
                 
                 if (hasDownpayment) {
                     summaryHTML += '<div class="summary-row">' +
@@ -1126,7 +1149,7 @@ $(document).ready(function() {
                     '</div>' +
                     '<div class="summary-row total-row">' +
                         '<span class="summary-label">Total to Pay:</span>' +
-                        '<span class="summary-value">₱' + (exampleTotal + totalInterestAmount).toFixed(2) + '</span>' +
+                        '<span class="summary-value">₱' + finalTotalToPay.toFixed(2) + '</span>' +
                     '</div>' +
                     '<div class="summary-row monthly-row">' +
                         '<span class="summary-label">Monthly Payment:</span>' +
@@ -1180,10 +1203,12 @@ $(document).ready(function() {
                    '<div class="input-group">' +
                    '<select class="form-control" name="installmentMonths" id="installmentMonths" required>' +
                    '<option value="">Select Payment Plan</option>' +
+                   '<option value="1">1 Month</option>' +
+                   '<option value="2">2 Months</option>' +
                    '<option value="3">3 Months</option>' +
+                   '<option value="4">4 Months</option>' +
+                   '<option value="5">5 Months</option>' +
                    '<option value="6">6 Months</option>' +
-                   '<option value="9">9 Months</option>' +
-                   '<option value="12">12 Months</option>' +
                    '</select>' +
                    '</div>' +
                    '</div>' +
@@ -1367,10 +1392,14 @@ $(document).ready(function() {
                  var totalPrice = parseFloat($('#saleTotal').val()) || 0;
                  var change = cashValue - totalPrice;
                  
-                 if (change >= 0) {
-                     $('#newCashChange').val(change.toFixed(2));
+                 // Always show the actual change, including negative values
+                 $('#newCashChange').val(change.toFixed(2));
+                 
+                 // Add visual indicator for insufficient cash
+                 if (change < 0) {
+                     $('#newCashChange').addClass('insufficient-cash');
                  } else {
-                     $('#newCashChange').val('0.00');
+                     $('#newCashChange').removeClass('insufficient-cash');
                  }
                  
                  // Update cash payment summary
@@ -1397,6 +1426,17 @@ $(document).ready(function() {
          }
     });
     
+    // Monitor discount changes in edit-sale
+    $(document).on('input change', '#saleDiscount', function() {
+        var currentMethod = $('#newPaymentMethod').val();
+        if ((currentMethod === 'QRPH' || currentMethod === 'Card') && $('#electronicPaymentSummaryDiv').is(':visible')) {
+            updateElectronicPaymentSummary(currentMethod);
+        } else if (currentMethod === 'cash' && $('#cashPaymentSummaryDiv').is(':visible')) {
+            updateCashPaymentSummary();
+        }
+    });
+    
+
     // Add form submission debugging
     $('.saleForm').on('submit', function(e) {
         console.log('Form being submitted');
@@ -1540,3 +1580,16 @@ $(document).ready(function() {
     }
 });
 </script>
+
+<!-- Add CSS for insufficient cash styling -->
+<style>
+.insufficient-cash {
+    background-color: #ffebee !important;
+    color: #d32f2f !important;
+    border-color: #d32f2f !important;
+}
+.insufficient-cash:focus {
+    border-color: #d32f2f !important;
+    box-shadow: 0 0 0 0.2rem rgba(211, 47, 47, 0.25) !important;
+}
+</style>

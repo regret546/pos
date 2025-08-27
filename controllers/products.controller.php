@@ -48,7 +48,7 @@ class ControllerProducts{
 			  	return;
 			}
 
-			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["newDescription"]) &&
+			if(!empty($_POST["newDescription"]) &&
 			   preg_match('/^[0-9]+$/', $_POST["newStock"]) &&	
 			   preg_match('/^[0-9.]+$/', $_POST["newBuyingPrice"]) &&
 			   preg_match('/^[0-9.]+$/', $_POST["newSellingPrice"])){
@@ -115,7 +115,7 @@ class ControllerProducts{
 				$table = "products";
 
 				$data = array("idCategory" => $_POST["newCategory"],
-							   "code" => $_POST["newCode"],
+							   "model" => $_POST["newCode"],
 							   "description" => $_POST["newDescription"],
 							   "stock" => $_POST["newStock"],
 							   "buyingPrice" => $_POST["newBuyingPrice"],
@@ -153,7 +153,7 @@ class ControllerProducts{
 
 					swal({
 						  type: "error",
-						  title: "¡Product cannot go with empty fields or carry special characters!",
+						  title: "¡Product cannot go with empty fields!",
 						  showConfirmButton: true,
 						  confirmButtonText: "Close"
 						  }).then(function(result){
@@ -203,7 +203,7 @@ class ControllerProducts{
 			  	return;
 			}
 
-			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["editDescription"]) &&
+			if(!empty($_POST["editDescription"]) &&
 			   preg_match('/^[0-9]+$/', $_POST["editStock"]) &&	
 			   preg_match('/^[0-9.]+$/', $_POST["editBuyingPrice"]) &&
 			   preg_match('/^[0-9.]+$/', $_POST["editSellingPrice"])){
@@ -289,8 +289,9 @@ class ControllerProducts{
 
 				$table = "products";
 
-				$data = array("idCategory" => $_POST["editCategory"],
-							   "code" => $_POST["editCode"],
+				$data = array("id" => $_POST["editId"],
+							   "idCategory" => $_POST["editCategory"],
+							   "model" => $_POST["editCode"],
 							   "description" => $_POST["editDescription"],
 							   "stock" => $_POST["editStock"],
 							   "buyingPrice" => $_POST["editBuyingPrice"],
@@ -327,7 +328,7 @@ class ControllerProducts{
 
 					swal({
 						  type: "error",
-						  title: "The Product cannot be empty or have special characters!",
+						  title: "The Product cannot be empty!",
 						  showConfirmButton: true,
 						  confirmButtonText: "Close"
 						  }).then(function(result){
@@ -358,7 +359,7 @@ class ControllerProducts{
 			if($_GET["image"] != "" && $_GET["image"] != "views/img/products/default/anonymous.png"){
 
 				unlink($_GET["image"]);
-				rmdir('views/img/products/'.$_GET["code"]);
+				rmdir('views/img/products/'.$_GET["Model"]);
 
 			}
 
